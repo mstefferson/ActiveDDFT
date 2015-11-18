@@ -1,4 +1,5 @@
-function [OrderParamObj] = CPNrecMaker(Nx,Ny,TimeRecVec,GridObj,Density_rec)
+function [OrderParamObj] = ...
+    CPNrecMaker(Nx,Ny,TimeRecVec,GridObj,Density_rec,feq)
 
 nFrames    = length(TimeRecVec)  ;                 % Number of frames
 C_rec      = zeros(Nx,Ny,nFrames);                 % Concentration
@@ -11,7 +12,9 @@ NADy_rec   = zeros(Nx,Ny,nFrames);                 % Nematic alignment director-
 
 
 for ii = 1:nFrames
-    [C,POP,nx_POP,ny_POP,NOP,NADx,NADy] = OpCPNCalc(Nx,Ny,Density_rec(:,:,:,ii),GridObj.phi,GridObj.x,GridObj.y,GridObj.phi3D);
+    [C,POP,nx_POP,ny_POP,NOP,NADx,NADy] = ...
+        OpCPNCalc(Nx,Ny,Density_rec(:,:,:,ii),...
+        GridObj.phi,GridObj.x,GridObj.y,GridObj.phi3D);
     
     C_rec(:,:,ii) = real(C);
     
@@ -25,7 +28,16 @@ for ii = 1:nFrames
 %     keyboard 
 end
 
-OrderParamObj = struct('nFrames',nFrames,'TimeRec',TimeRecVec,'C_rec',C_rec, 'POP_rec',POP_rec,'nx_POP_rec',nx_POP_rec,'ny_POP_rec',ny_POP_rec,...
-                       'NOP_rec',NOP_rec,'NADx_rec',NADx_rec,'NADy_rec',NADy_rec);
+% keyboard
+[~,~,~,~,NOPeq,~,~] = ...
+        OpCPNCalc(1,1,feq,...
+        GridObj.phi,1,1,GridObj.phi3D);
+    
+OrderParamObj = struct('nFrames',nFrames,'TimeRec',TimeRecVec,...
+    'C_rec',C_rec, 'POP_rec',POP_rec,...
+    'nx_POP_rec',nx_POP_rec,'ny_POP_rec',ny_POP_rec,...
+                       'NOP_rec',NOP_rec,'NADx_rec',...
+                       NADx_rec,'NADy_rec',NADy_rec,...
+                       'NOPeq',NOPeq);
 
 end

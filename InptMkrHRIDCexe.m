@@ -12,7 +12,7 @@ Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 54;
+trial    = 38;
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1; 
@@ -20,9 +20,9 @@ SaveMe       = 1;
 MakeMovies   = 1; % Movies won't run if save is zero
 MakeOP       = 1;
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 32;
-Ny      = 32;
-Nm      = 32;
+Nx      = 64;
+Ny      = 64;
+Nm      = 64;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
@@ -31,15 +31,17 @@ v0      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 1e-1; %time interval for recording dynamics
-t_tot       = 1;   %total time
+t_record    = 4e-2; %time interval for recording dynamics
+t_tot       = 2;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation 
-NumModesX   = 6;
-NumModesY   = 6;
-NumModesM   = 6;
-
+NumModesX   = 1;
+NumModesY   = 1;
+NumModesM   = 2;
+WeightPos   = 1e-3;   
+WeightAng   = 1e-3;    
+Random      = 0;       % Random perturbation coeffs
 
 %%%%%%%%%%%%%%%%%%%%% Physical Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Tmp      = 1;            % Temperature
@@ -51,22 +53,19 @@ Mob_rot  = Mob_same;
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
  % Weight of the spatial sinusoidal perturbation. %
  % Perturbations added to rho(i,j,k) = 1. Must be small
-WeightPos      = 1e-2;   
-WeightAng      = 1e-2;    
-Random         = 1;       % Random perturbation coeffs
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if 
 % perturbing about equilbrum
-bc             = 1.5001;    
+bc             = 1.6;    
 
 
 % Type of initial Condition
 IntGauss   = 0;
 IntPw      = 0;
 IntSepPw   = 0;
-IntEqPw    = 1;    % Distribution from perturbing equil. dist.
+IntEqPw    = 0;    % Distribution from perturbing equil. dist.
 IntEqSepPw = 0;    % This is the wrong way to perturb.
 IntLoad    = 0;
-IntNemPw   = 0;    % Distribution from perturbing equil. dist.
+IntNemPw   = 1;    % Distribution from perturbing equil. dist.
 
 % Save a string saying what you want
 [IntDenType, IntDenIndicator] = ...
@@ -101,7 +100,7 @@ if v0  == 0; Drive = 0; else Drive = 1;end
 % Parameter vectors
 Paramtmp = [trial Interactions Drive MakeOP MakeMovies SaveMe Nx Ny Nm...
     Lx Ly L_rod Tmp Norm WeightPos WeightAng Random ...
-    NumModesX NumModesY NumModesM bc Mob_pos Mob_rot v0];
+    NumModesX NumModesY NumModesM bc c Mob_pos Mob_rot v0];
 Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
@@ -115,7 +114,12 @@ FileInpt = ...
 
 Where2SavePath    = sprintf('%s/%s/%s',pwd,'Outputs',FileDir);
 
-fid = fopen(FileInpt,'wt');  % Note the 'wt' for writing in text mode
+[fid,msg] = fopen(FileInpt,'w+');  % Note the 'wt' for writing in text mode
+
+if fid == -1
+    error( 'Failed to open %s: %s', FileInpt, msg);
+end
+
 fprintf(fid,'%s\n%s\n%s\n',FileDir,Where2SavePath,IntDenType);
 fprintf(fid,'Param\t');
 fprintf(fid,'%e\t',Paramtmp);

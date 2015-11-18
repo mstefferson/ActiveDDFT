@@ -22,12 +22,12 @@ function [rho] = IntDenCalcPerturbEqPw2Drot(GridObj,ParamObj)
 % Distribution stuff
 Nc    = 20;            % Number of Coefficients
 
-[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
+[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
 f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
 % plot(GridObj.phi,f)
 
 % Initialize rho
-rho = ParamObj.Norm / ( ParamObj.Lx .* ParamObj.Lx) .* ...
+rho = ParamObj.c .* ...
     ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
 
 % Map distribution to a homogeneous system

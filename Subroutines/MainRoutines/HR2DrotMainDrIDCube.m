@@ -42,7 +42,8 @@ try
         'WeightAng',ParamVec(16), 'Random',ParamVec(17),...
         'NumModesX',ParamVec(18), 'NumModesY',ParamVec(19), ...
         'NumModesM', ParamVec(20),'bc',ParamVec(21), ...
-        'Mob_pos',ParamVec(22),'Mob_rot',ParamVec(23), 'v0', ParamVec(24) );
+        'c', ParamVec(22), ...
+        'Mob_pos',ParamVec(23),'Mob_rot',ParamVec(24), 'v0', ParamVec(25) );
     %     keyboard
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
@@ -77,12 +78,17 @@ try
     
     %Initialze density
     [rho] = MakeConcFromInd(GridObj,ParamObj,IntDenType);
+    Nc    = 20;
+ % Equilib distribution
+    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
+    feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
+
 %     keyboard
     % Run the main code
     tBodyID      = tic;
     
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIDCube(...
-        wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj);
+        wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
     EvolvedDen = 1;
     BodyRunTime  = toc(tBodyID);
     fprintf(lfid,'Made density object\n');
@@ -104,12 +110,13 @@ try
         if  DenRecObj.DidIBreak == 0
             [OrderParamObj] = CPNrecMaker(...
                 ParamObj.Nx,ParamObj.Ny,DenRecObj.TimeRecVec,...
-                GridObj,DenRecObj.Density_rec);
+                GridObj,DenRecObj.Density_rec,feq);
         else %Don't incldue the blowed up denesity for movies. They don't like it.
             TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1);
             [OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
                 TimeRecVecTemp,GridObj,...
-                DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)));
+                DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
+                feq);
         end
         OpRunTime       = toc(tOpID);
         fprintf(lfid,'Made interaction order paramater object\n');
@@ -119,10 +126,9 @@ try
             
             % Make matlab movies
             tMovID       = tic;
-            
-            [MovieObj]   = OPMatMovieMakerTgthr(ParamObj.Nx,ParamObj.Ny,...
-                ParamObj.Nm,GridObj.x,GridObj.y,GridObj.phi,...
-                OrderParamObj,DenRecObj.Density_rec,ParamObj.trial,ParamObj.SaveMe);
+%             keyboard
+        OPMatMovieMakerTgthr(GridObj,ParamObj,OrderParamObj,...
+            DenRecObj.Density_rec,feq);
             %                 keyboard
             MovRunTime   = toc(tMovID);
             %         keyboard
