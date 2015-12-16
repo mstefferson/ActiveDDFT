@@ -67,8 +67,7 @@ Prop = exp(Lop_kcube .* TimeObj.delta_t);   % Exponentiate the elements
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
 Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
-    Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, GridObj.dx,...
-    GridObj.dy, GridObj.dphi, ParamObj.L_rod) ));
+    Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ));
 
 
 %Hard rod interactions

@@ -1,0 +1,16 @@
+# Compiled Things
+*.o
+
+# Executeables
+*.exe
+
+# Outputs and ish
+*.txt
+*.swp
+*.avi
+
+# Directories
+Outputs/
+Outputs/*
+data/
+data/*

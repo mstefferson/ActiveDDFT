@@ -19,19 +19,19 @@
 
 function [t_tot,Nt,t_rec,N_rec,N_count] = TimeStepRecMaker(dt,t_tot,t_rec)
 
-% Fix the total run time to be divisible by time step 
-if mod(t_tot,dt) ~= 0
-  t_tot = floor(t_tot/dt)*dt;
-end
-
 % Fix the recording time to be divisible by the time step
 if mod(t_rec,dt) ~= 0
   t_rec = floor(t_rec/dt)*dt;
 end
 
+% Fix the total run time to be divisible by time step 
+if mod(t_tot,dt) ~= 0
+  t_tot = floor(t_tot/dt)*dt;
+end
+
 % Calculate the outputs
-Nt = t_tot/dt;           % Number of time steps
-N_rec = floor(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
-N_count = t_rec/dt;      % Number of time steps before recording
+Nt = round(t_tot/dt);           % Number of time steps
+N_rec = round(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
+N_count = round(t_rec/dt);      % Number of time steps before recording
 
 end

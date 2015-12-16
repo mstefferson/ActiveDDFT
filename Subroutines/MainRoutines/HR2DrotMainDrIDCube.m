@@ -126,9 +126,16 @@ try
             
             % Make matlab movies
             tMovID       = tic;
-%             keyboard
-        OPMatMovieMakerTgthr(GridObj,ParamObj,OrderParamObj,...
-            DenRecObj.Density_rec,feq);
+%         keyboard
+        HoldX = ParamObj.Nx /2 + 1;
+        HoldY = ParamObj.Ny /2 + 1;
+        OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+            OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
+            reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
+            DenRecObj.TimeRecVec)
+       
+%        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
+%              DenRecObj.Density_rec,feq);
             %                 keyboard
             MovRunTime   = toc(tMovID);
             %         keyboard
@@ -176,7 +183,7 @@ try
     %     end
     
 catch err %Catch errors 
-            keyboard
+         
     
     ErrFileNmStr = sprintf('errFile%i.txt',ParamObj.trial);
     efid         = fopen(ErrFileNmStr,'a+');
@@ -188,6 +195,7 @@ catch err %Catch errors
     fclose(efid);
     fclose('all');
     
+   keyboard
 %    keyboard
     if ParamObj.SaveMe
       

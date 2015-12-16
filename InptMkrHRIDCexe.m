@@ -6,7 +6,6 @@
 CurrentDir = pwd;
 addpath( genpath( CurrentDir) );
 
-
 % Now can change number of grid points in the x, y, phi direction
 Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
@@ -20,9 +19,9 @@ SaveMe       = 1;
 MakeMovies   = 1; % Movies won't run if save is zero
 MakeOP       = 1;
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 64;
-Ny      = 64;
-Nm      = 64;
+Nx      = 16;
+Ny      = 16;
+Nm      = 16;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
@@ -31,14 +30,14 @@ v0      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 4e-2; %time interval for recording dynamics
+t_record    = 1e-1; %time interval for recording dynamics
 t_tot       = 2;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation 
 NumModesX   = 1;
-NumModesY   = 1;
-NumModesM   = 2;
+NumModesY   = 2;
+NumModesM   = 1;
 WeightPos   = 1e-3;   
 WeightAng   = 1e-3;    
 Random      = 0;       % Random perturbation coeffs
@@ -55,7 +54,7 @@ Mob_rot  = Mob_same;
  % Perturbations added to rho(i,j,k) = 1. Must be small
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if 
 % perturbing about equilbrum
-bc             = 1.6;    
+bc             = 1.0;    
 
 
 % Type of initial Condition
@@ -149,6 +148,7 @@ if Run == 1
       mkdir(Where2SavePath)
       movefile('*.mat', Where2SavePath)
       movefile('*.txt', Where2SavePath)
+      movefile('*.avi', Where2SavePath)
     end
     toc
     fprintf('Break = %d Steady = %d Max dRho/Rho = %.2e\n',...

@@ -5,10 +5,10 @@ dx   = Lx/Nx;
 dy   = Ly/Ny;              
 dphi = 2*pi/Nm;
 % Make vectors and grids
-% x                = ( 0: dx : Lx - dx );
-x                = ( -Lx/2 : dx: Lx/2 - dx); 
-% y                = ( 0: dy : Ly - dy );
-y                = ( -Ly/2 : dy: Ly/2 - dy);
+x                = ( 0: dx : Lx - dx );
+% x                = ( -Lx/2 : dx: Lx/2 - dx); 
+y                = ( 0: dy : Ly - dy );
+% y                = ( -Ly/2 : dy: Ly/2 - dy);
 phi              = ( 0: dphi: (2*pi - dphi) );
 [y2D,x2D]        = meshgrid(y,x);                          
 [y3D,x3D,phi3D]  = meshgrid(y,x,phi);            
