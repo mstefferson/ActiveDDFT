@@ -22,7 +22,7 @@
 
 
 function [DenRecObj] = HR2DrotDrDenEvolverFTBody(...
-    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj)
+    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq)
 
 fprintf(lfid,'In body of code\n');
 % Create a text file that tells user what percent of the program has
@@ -65,8 +65,7 @@ j_record = 2;     %Record holder
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
 Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
-    Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, GridObj.dx,...
-    GridObj.dy, GridObj.dphi, ParamObj.L_rod) ));
+    Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ));
 
 %Hard rod interactions
 if ParamObj.Interactions
@@ -149,12 +148,12 @@ for t = 1:TimeObj.N_time-1
     %Save everything (this includes the initial state)
     if (mod(t,TimeObj.N_count)== 0)
         if ParamObj.SaveMe
-            [SteadyState,ShitIsFucked] = ...
+            [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTracker(wfid,tfid,TimeObj,t,...
                 Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
             
         else
-            [SteadyState,ShitIsFucked] = ...
+            [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTrackerNoSave(wfid,tfid,TimeObj,t,Nx,Ny,Nm,...
                 rhoVec_FT,rhoVec_FTprev,TotalDensity);
         end
@@ -170,25 +169,31 @@ fprintf(lfid,'Finished master time loop\n');
 %  keyboard
 
 % Update last rho
-if ParamObj.SaveMe
+if ParamObj.SaveMe 
     if ShitIsFucked == 0 && SteadyState == 0
         t =  t + 1;
         rhoVec_FTprev  = rhoVec_FT;
         rhoVec_FT      = rhoVec_FT_next;
-%         keyboard
-        if (mod(t,TimeObj.N_count)==0)
-            VarRecorderTracker(wfid,tfid,TimeObj,t,...
-                Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);            
-        end % End recording
+        rho_FT       = reshape(rhoVec_FT,Nx,Ny,Nm);
+        if ParamObj.SaveMe
+            [SteadyState,ShitIsFucked,MaxReldRho] = ...
+                VarRecorderTracker(wfid,tfid,TimeObj,t,...
+                Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
+            
+        else
+            [SteadyState,ShitIsFucked,MaxReldRho] = ...
+                VarRecorderTrackerNoSave(wfid,tfid,TimeObj,t,Nx,Ny,Nm,...
+                rhoVec_FT,rhoVec_FTprev,TotalDensity);
+        end
     end
 end %end if save
 
 %If something broke, return zeros. Else, return the goods
-if ShitIsFucked
+if ShitIsFucked 
     fprintf(wfid,'Density is either negative or not conserved.\n');
     fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
     
-elseif SteadyState
+elseif SteadyState 
     fprintf(wfid,'Things are going steady if you know what I mean.\n');
     fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
 end
@@ -196,7 +201,7 @@ end
 % Get rid of zeros in record matrices
 Record_hold   = 1:j_record;
 TimeRecVec    = (0:j_record-1) * TimeObj.t_record;
-if ParamObj.SaveMe
+if ParamObj.SaveMe 
     Density_rec   = Density_rec(:,:,:,Record_hold);
     DensityFT_rec = DensityFT_rec(:,:,:,Record_hold);
 else
@@ -216,10 +221,11 @@ DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
     'TimeRecVec',TimeRecVec,...
     'RunTime', trun, ...
     'bc',ParamObj.bc,...
-    'Density_rec',Density_rec,'DensityFT_rec', DensityFT_rec);
+    'Density_rec',Density_rec,'DensityFT_rec', DensityFT_rec,...
+    'MaxReldRho',MaxReldRho,'feq',feq);
 
 
 fclose(wfid); %Close warning statement file
 fclose(tfid); %Close program tracker file
-
+% keyboard
 end %function

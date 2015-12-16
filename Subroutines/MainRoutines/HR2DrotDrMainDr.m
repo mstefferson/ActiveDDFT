@@ -1,21 +1,19 @@
-% HR2DrotMainDrIDCube
+% HR2DrotDrMain.m
 %
 % Program is the main() for running the diffusion of 2D hard rods with
 % orientation. Program handles interactions using DDFT
-%
-% Angle-indepent diffusion matrix. Approximate interactions.
 
-function [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
-    DidIBreak,SteadyState,MaxReldRho] = ...
-    HR2DrotMainDrIDCube(InputFile)
+function  [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
+        DidIBreak,SteadyState,MaxReldRho] = ...
+        HR2DrotDrMainDr(InputFile)
 % Add paths (this should already be added, but just to be careful)
 % Save error messages in file
-try
+try 
     EvolvedDen = 0;DenFinal = 0;DenFTFinal = 0;GridObj = 0;ParamObj = 0;
     TimeObj = 0;DidIBreak = 0;SteadyState = 0;MaxReldRho = 0;
-    %         keyboard
+   
+    %     keyboard
     tMainID  = tic;
-    
     %Grab the parameters
     % keyboard
     DataTemp    = importdata(InputFile);
@@ -24,15 +22,17 @@ try
     FileNameMat = DataTemp.textdata(1);
     Path2Save   = DataTemp.textdata(2);
     IntDenType  = DataTemp.textdata(3);
-    %     keyboard
+    
     % Make some  objects
-    ParamNmVec = {'trial' 'Interactions' 'Drive' 'MakeOP' 'MakeMovies' 'SaveMe'...
+    %     ParamNmVec = {'trial' 'Interactions' 'Nx' 'Ny' 'Nm' 'Lx' 'Ly' 'L_rod' 'Diam' 'Eta_visc'...
+    %         'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' 'NumModesM' 'bc'};
+    ParamNmVec = {'trial' 'Interactions' 'Drive' 'Movies' 'SaveMe'...
         'Nx' 'Ny' 'Nm' 'Lx' 'Ly' 'L_rod' 'Diam' 'Eta_visc'...
-        'kB' 'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' 'NumModesM' 'bc'...
-        'Mob_pos','Mob_rot'  };
+        'kB' 'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' ...
+        'NumModesM' 'bc' 'Mob_pos','Mob_rot'  };
     TimeNmVec  = {'delta_t' 't_record' 't_tot' 'ss_epsilon'};
     
-    ParamObj   = struct('NmVec',{ParamNmVec},'ValVec',...
+     ParamObj   = struct('NmVec',{ParamNmVec},'ValVec',...
         ParamVec,'trial',ParamVec(1),...
         'Interactions',ParamVec(2), 'Drive',ParamVec(3),...
         'MakeOP',ParamVec(4),'MakeMovies',ParamVec(5),'SaveMe',ParamVec(6),...
@@ -43,17 +43,20 @@ try
         'NumModesX',ParamVec(18), 'NumModesY',ParamVec(19), ...
         'NumModesM', ParamVec(20),'bc',ParamVec(21), ...
         'c', ParamVec(22), ...
-        'Mob_pos',ParamVec(23),'Mob_rot',ParamVec(24), 'v0', ParamVec(25) );
+        'Mob_par',ParamVec(23),'Mob_perp',ParamVec(24),...
+        'Mob_rot',ParamVec(25), 'v0', ParamVec(26) );
+   
+    
     %     keyboard
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
-    wfid              = fopen(WarningStmtString,'a+');    % a+ allows to append data
+    wfid  = fopen(WarningStmtString,'a+');    % a+ allows to append data
     
     LocString = sprintf('Location_%i.txt',ParamObj.trial);
     lfid      = fopen(LocString,'a+');    % a+ allows to append data
     fprintf(lfid,'Starting main, current code\n');
     
-    % Time Recording
+    %Time Recording
     N_time   = ceil(TimeVec(3)/TimeVec(1)); %number of time steps
     N_record = ceil(TimeVec(3)/TimeVec(2)); %number of time points to record. Does not include initial density
     N_count  = ceil(TimeVec(2)/TimeVec(1)); %spacing between times to record
@@ -66,18 +69,23 @@ try
    [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
       TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
 
+    
+    
     %%%Make all the grid stuff%%%%%%%%%%%%%%
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
     fprintf(lfid,'Made grid\n');
     
     %Make diffusion coeff (send smallest dx dy for stability
-    [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
-        ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
+    [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
+        ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
+        TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
+        GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.v0);
+    
     fprintf(lfid,'Made diffusion object\n');
     
-    %Initialze density
-    [rho] = MakeConcFromInd(GridObj,ParamObj,IntDenType);
+% keyboard
+     [rho] = MakeConcFromInd(GridObj,ParamObj,IntDenType);
     Nc    = 20;
  % Equilib distribution
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
@@ -87,8 +95,8 @@ try
     % Run the main code
     tBodyID      = tic;
     
-    [DenRecObj]  = HR2DrotDenEvolverFTBodyIDCube(...
-        wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
+    [DenRecObj]  = HR2DrotDrDenEvolverFTBody(wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
+%     keyboard
     EvolvedDen = 1;
     BodyRunTime  = toc(tBodyID);
     fprintf(lfid,'Made density object\n');

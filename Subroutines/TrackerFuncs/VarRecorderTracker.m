@@ -1,4 +1,4 @@
-function [SteadyState,ShitIsFucked] = ...
+function [SteadyState,ShitIsFucked,MaxReldRho] = ...
 VarRecorderTracker(wfid,tfid,TimeObj,t,Nx,Ny,Nm,rhoVec_FT,rhoVec_FT_prev,TotalDensity ,j_record)
 % Track how mucht the wieghted density has changed.
 %Check to see if steady state has been reached. If so, break the
@@ -14,7 +14,7 @@ rho         = real(ifftn(ifftshift(reshape( rhoVec_FT,Nx,Ny,Nm ))));
 rho_prev    = real(ifftn(ifftshift(reshape( rhoVec_FT_prev,Nx,Ny,Nm ))));
 
 % See if things are broken
-[SteadyState,ShitIsFucked] = BrokenSteadyDenTracker(wfid,rho,rho_prev,TotalDensity ,TimeObj);
+[SteadyState,ShitIsFucked,MaxReldRho] = BrokenSteadyDenTracker(wfid,rho,rho_prev,TotalDensity ,TimeObj);
 
 rho_cube_FT = reshape( rhoVec_FT,Nx,Ny,Nm );
 DensityFT_rec(:,:,:,j_record)   = rho_cube_FT;
@@ -22,16 +22,18 @@ Density_rec(:,:,:,j_record)     = rho;
 %         keyboard
 end
 
-function [SteadyState,ShitIsFucked] = ...
+function [SteadyState,ShitIsFucked,MaxReldRho] = ...
     BrokenSteadyDenTracker(wfid,rho,rho_prev,TotalDensity ,TimeObj)
 SteadyState = 0;
 ShitIsFucked = 0;
 
 AbsDensityChange = abs( rho - rho_prev );
 WeightDensityChange = AbsDensityChange ./ rho;
-if max(max(max(WeightDensityChange))) < TimeObj.ss_epsilon
+MaxReldRho = max(max(max(WeightDensityChange)));
+if MaxReldRho < TimeObj.ss_epsilon
     SteadyState = 1;
 end
+
 %See if something broke
 %Negative Density check
 if min(min(min(rho))) < 0

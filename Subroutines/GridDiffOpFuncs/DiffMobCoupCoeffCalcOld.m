@@ -1,6 +1,17 @@
+% Calculates the mobility and diffusion tensor based on dimensions of rod
+% and fluid
+
 function [DiffMobObj]...
-             = DiffDrCoupCoeffCalcGivenMob(wfid,T,Mob_par,Mob_perp,Mob_rot,delta_t,delta_x,delta_phi,kx2D,ky2D,vd)
-         
+             = DiffMobCoupCoeffCalcOld(wfid,Eta_visc,L_rod,Diam,T,delta_t,delta_x,delta_phi,kx2D,ky2D)
+%Coefficients of the friction matrix
+Fric_par  = pi * Eta_visc * L_rod / (log(L_rod/Diam));          % for motion parallel to rods
+Fric_perp = 2*Fric_par;                                         % for motion perpendicular to rods
+Fric_rot  = pi * Eta_visc * L_rod ^3 / (3 * log(L_rod/Diam));   % for rotational motion
+
+Mob_par  = Fric_par^(-1);                                           % Parallel mobility coefficient
+Mob_perp = Fric_perp^(-1);                                          % Perpendicular mobility coefficient
+Mob_rot  = Fric_rot^(-1);                                           % Rotational mobility coefficient
+
 % Use Einstein diffusion relations
 D_par  = Mob_par * T;                                            % Parallel diffusion coeff
 D_perp = Mob_perp * T;                                           % Perpendicular coeff
@@ -24,18 +35,10 @@ if StabCoeffRot > 1/2
     fprintf(wfid,'StabCoeffRot = %f (should be less than 1/2) \n', StabCoeffRot);
 end
 
-%Aniso diffusion coupling
 CrossTermFactor = (D_par - D_perp)/4;                       % Constant in front of cross terms
 CoupFacMplus2   = CrossTermFactor.*(ky2D - 1i.*kx2D).^2;      % Coupling coefficent
 CoupFacMminus2  = CrossTermFactor.*(ky2D + 1i.*kx2D).^2;     % Coupling coefficent
 
-% Driven part
-CoupFacMplus1  = -vd/2 * ( 1i .* kx2D - ky2D  ) ;
-CoupFacMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
-
-% keyboard
-
 DiffMobObj = struct('Mob_par', Mob_par, 'Mob_perp', Mob_perp, 'Mob_rot',Mob_rot,...
     'D_par',D_par, 'D_perp',D_perp, 'D_rot',D_rot, ...
-    'CfMplus2',CoupFacMplus2,'CfMminus2',CoupFacMminus2, ...
-    'CfMplus1',CoupFacMplus1,'CfMminus1',CoupFacMminus1);
+    'CfMplus2',CoupFacMplus2,'CfMminus2',CoupFacMminus2);

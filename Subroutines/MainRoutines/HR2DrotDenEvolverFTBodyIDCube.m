@@ -8,7 +8,7 @@
 % Includes hard rod interactions, assuming in the interaction that the rods
 % are infinitely thin.
 %
-% 
+%
 %
 % Density matrix is set up as rho(x,y,phi)-----> RHO(kx,ky,km)
 %
@@ -44,7 +44,7 @@ rho_FT = fftshift(fftn(rho));
 global Density_rec
 global DensityFT_rec
 %Initialize matrices that change size the +1 is to include initial density
-if ParamObj.SaveMe 
+if ParamObj.SaveMe
     Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_record + 1 );      % Store density amplitudes
     DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_record + 1 );      % Store k-space amplitdues
     
@@ -71,21 +71,21 @@ Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
 
 
 %Hard rod interactions
-if ParamObj.Interactions 
-%     GammaExCube_FT = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,...
-%         GridObj,DiffMobObj);
-%     
-GammaExCube_FT = dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,...
+if ParamObj.Interactions
+    %     GammaExCube_FT = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,...
+    %         GridObj,DiffMobObj);
+    %
+    GammaExCube_FT = dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,...
         GridObj,DiffMobObj);
     
-%     GammaEx = dRhoInterCalcFT2nd_ID(rho,ParamObj,GridObj,DiffMobObj)
+    %     GammaEx = dRhoInterCalcFT2nd_ID(rho,ParamObj,GridObj,DiffMobObj)
 else
     GammaExCube_FT = zeros(Nx,Ny,Nm);
     fprintf(wfid,'Interacts are off my Lord\n');
 end
 
 %Driven Term
-if ParamObj.Drive 
+if ParamObj.Drive
     GammaDrCube_FT  = ...
         dRhoDriveCalcFT_ID(rho,ParamObj.v0,...
         GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
@@ -123,12 +123,12 @@ for t = 1:TimeObj.N_time-1
     end
     
     %Hard rod interactions
-    if ParamObj.Interactions 
-       %     GammaExCube_FT = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,...
-%         GridObj,DiffMobObj);
-%     
-GammaExCube_FT = dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,...
-        GridObj,DiffMobObj);
+    if ParamObj.Interactions
+        %     GammaExCube_FT = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,...
+        %         GridObj,DiffMobObj);
+        %
+        GammaExCube_FT = dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,...
+            GridObj,DiffMobObj);
     end
     
     %Driven Term
@@ -137,7 +137,7 @@ GammaExCube_FT = dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,...
             rho,ParamObj.v0,GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
     end
     
-
+    
     GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
     % Take the first step- Euler. Element by element mulitplication
     [rho_FTnext] = ...
@@ -151,44 +151,51 @@ GammaExCube_FT = dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,...
     
     %Save everything (this includes the initial state)
     if (mod(t,TimeObj.N_count)== 0)
-        if ParamObj.SaveMe 
+        if ParamObj.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTrackerCube(wfid,tfid,TimeObj,t,...
                 rho_FT,rho_FTprev,TotalDensity ,j_record);
         else
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTrackerNoSaveCube(wfid,tfid,TimeObj,t,...
-                rho_FT,rho_FTprev,TotalDensity);            
+                rho_FT,rho_FTprev,TotalDensity);
         end %if save
         if ShitIsFucked == 1 || SteadyState == 1
             break
         end
         j_record = j_record+1;
-    end %end recording   
+    end %end recording
     
 end %end time loop
 fprintf(lfid,'Finished master time loop\n');
 %  keyboard
 
 % Update last rho
-if ParamObj.SaveMe 
+if ParamObj.SaveMe
     if ShitIsFucked == 0 && SteadyState == 0
         t =  t + 1;
         rho_FT      = rho_FTnext;
         if (mod(t,TimeObj.N_count)==0)
-            [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerCube(wfid,tfid,TimeObj,t,...
-                rho_FT,rho_FTprev,TotalDensity,j_record);
+            if ParamObj.SaveMe
+                [SteadyState,ShitIsFucked,MaxReldRho] = ...
+                    VarRecorderTrackerCube(wfid,tfid,TimeObj,t,...
+                    rho_FT,rho_FTprev,TotalDensity ,j_record);
+            else
+                [SteadyState,ShitIsFucked,MaxReldRho] = ...
+                    VarRecorderTrackerNoSaveCube(wfid,tfid,TimeObj,t,...
+                    rho_FT,rho_FTprev,TotalDensity);
+            end %if save   [SteadyState,ShitIsFucked,MaxReldRho] = ...
+            
         end % End recording
     end
 end %end if save
 
 %If something broke, return zeros. Else, return the goods
-if ShitIsFucked 
+if ShitIsFucked
     fprintf(wfid,'Density is either negative or not conserved.\n');
     fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
     
-elseif SteadyState 
+elseif SteadyState
     fprintf(wfid,'Things are going steady if you know what I mean.\n');
     fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
 end
@@ -196,7 +203,7 @@ end
 % Get rid of zeros in record matrices
 Record_hold   = 1:j_record;
 TimeRecVec    = (0:j_record-1) * TimeObj.t_record;
-if ParamObj.SaveMe 
+if ParamObj.SaveMe
     Density_rec   = Density_rec(:,:,:,Record_hold);
     DensityFT_rec = DensityFT_rec(:,:,:,Record_hold);
 else
