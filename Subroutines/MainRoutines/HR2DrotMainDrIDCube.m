@@ -43,7 +43,7 @@ try
         'NumModesX',ParamVec(18), 'NumModesY',ParamVec(19), ...
         'NumModesM', ParamVec(20),'bc',ParamVec(21), ...
         'c', ParamVec(22), ...
-        'Mob_pos',ParamVec(23),'Mob_rot',ParamVec(24), 'v0', ParamVec(25) );
+        'Mob_pos',ParamVec(23),'Mob_rot',ParamVec(24), 'vD', ParamVec(25) );
     %     keyboard
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
@@ -61,11 +61,11 @@ try
     TimeObj = struct('TimeNmVec',{TimeNmVec},'TimeVecOrg',{TimeVec},...
         'delta_t',TimeVec(1), 't_record',TimeVec(2), 't_tot',TimeVec(3), 'ss_epsilon',TimeVec(4),...
         'N_time', N_time, 'N_record',N_record,'N_count',N_count);
-   
+    
     % Fix the time
-   [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
-      TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
-
+    [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
+        TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
+    
     %%%Make all the grid stuff%%%%%%%%%%%%%%
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
@@ -79,11 +79,11 @@ try
     %Initialze density
     [rho] = MakeConcFromInd(GridObj,ParamObj,IntDenType);
     Nc    = 20;
- % Equilib distribution
+    % Equilib distribution
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
     feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
-
-%     keyboard
+    
+    %     keyboard
     % Run the main code
     tBodyID      = tic;
     
@@ -101,8 +101,8 @@ try
     SteadyState = DenRecObj.SteadyState;
     MaxReldRho  = DenRecObj.MaxReldRho;
     
-%         keyboard
-
+    %         keyboard
+    
     % Run movies if you want
     if ParamObj.MakeOP  == 1
         tOpID           = tic ;
@@ -126,16 +126,16 @@ try
             
             % Make matlab movies
             tMovID       = tic;
-%         keyboard
-        HoldX = ParamObj.Nx /2 + 1;
-        HoldY = ParamObj.Ny /2 + 1;
-        OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
-            OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
-            reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
-            DenRecObj.TimeRecVec)
-       
-%        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
-%              DenRecObj.Density_rec,feq);
+            %         keyboard
+            HoldX = ParamObj.Nx /2 + 1;
+            HoldY = ParamObj.Ny /2 + 1;
+            OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+                OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
+                reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
+                DenRecObj.TimeRecVec)
+            
+            %        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
+            %              DenRecObj.Density_rec,feq);
             %                 keyboard
             MovRunTime   = toc(tMovID);
             %         keyboard
@@ -143,9 +143,39 @@ try
             % Record how long it took
             fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
             fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);
-        end % End if movies        
+
+
+
+      
+        end % End if movies
+       
+
+             % Plot amps
+        kx0 = ParamObj.Nx / 2 + 1;
+        ky0 = ParamObj.Ny / 2 + 1;
+        km0 = ParamObj.Nm / 2 + 1;
+        Nrec = length( DenRecObj.TimeRecVec);
+        
+        FTmat2plot = zeros( 8, Nrec );
+        FTmat2plot(1,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0, km0 + 1,: ), [ 1, Nrec]  );
+        FTmat2plot(2,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0, km0 + 1,: ), [ 1, Nrec]  );
+        FTmat2plot(3,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0 + 1, km0 + 1,: ), [ 1, Nrec]  );
+        FTmat2plot(4,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0 + 1, km0 + 1,: ), [ 1, Nrec]  );
+        FTmat2plot(5,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0, km0 + 2,: ), [ 1, Nrec]  );
+        FTmat2plot(6,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0, km0 + 2,: ), [ 1, Nrec]  );
+        FTmat2plot(7,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0 + 1, km0 + 2,: ), [ 1, Nrec]  );
+        FTmat2plot(8,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0 + 1, km0 + 2,: ), [ 1, Nrec]  );
+        
+        ampPlotterFT(FTmat2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
+            ParamObj.Nm, DenRecObj.bc,ParamObj.vD, ParamObj.trial, ParamObj.SaveMe)
+        
     end % if OP
     
+    
+
+    
+    
+    %%
     if ParamObj.SaveMe
         MemObj = 0;
         % Save all parameters
@@ -160,10 +190,10 @@ try
         save(TimeStr,'GridObj','-v7.3')
         save(ParamStr,'ParamObj','-v7.3')
         save(GridStr,'GridObj','-v7.3')
-       
+        
         if ParamObj.MakeOP
             OpStr = sprintf('OP_%i',ParamObj.trial);
-          save(OpStr,'OrderParamObj','-v7.3')
+            save(OpStr,'OrderParamObj','-v7.3')
         end
     end
     % Save how long everything took
@@ -182,38 +212,38 @@ try
     %         cd /home/mws/Documents/Research/BG/DDFT/Outputs
     %     end
     
-catch err %Catch errors 
-         
+catch err %Catch errors
+    
     
     ErrFileNmStr = sprintf('errFile%i.txt',ParamObj.trial);
     efid         = fopen(ErrFileNmStr,'a+');
     % write the error to file and to screen
     % first line: message
-%     fprintf(efid,'%s', err.getReport('extended', 'hyperlinks','off')) ;
+    %     fprintf(efid,'%s', err.getReport('extended', 'hyperlinks','off')) ;
     fprintf('%s', err.getReport('extended')) ;
     disp(err.message);
     fclose(efid);
     fclose('all');
     
-   keyboard
-%    keyboard
+    keyboard
+    %    keyboard
     if ParamObj.SaveMe
-      
+        
         TimeStr = sprintf('TimeObj_%i',ParamObj.trial);
         ParamStr = sprintf('ParamObj_%i',ParamObj.trial);
         GridStr = sprintf('GridObj_%i',ParamObj.trial);
-       
+        
         save(TimeStr,'GridObj','-v7.3')
         save(ParamStr,'ParamObj','-v7.3')
         save(GridStr,'GridObj','-v7.3')
         if EvolvedDen
-           DenStr = sprintf('DenRec_%i',ParamObj.trial);     
-           save(DenStr,'DenRecObj','-v7.3');
+            DenStr = sprintf('DenRec_%i',ParamObj.trial);
+            save(DenStr,'DenRecObj','-v7.3');
         end
     end
     
 end %End try and catch
 
 % clc
-close all
+%close all
 end % End HR2DrotVgrExeMain.m

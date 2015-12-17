@@ -87,7 +87,7 @@ end
 %Driven Term
 if ParamObj.Drive
     GammaDrCube_FT  = ...
-        dRhoDriveCalcFT_ID(rho,ParamObj.v0,...
+        dRhoDriveCalcFT_ID(rho,ParamObj.vD,...
         GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
 else
     GammaDrCube_FT = zeros(Nx,Ny,Nm);
@@ -134,7 +134,7 @@ for t = 1:TimeObj.N_time-1
     %Driven Term
     if ParamObj.Drive
         GammaDrCube_FT  = dRhoDriveCalcFT_ID(...
-            rho,ParamObj.v0,GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
+            rho,ParamObj.vD,GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
     end
     
     

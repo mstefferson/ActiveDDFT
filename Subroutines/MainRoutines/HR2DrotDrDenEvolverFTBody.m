@@ -77,21 +77,8 @@ else
     fprintf(wfid,'Interacts are off my Lord\n');
 end
 
-%Driven Term
-if ParamObj.Drive
-    GammaDrVec_FT  = reshape(...
-        dRhoDriveCalcFT_ID(rho,ParamObj.v0, ...
-        GridObj.phi3D,GridObj.kx3D,GridObj.ky3D), ...
-        N3,1);
-else
-    GammaDrVec_FT = zeros(Nx*Ny*Nm,1);
-    fprintf(wfid,'Driving is off my Lord\n');
-end
-%Total
-GammaVec_FT = GammaDrVec_FT + GammaExVec_FT;
-
 % Take the first step- Euler
-[rhoVec_FT_next,ticExpInt] = DenStepperAB1(Lop,rhoVec_FT, GammaVec_FT,TimeObj.delta_t);
+[rhoVec_FT_next,ticExpInt] = DenStepperAB1(Lop,rhoVec_FT, GammaExVec_FT,TimeObj.delta_t);
 
 tic
 ShitIsFucked = 0;
@@ -121,20 +108,12 @@ for t = 1:TimeObj.N_time-1
             rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj),...
             N3,1);
     end
-    
-    %Driven Term
-    if ParamObj.Drive
-        GammaDrVec_FT  = reshape(...
-            dRhoDriveCalcFT_ID(rho,ParamObj.v0, ...
-            GridObj.phi3D,GridObj.kx3D,GridObj.ky3D), ...
-            N3,1);
-    end
-    
+       
     GammaVec_FT = GammaDrVec_FT + GammaExVec_FT;
     
     %Take a step in k-space using AB
     [rhoVec_FT_next,ticExptemp] = DenStepperAB1( ...
-        Lop,rhoVec_FT, GammaVec_FT,TimeObj.delta_t);
+        Lop,rhoVec_FT, GammaExVec_FT,TimeObj.delta_t);
     
     
     %Make sure things are taking too long. This is a sign density---> inf
@@ -228,4 +207,4 @@ DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
 fclose(wfid); %Close warning statement file
 fclose(tfid); %Close program tracker file
 % keyboard
-end %function
+end %functi

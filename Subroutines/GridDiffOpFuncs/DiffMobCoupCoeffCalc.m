@@ -20,7 +20,7 @@ if StabCoeffPerp > 1/2
     fprintf('StabCoeffPerp = %f (should be less than 1/2) \n', StabCoeffPerp);
 end
 if StabCoeffRot > 1/2
-    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n');
+    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n')
     fprintf(wfid,'StabCoeffRot = %f (should be less than 1/2) \n', StabCoeffRot);
 end
 
