@@ -1,13 +1,23 @@
+% Function: dRhoInterCalcVcId.m
 
-% Function: dRhoInteract_FT_calc
-% Description: Uses the 2nd virial coefficient to calcuate the change in
-% density due to hard rod interactions in k-space.
-%
-% Unlike v1, takes a divergence of the entire flux. Takes the derivative of
-% the product of functions. Doesn't distribute the derivative.
-% Takes in parameter and grid object as inputs
+% Description: Wrapper function to calcuate the interaction contribution
+% to the PDE in k-space. This calls functions that calculate the excess 
+% chemical potential calculated by the virial expansion. It can call
+% multiple expansions, but it should not be trusted above 2nd order. From
+% excess chemical potential, it calculates the flux, then take the
+% divergence of it, assuming isotropic diffusion.
+% 
+% ISOTROPIC Diffusion
+% 
+% Called by:  HR2DrotDenEvolverFTBodyIDCube.m - main body of isotropic
+% diffusion
+
+% Calls: 
+% MuExCalcVc2Id(rho_FT, Fm_FT, ParamObj)- Calculates excess Chem pot. Using
+% 2nd virial approx.
+
 function [NegDivFluxExcess_FT] = ...
-       dRhoInterCalcVcID(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
+       dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
 %%%%%%%%%%%%%%%%%%%Hard rod %%%%%%%%%%%%%%%%
 
 
@@ -17,11 +27,12 @@ function [NegDivFluxExcess_FT] = ...
 % keyboard
 %Now includes the correct scale
 
-[MuEx2_FT] = FtMuExCalcVc2(rho_FT,Fm_FT,ParamObj);
+[MuEx_FT] = MuExCalcVc2Ft(rho_FT,Fm_FT,ParamObj);
 % [MuEx3_FT] = FtMuExCalcAprxVc3(rho,ParamObj);
-[MuEx3_FT] = 0;
+% [MuEx3_FT] = 0;
 % keyboard
-MuEx_FT    = MuEx2_FT+MuEx3_FT;
+
+% MuEx_FT    = MuEx2_FT+MuEx3_FT;
 %Takes its derivative in k-space
 dMuEx_dx_FT   =     sqrt(-1) .* GridObj.kx3D .*  MuEx_FT;
 dMuEx_dy_FT   =     sqrt(-1) .* GridObj.ky3D .*  MuEx_FT;

@@ -27,7 +27,7 @@ L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
 AspctRt = 8;                  % L / W
-vD      = 0;                  %Driving velocity
+vD      = 10.0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
@@ -106,10 +106,10 @@ Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...
-    sprintf('HRdiff_N%i%i%i_bc%.1f_Int%i_v%.1f_%st%i',...
+    sprintf('HRdiff_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i',...
     Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,trial);
 FileInpt = ...
-    sprintf('Inpt_N%i%i%i_bc%.1f_Int%i_v%.1f_%st%i.txt', ...
+    sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i.txt', ...
     Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,...
     trial);
 
@@ -141,7 +141,7 @@ if Run == 1
     %     keyboard
     [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
         DidIBreak,SteadyState,MaxReldRho] = ...
-        HR2DrotDrMainDr(FileInpt);
+        HR2DrotMain(FileInpt);
     
     if SaveMe
         mkdir Outputs

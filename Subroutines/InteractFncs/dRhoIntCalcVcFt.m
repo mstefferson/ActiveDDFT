@@ -1,28 +1,28 @@
-% Function: dRhoInteract_FT_calc
+% Function: dRhoIntCalcVcFt.m
+
 % Description: Uses the 2nd virial coefficient to calcuate the change in
-% density due to hard rod interactions in k-space.
+% density due to hard rod interactions in k-space. 
+%
+% ANISOTROPIC Diffusion
 % 
-% Unlike v1, takes a divergence of the entire flux. Takes the derivative of
-% the product of functions. Doesn't distribute the derivative.
-% Takes in parameter and grid object as inputs
-function [NegDivFluxExcess_FT] = dRhoInterCalcFT_AI(rho_FT, ParamObj,GridObj,DiffMobObj)
+% Called by: Anisotropic main
+%
+% Calls: MuExCalcVc2Ft
+
+function [NegDivFluxExcess_FT] = ...
+    dRhoIntCalcVcFt(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
     Nm = ParamObj.Nm;
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %Excess chemical potential in position space is a convolution. In k-space, it is a
     %product. Given by the function derivative of the excess free energy w.r.t.
     %the density profile
-     % Calculate rho
-     rho = real( ifftn(ifftshift( rho_FT ) ) );
-     
-     % Just integrating over angle. Already integrated over space to get kernal.
-     % Just Fourier transform w.r.t. to angle
-     Kern_FT  = fftshift( fft( abs( sin( GridObj.phi3D) ),[], 3) );
-     
-     %Now includes the correct scale
-     MuEx_FT = (2 * pi ) / ParamObj.Nm .* ParamObj.Tmp .* ParamObj.L_rod ^ 2 ...
-         .* Kern_FT .* rho_FT;
-     
+   
+    %Now includes the correct scale
+    MuEx_FT = MuExCalcVc2Ft(rho_FT, Fm_FT);
+
+%     MuEx    = real(ifftn(ifftshift(MuEx_FT)));
+   
     %Takes its derivative in k-space
     dMuEx_dx_FT   =     sqrt(-1) .* GridObj.kx3D .*  MuEx_FT;
     dMuEx_dy_FT   =     sqrt(-1) .* GridObj.ky3D .*  MuEx_FT;
@@ -34,7 +34,7 @@ function [NegDivFluxExcess_FT] = dRhoInterCalcFT_AI(rho_FT, ParamObj,GridObj,Dif
     dMuEx_dy   =  real(ifftn(ifftshift(dMuEx_dy_FT)));
     dMuEx_dphi =  real(ifftn(ifftshift(dMuEx_dphi_FT)));
    
-    %Do the hard disk interaction portion of the PDE in real space then FT it
+    %Do the hard disk interaction portion of the PDE in real space then FT.
     % Isolate the seperate parts and call them some arbitrary function. We
     % will Fourier transform these functions to solve this in Fourier space
     %

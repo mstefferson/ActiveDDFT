@@ -1,12 +1,9 @@
-%%Calculates the Mayer Function for infinity thin hard rods
-
-%% Calculated by calculating the Mayer funciton for a hard rod at the
-%% origin with its orientation angle being zero.
-%% 
-%% Calculated by seeing if rod COM is in the interaction trapezoid.
-%% Same as .cpp
-
-
+% Function: MayerFncDiffBtwPntsCalc.m
+%
+% Description: Calculates the Mayer Function for infinity thin hard rods for a hard rod at the
+% origin with its orientation angle being zero. Using the COM trapezoid intersection
+% method (as seen in HardRod---cpp--project.)
+ 
 function [MayerFnc] = MayerFncDiffBtwPntsCalc(Nx, Ny, Nm, Lx, Ly, Lrod)
 
 

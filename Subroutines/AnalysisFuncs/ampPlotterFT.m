@@ -3,8 +3,8 @@ function ampPlotterFT(FTmat2plot, TimeRec, Nx, Ny, Nm, bc, vD,SaveMe,trial)
 ParamStrNx = sprintf('Nx = %d', Nx);
 ParamStrNy = sprintf('Ny = %d', Ny);
 ParamStrNm = sprintf('Nm = %d', Nm);
-ParamStrBc = sprintf('Nm = %.2f', bc);
-ParamStrVd = sprintf('Nm = %.2f', vD);
+ParamStrBc = sprintf('bc = %.2f', bc);
+ParamStrVd = sprintf('vD = %.2f', vD);
 
 figure()
 

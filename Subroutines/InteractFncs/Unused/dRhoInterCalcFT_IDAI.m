@@ -1,14 +1,15 @@
-% Function: dRhoInteract_FT_calc
+%% CURRENTLY NOT USED 4-Jan-16
+
+% Function: dRhoInterCalcFT_AI.m
+
 % Description: Uses the 2nd virial coefficient to calcuate the change in
-% density due to hard rod interactions in k-space.
-%
-% Unlike v1, takes a divergence of the entire flux. Takes the derivative of
-% the product of functions. Doesn't distribute the derivative.
-% Takes in parameter and grid object as inputs
-%
-% Constant (angle-independent) diffusion matrix.
-%
-% Approximate interactions. No Mayer function needed!
+% density due to hard rod interactions in k-space assuming spatial homogenity.
+% This should only be used if there are no spatial variation. Otherwise, the
+% assumptions could lead to issues. Uses traditional Onsager excluded volume:
+% kernal is sin( d_phi ) instead of Mayer function.
+% 
+% ISOTROPIC diffusion
+
 function [NegDivFluxExcess_FT] = dRhoInterCalcFT_IDAI(rho_FT,ParamObj,GridObj,DiffMobObj)
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%
 

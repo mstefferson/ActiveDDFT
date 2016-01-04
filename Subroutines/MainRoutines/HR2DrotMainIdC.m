@@ -1,19 +1,23 @@
-% HR2DrotDrMain.m
+% HR2DrotMainIdC
 %
 % Program is the main() for running the diffusion of 2D hard rods with
-% orientation. Program handles interactions using DDFT
+% orientation. Program handles interactions using DDFT. 
+% 
+% Isotropic diffusion cube form.
+%
+% Angle-indepent diffusion matrix. Approximate interactions.
 
-function  [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
+function [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
     DidIBreak,SteadyState,MaxReldRho] = ...
-    HR2DrotDrMainDr(InputFile)
+    HR2DrotMainIdC(InputFile)
 % Add paths (this should already be added, but just to be careful)
 % Save error messages in file
 try
     EvolvedDen = 0;DenFinal = 0;DenFTFinal = 0;GridObj = 0;ParamObj = 0;
     TimeObj = 0;DidIBreak = 0;SteadyState = 0;MaxReldRho = 0;
-    
-    %     keyboard
+    %         keyboard
     tMainID  = tic;
+    
     %Grab the parameters
     % keyboard
     DataTemp    = importdata(InputFile);
@@ -22,14 +26,12 @@ try
     FileNameMat = DataTemp.textdata(1);
     Path2Save   = DataTemp.textdata(2);
     IntDenType  = DataTemp.textdata(3);
-    
+    %     keyboard
     % Make some  objects
-    %     ParamNmVec = {'trial' 'Interactions' 'Nx' 'Ny' 'Nm' 'Lx' 'Ly' 'L_rod' 'Diam' 'Eta_visc'...
-    %         'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' 'NumModesM' 'bc'};
-    ParamNmVec = {'trial' 'Interactions' 'Drive' 'Movies' 'SaveMe'...
+    ParamNmVec = {'trial' 'Interactions' 'Drive' 'MakeOP' 'MakeMovies' 'SaveMe'...
         'Nx' 'Ny' 'Nm' 'Lx' 'Ly' 'L_rod' 'Diam' 'Eta_visc'...
-        'kB' 'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' ...
-        'NumModesM' 'bc' 'Mob_pos','Mob_rot'  };
+        'kB' 'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' 'NumModesM' 'bc'...
+        'Mob_pos','Mob_rot'  };
     TimeNmVec  = {'delta_t' 't_record' 't_tot' 'ss_epsilon'};
     
     ParamObj   = struct('NmVec',{ParamNmVec},'ValVec',...
@@ -43,20 +45,17 @@ try
         'NumModesX',ParamVec(18), 'NumModesY',ParamVec(19), ...
         'NumModesM', ParamVec(20),'bc',ParamVec(21), ...
         'c', ParamVec(22), ...
-        'Mob_par',ParamVec(23),'Mob_perp',ParamVec(24),...
-        'Mob_rot',ParamVec(25), 'vD', ParamVec(26) );
-    
-    
+        'Mob_pos',ParamVec(23),'Mob_rot',ParamVec(24), 'vD', ParamVec(25) );
     %     keyboard
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
-    wfid  = fopen(WarningStmtString,'a+');    % a+ allows to append data
+    wfid              = fopen(WarningStmtString,'a+');    % a+ allows to append data
     
     LocString = sprintf('Location_%i.txt',ParamObj.trial);
     lfid      = fopen(LocString,'a+');    % a+ allows to append data
     fprintf(lfid,'Starting main, current code\n');
     
-    %Time Recording
+    % Time Recording
     N_time   = ceil(TimeVec(3)/TimeVec(1)); %number of time steps
     N_record = ceil(TimeVec(3)/TimeVec(2)); %number of time points to record. Does not include initial density
     N_count  = ceil(TimeVec(2)/TimeVec(1)); %spacing between times to record
@@ -69,22 +68,17 @@ try
     [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
         TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
     
-    
-    
     %%%Make all the grid stuff%%%%%%%%%%%%%%
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
     fprintf(lfid,'Made grid\n');
     
     %Make diffusion coeff (send smallest dx dy for stability
-    [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
-        ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
-        TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
-        GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
-    
+    [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
+        ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
     fprintf(lfid,'Made diffusion object\n');
     
-    % keyboard
+    %Initialze density
     [rho] = MakeConcFromInd(GridObj,ParamObj,IntDenType);
     Nc    = 20;
     % Equilib distribution
@@ -95,8 +89,8 @@ try
     % Run the main code
     tBodyID      = tic;
     
-    [DenRecObj]  = HR2DrotDrDenEvolverFTBody(wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
-    %     keyboard
+    [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
+        wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
     EvolvedDen = 1;
     BodyRunTime  = toc(tBodyID);
     fprintf(lfid,'Made density object\n');
@@ -139,8 +133,9 @@ try
             HoldY = ParamObj.Ny /2 + 1;
             OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
-                reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
-                DenRecObj.TimeRecVec)
+                reshape( DenRecObj.Density_rec(HoldX, HoldY, : , 1:length(OrderParamObj.TimeRec) ),...
+                [ ParamObj.Nm length(OrderParamObj.TimeRec) ] ),...
+                OrderParamObj.TimeRec)
             
             %        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
             %              DenRecObj.Density_rec,feq);
@@ -151,10 +146,14 @@ try
             % Record how long it took
             fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
             fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);
-            
-            
+
+
+
+      
         end % End if movies
-        
+       
+
+             % Plot amps
         kx0 = ParamObj.Nx / 2 + 1;
         ky0 = ParamObj.Ny / 2 + 1;
         km0 = ParamObj.Nm / 2 + 1;
@@ -172,8 +171,14 @@ try
         
         ampPlotterFT(FTmat2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
             ParamObj.Nm, DenRecObj.bc,ParamObj.vD, ParamObj.trial, ParamObj.SaveMe)
+        
     end % if OP
     
+    
+
+    
+    
+    %%
     if ParamObj.SaveMe
         MemObj = 0;
         % Save all parameters
@@ -243,5 +248,5 @@ catch err %Catch errors
 end %End try and catch
 
 % clc
-close all
+%close all
 end % End HR2DrotVgrExeMain.m

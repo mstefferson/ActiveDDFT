@@ -1,5 +1,11 @@
-% Heavily approximates the 3rd virial coefficient assuming that
+% CURRENTLY UNUSED 4-Jan-2015
+%
+% Program: FtMuExCalcAprxVc
+%
+% Description: Heavily approximates the 3rd virial coefficient assuming that
 % the density is constant
+% 
+% Called by: dRhoInterCalcVcID
 
 function [MuEx_FT] = FtMuExCalcAprxVc3(rho,ParamObj)
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%

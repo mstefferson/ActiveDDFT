@@ -11,7 +11,7 @@ Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 4;
+trial    = 7;
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
@@ -27,12 +27,12 @@ L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
 AspctRt = 8;                  % L / W
-vD      = 0;                  %Driving velocity
+vD      = 50.0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 1; %time interval for recording dynamics
-t_tot       = 50;   %total time
+t_record    = 1e-2; %time interval for recording dynamics
+t_tot       = 1;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -55,17 +55,16 @@ Mob_rot  = Mob_same;
 % Perturbations added to rho(i,j,k) = 1. Must be small
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
 % perturbing about equilbrum
-bc             = 1.0;
-
+bc             = 1.55;
 
 % Type of initial Condition
 IntGauss   = 0;
-IntPw      = 1;
+IntPw      = 0;
 IntSepPw   = 0;
 IntEqPw    = 0;    % Distribution from perturbing equil. dist.
 IntEqSepPw = 0;    % This is the wrong way to perturb.
 IntLoad    = 0;
-IntNemPw   = 0;    % Distribution from perturbing equil. dist.
+IntNemPw   = 1;    % Distribution from perturbing equil. dist.
 
 % Save a string saying what you want
 [IntDenType, IntDenIndicator] = ...
@@ -105,10 +104,10 @@ Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...
-    sprintf('HRdiffIDC_N%i%i%i_bc%.1f_Int%i_v%.1f_%st%i',...
+    sprintf('HRdiffIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i',...
     Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,trial);
 FileInpt = ...
-    sprintf('Inpt_N%i%i%i_bc%.1f_Int%i_v%.1f_%st%i.txt', ...
+    sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i.txt', ...
     Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,...
     trial);
 
@@ -140,7 +139,7 @@ if Run == 1
     %     keyboard
     [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
         DidIBreak,SteadyState,MaxReldRho] = ...
-        HR2DrotMainDrIDCube(FileInpt);
+        HR2DrotMainIdC(FileInpt);
 
     if SaveMe
         mkdir Outputs

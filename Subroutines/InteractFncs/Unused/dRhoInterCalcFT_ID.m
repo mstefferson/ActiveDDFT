@@ -1,10 +1,10 @@
-% Function: dRhoInteract_FT_calc
+%% CURRENTLY UNUSED 4-Jan-2016
+
+% Function: dRhoInteractFT_ID
 % Description: Uses the 2nd virial coefficient to calcuate the change in
-% density due to hard rod interactions in k-space.
+% density due to hard rod interactions in k-space. Assuming isotropic
+% diffusion.
 %
-% Unlike v1, takes a divergence of the entire flux. Takes the derivative of
-% the product of functions. Doesn't distribute the derivative.
-% Takes in parameter and grid object as inputs
 function [NegDivFluxExcess_FT] = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%
 

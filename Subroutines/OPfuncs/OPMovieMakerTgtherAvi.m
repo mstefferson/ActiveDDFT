@@ -2,6 +2,10 @@ function OPMovieMakerTgtherAvi(trial,x,y,phi,Crec,NOrec,POrec,DistRec,TimeRec)
 
 % keyboard
 
+% Set up figure
+figure()
+
+
 %Initialize the movie structure
 MovStr = sprintf('OPmov%.d.avi',trial);
 Mov = VideoWriter(MovStr);
@@ -11,8 +15,6 @@ open(Mov);
 %%%% Concentration %%%%%
 nFrames = length(TimeRec);
 
-% Set up figure
-figure()
 % keyboard
 set(gcf,'renderer','zbuffer')
 
@@ -46,6 +48,7 @@ axpos4 = get(axh4,'position'); % Save the position as ax
 set(axh4,'position',axpos4); % Manually setting this holds the position with colorbar
 xlabel('x'); ylabel('y')
 
+% keyboard
 for ii = 1:nFrames
 %     keyboard
     %     set(axh1,'position',axpos1,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbar
@@ -84,7 +87,7 @@ for ii = 1:nFrames
     title(axh4,TitlStr)
     %     keyboard
     
-    Fr = getframe(gcf);
+    Fr = getframe(gcf,[74 47 450 350]);
     writeVideo(Mov,Fr);
     
 %     if ii ~= nFrames

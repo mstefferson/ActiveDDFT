@@ -1,7 +1,13 @@
-% Calculates the Mayer Function for infinity thin hard rods
+% CURRENTLY NOT WORKING 4-Jan-16
+% CURRENTLY NOT USED.  4-Jan-16
+% 
 
-% Calculated by calculating the Mayer funciton for a hard rod at the origin
-% with its orientation angle being zero.
+% Function: MayerFncDiffBtwPntsCalcOld.m
+% 
+% Description: Calculates the Mayer Function for infinity thin hard rods using 
+% a line intersection method.  Mayer function is calculated for a hard rod at the origin
+% with its orientation angle being zero---rod at origin, lying along x-axis.
+
 function [FmDistBtwnPts] = MayerFncDiffBtwPntsCalc(Nx, Ny, Nm, Lx, Ly, dx, dy, dphi, L_rod)
 
 % Vector of position/ang differences
