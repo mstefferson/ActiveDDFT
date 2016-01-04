@@ -19,9 +19,9 @@ SaveMe       = 1;
 MakeMovies   = 1; % Movies won't run if save is zero
 MakeOP       = 1;
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 64;
-Ny      = 64;
-Nm      = 64;
+Nx      = 16;
+Ny      = 16;
+Nm      = 16;
 
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length

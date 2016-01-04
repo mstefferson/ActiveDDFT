@@ -19,7 +19,7 @@ function [NegDivFluxExcess_FT] = ...
     %the density profile
    
     %Now includes the correct scale
-    MuEx_FT = MuExCalcVc2Ft(rho_FT, Fm_FT);
+    MuEx_FT = MuExCalcVc2Ft(rho_FT, Fm_FT,ParamObj);
 
 %     MuEx    = real(ifftn(ifftshift(MuEx_FT)));
    
