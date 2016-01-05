@@ -26,6 +26,7 @@ try
     FileNameMat = DataTemp.textdata(1);
     Path2Save   = DataTemp.textdata(2);
     IntDenType  = DataTemp.textdata(3);
+    LoadName    = DataTemp.textdata(4);
     %     keyboard
     % Make some  objects
     ParamNmVec = {'trial' 'Interactions' 'Drive'  'StepMeth' 'IntCond' ...
@@ -81,7 +82,7 @@ try
     fprintf(lfid,'Made diffusion object\n');
     
     %Initialze density
-    [rho] = MakeConcFromInd(GridObj,ParamObj,IntDenType);
+    [rho] = MakeConc(GridObj,ParamObj);
     Nc    = 20;
     % Equilib distribution
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff

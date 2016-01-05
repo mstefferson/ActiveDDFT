@@ -23,6 +23,10 @@ Nx      = 16;
 Ny      = 16;
 Nm      = 16;
 
+%%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
+% Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
+% perturbing about equilbrum
+bc      = 1.35;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
@@ -36,9 +40,20 @@ t_tot       = 1;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
+% Type of Inital Condition
+% 0: Plane wave perturbation over an isotropic distribution
+% 1: Plane wave perturbation over the equilibrium distribution
+% 2: Plane wave perturbation over a nematic distribution
+% 3: Load an equilbrium distribution
+% 4: Seperate plane waves over an isotropic distribution (non-sensical)
+% 5: Seperate plane waves over an nematic distribution (non-sensical)
+% 6: A gaussian initial condition
+IntCond     = 1;
 NumModesX   = 4;
 NumModesY   = 4;
 NumModesM   = 4;
+% Weight of the spatial sinusoidal perturbation. %
+% Perturbations added to rho(i,j,k) = 1. Must be small
 WeightPos   = 1e-3;
 WeightAng   = 1e-3;
 Random      = 0;       % Random perturbation coeffs
@@ -49,24 +64,6 @@ Tmp      = 1;            % Temperature
 Mob_same = 1;
 Mob_pos  = Mob_same;
 Mob_rot  = Mob_same;
-
-%%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
-% Weight of the spatial sinusoidal perturbation. %
-% Perturbations added to rho(i,j,k) = 1. Must be small
-% Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
-% perturbing about equilbrum
-bc             = 1.55;
-
-% Type of initial Condition
-IntGauss   = 0;
-IntPw      = 0;
-IntSepPw   = 0;
-IntEqPw    = 0;    % Distribution from perturbing equil. dist.
-IntEqSepPw = 0;    % This is the wrong way to perturb.
-IntLoad    = 0;
-IntNemPw   = 1;    % Distribution from perturbing equil. dist.
-
-IntCond = 4;
 
 % Stepping method
 % 0: AB1
@@ -79,10 +76,7 @@ IntCond = 4;
 
 StepMeth = 0; 
 
-% Save a string saying what you want
-[IntDenType, IntDenIndicator] = ...
-    IntDenIndicatorMaker(IntGauss,IntPw,IntSepPw,IntEqPw,...
-    IntEqSepPw,IntLoad,IntNemPw);
+[IntConcStr] =  IntDenNameWriter( IntCond );
 
 if IntEqPw == 1 || IntSepPw == 1
     if 1.499 < bc && bc < 1.501
@@ -117,11 +111,11 @@ Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...
-    sprintf('HRdiffIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%ism%d',...
-    Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,trial,StepMeth);
+    sprintf('HRdiffIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%ism%d',...
+    Nx,Ny,Nm,bc,Interactions,vD,IntCond,trial,StepMeth);
 FileInpt = ...
-    sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i.txt', ...
-    Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,...
+    sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%i.txt', ...
+    Nx,Ny,Nm,bc,Interactions,vD,IntCond,...
     trial);
 
 Where2SavePath    = sprintf('%s/%s/%s',pwd,'Outputs',FileDir);
@@ -132,7 +126,7 @@ if fid == -1
     error( 'Failed to open %s: %s', FileInpt, msg);
 end
 
-fprintf(fid,'%s\n%s\n%s\n',FileDir,Where2SavePath,IntDenType);
+fprintf(fid,'%s\n%s\n%s\n%s\n',FileDir,Where2SavePath,IntConcStr,IntDenName);
 fprintf(fid,'Param\t');
 fprintf(fid,'%e\t',Paramtmp);
 fprintf(fid,'\n');
