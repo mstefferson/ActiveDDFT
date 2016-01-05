@@ -14,10 +14,6 @@
 %
 % Isotropic diffusion. The propagaotr is a cube.
 %
-% Everything is sparsified
-%
-% Program never actually calculates the propagator, but uses expv from
-% ExpoKit. Way Faster.
 
 
 function [DenRecObj]  = ...
@@ -61,8 +57,8 @@ j_record = 2;     %Record holder
 
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 %Set up Diffusion operator in cube form
-[Lop_kcube] = DiffOpBuilderIsoDiffCube(DiffMobObj,GridObj);
-Prop = exp(Lop_kcube .* TimeObj.delta_t);   % Exponentiate the elements
+[Lop] = DiffOpBuilderIsoDiffCube(DiffMobObj,GridObj);
+Prop = exp(Lop .* TimeObj.delta_t);   % Exponentiate the elements
 
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,13 +68,8 @@ Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
 
 %Hard rod interactions
 if ParamObj.Interactions
-    %     GammaExCube_FT = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,...
-    %         GridObj,DiffMobObj);
-    %
     GammaExCube_FT = dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,ParamObj,...
         GridObj,DiffMobObj);
-    
-    %     GammaEx = dRhoInterCalcFT2nd_ID(rho,ParamObj,GridObj,DiffMobObj)
 else
     GammaExCube_FT = zeros(Nx,Ny,Nm);
     fprintf(wfid,'Interacts are off my Lord\n');
@@ -96,11 +87,44 @@ end
 
 %Total
 GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
-% Take the first step- Euler. Element by element mulitplication
 
-% keyboard
-[rho_FTnext] = ...
-    DenStepperAB1Cube( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+% Take the first step- Euler. Element by element mulitplication
+  % Take a step
+if( ParamObj.StepMeth == 0 ) 
+  NlPf =  TimeObj.delta_t;
+ %[rho_FTnext] = DenStepperAB1c( Prop, rho_FT, GammaCube_FT, TimeObj.delta_t );
+ [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+elseif( ParamObj.StepMeth == 1 )
+  NlPf = 3 * TimeObj.delta_t / 2;
+  NlPrevPf = TimeObj.delta_t / 2;
+%   [rho_FTnext] = DenStepperAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,NlPf );
+elseif( ParamObj.StepMeth == 2 ) 
+  NlPf = TimeObj.delta_t .* Prop;
+%   [rho_FTnext] = DenStepperHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
+elseif( ParamObj.StepMeth == 3 )
+  NlPf = 3 * TimeObj.delta_t / 2 .* Prop;
+  NlPrevPf = TimeObj.delta_t / 2 .* Prop .* Prop;
+%   [rho_FTnext] = DenStepperHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+elseif( ParamObj.StepMeth == 4 )
+  NlPf = TimeObj.delta_t / 2 .* ( 1 + Prop);
+%   [rho_FTnext] = DenStepperBHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+  [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+elseif( ParamObj.StepMeth == 5 )
+  NlPf = TimeObj.delta_t / 2 * ( 2 + Prop );
+  NlPrevPf = TimeObj.delta_t / 2;
+%   [rho_FTnext] = DenStepperBHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+  [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
+elseif( ParamObj.StepMeth == 6 ) 
+  GamProp = ( Prop - 1 ) ./ Lop;
+  [rho_FTnext] = DenStepperEEMc1( Prop, GamProp, rho_FT,GammaCube_FT);
+%   keyboard
+else
+  fprintf('No stepping method selected');
+end
+
 
 tic
 ShitIsFucked = 0;
@@ -111,7 +135,7 @@ fprintf(lfid,'Starting master time loop\n');
 for t = 1:TimeObj.N_time-1
     %Save the previous and take one step forward.
     % Save the old drho
-    GammaExCube_FT_prev = GammaExCube_FT;
+    GammaCube_FTprev = GammaCube_FT;
     rho_FTprev  = rho_FT;
     
     %Need to update rho!!!
@@ -124,9 +148,6 @@ for t = 1:TimeObj.N_time-1
     
     %Hard rod interactions
     if ParamObj.Interactions
-        %     GammaExCube_FT = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,...
-        %         GridObj,DiffMobObj);
-        %
         GammaExCube_FT = dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,ParamObj,...
             GridObj,DiffMobObj);
     end
@@ -139,16 +160,36 @@ for t = 1:TimeObj.N_time-1
     
     
     GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
-    % Take the first step- Euler. Element by element mulitplication
-    [rho_FTnext] = ...
-        DenStepperAB1Cube( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
-    
-    %Make sure things are taking too long. This is a sign density---> inf
-    % keyboard
-    if ShitIsFucked
-        break
+    % Take a step
+    if( ParamObj.StepMeth == 0 ) 
+%         [rho_FTnext] = DenStepperAB1c( Prop, rho_FT, GammaCube_FT, TimeObj.delta_t  );
+        [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+    elseif( ParamObj.StepMeth == 1 )
+%       [rho_FTnext] = DenStepperAB2c( ...
+%         Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,TimeObj.delta_t );
+        [rho_FTnext] = DenStepperAB2cPf( ...
+             Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,NlPf, NlPrevPf );
+    elseif( ParamObj.StepMeth == 2 ) 
+%       [rho_FTnext] = DenStepperHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+      [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
+    elseif( ParamObj.StepMeth == 3 )
+%       [rho_FTnext] = DenStepperHAB2c( ...
+%         Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, TimeObj.delta_t );
+        [rho_FTnext] = DenStepperHAB2cPf( ...
+            Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
+    elseif( ParamObj.StepMeth == 4 )
+%       [rho_FTnext] = DenStepperBHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+      [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+    elseif( ParamObj.StepMeth == 5 )
+%       [rho_FTnext] = DenStepperBHAB2c( ...
+%         Prop, rho_FT, GammaCube_FT,GammaCube_FTprev,TimeObj.delta_t );
+      [rho_FTnext] = DenStepperBHAB2cPf( ...
+        Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
+    elseif( ParamObj.StepMeth == 6 ) 
+      [rho_FTnext] = DenStepperEEMc1( Prop, GamProp, rho_FT,GammaCube_FT);
     end
-    
+
+   
     %Save everything (this includes the initial state)
     if (mod(t,TimeObj.N_count)== 0)
         if ParamObj.SaveMe
@@ -161,6 +202,7 @@ for t = 1:TimeObj.N_time-1
                 rho_FT,rho_FTprev,TotalDensity);
         end %if save
         if ShitIsFucked == 1 || SteadyState == 1
+%             keyboard
             break
         end
         j_record = j_record+1;
@@ -213,13 +255,9 @@ end %end if save
 
 trun = toc;
 
-% See how much memory this used
-% [uVbody, sVbody] = memory;
-
 %Save the structure
-% keyboard
-
 DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
+    'j_record', j_record,...
     'TimeRecVec',TimeRecVec,...
     'RunTime', trun, ...
     'bc',ParamObj.bc,...

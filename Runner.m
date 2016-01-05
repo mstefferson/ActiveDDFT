@@ -1,3 +1,9 @@
 % Runner
-InptMkrHRIDCexe9
-InptMkrHRIDCexe10
+InptMkrHRIdCexe0
+InptMkrHRIdCexe1
+InptMkrHRIdCexe2
+InptMkrHRIdCexe3
+InptMkrHRIdCexe4
+InptMkrHRIdCexe5
+
+

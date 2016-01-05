@@ -1,5 +1,5 @@
 function [rho_FT_next] = ...
-          DenStepperAB3Cube(Prop,rho_FT, GammaEx_FT,GammaEx_FT_prev,GammaEx_FT_prev2,dt)
+          DenStepperHAB3c(Prop,rho_FT, GammaEx_FT,GammaEx_FT_prev,GammaEx_FT_prev2,dt)
 
 % Step using the hybrid AB. Everything is still in cube form.
 rho_FT_next = Prop .* ( rho_FT ...

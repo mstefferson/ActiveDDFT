@@ -27,11 +27,11 @@ L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
 AspctRt = 8;                  % L / W
-vD      = 50.0;                  %Driving velocity
+vD      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 1e-2; %time interval for recording dynamics
+t_record    = 1e-1; %time interval for recording dynamics
 t_tot       = 1;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
@@ -66,6 +66,19 @@ IntEqSepPw = 0;    % This is the wrong way to perturb.
 IntLoad    = 0;
 IntNemPw   = 1;    % Distribution from perturbing equil. dist.
 
+IntCond = 4;
+
+% Stepping method
+% 0: AB1
+% 1: AB2
+% 2: HAB1
+% 3: HAB2
+% 4: BHAB1
+% 5: BHAB2
+% 6: Exponential Euler
+
+StepMeth = 0; 
+
 % Save a string saying what you want
 [IntDenType, IntDenIndicator] = ...
     IntDenIndicatorMaker(IntGauss,IntPw,IntSepPw,IntEqPw,...
@@ -97,15 +110,15 @@ if MakeMovies == 1; MakeOP = 1; end % if make movie, make OP first
 if vD  == 0; Drive = 0; else Drive = 1;end
 
 % Parameter vectors
-Paramtmp = [trial Interactions Drive MakeOP MakeMovies SaveMe Nx Ny Nm...
+Paramtmp = [trial Interactions Drive StepMeth IntCond MakeOP MakeMovies SaveMe Nx Ny Nm...
     Lx Ly L_rod Tmp Norm WeightPos WeightAng Random ...
     NumModesX NumModesY NumModesM bc c Mob_pos Mob_rot vD];
 Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...
-    sprintf('HRdiffIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i',...
-    Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,trial);
+    sprintf('HRdiffIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%ism%d',...
+    Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,trial,StepMeth);
 FileInpt = ...
     sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_%st%i.txt', ...
     Nx,Ny,Nm,bc,Interactions,vD,IntDenIndicator,...

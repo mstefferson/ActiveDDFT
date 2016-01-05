@@ -1,4 +1,4 @@
-function [rhoVec_FT_next,ticExpInt] = DenStepperAB1( Lop, rhoVec_FT, GammaEx_FT,dt)
+function [rhoVec_FT_next,ticExpInt] = DenStepperHAB1( Lop, rhoVec_FT, GammaEx_FT,dt)
 
 %Take the first step in k-space using Euler. Save the time it takes
 ticExpIntID = tic;

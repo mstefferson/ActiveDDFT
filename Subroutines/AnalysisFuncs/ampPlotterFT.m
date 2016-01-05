@@ -1,4 +1,4 @@
-function ampPlotterFT(FTmat2plot, TimeRec, Nx, Ny, Nm, bc, vD,SaveMe,trial)
+function ampPlotterFT(FTmat2plot, TimeRec, Nx, Ny, Nm, bc, vD, SaveMe,trial)
 
 ParamStrNx = sprintf('Nx = %d', Nx);
 ParamStrNy = sprintf('Ny = %d', Ny);
@@ -75,4 +75,6 @@ if SaveMe
 figtl = sprintf('AmpFT%d',trial);
 savefig(gcf,figtl)
 saveas(gcf, figtl,'jpg')
+end
+
 end
