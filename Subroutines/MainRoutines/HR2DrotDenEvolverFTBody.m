@@ -8,14 +8,16 @@
 % Includes hard rod interactions, assuming in the interaction that the rods
 % are infinitely thin.
 %
+% Anisotropic diffusion
+
 % Density matrix is set up as rho(x,y,phi)-----> RHO(kx,ky,km)
 %
-% The propagator now includes all the terms. The all the cubes are turned
+% The Lopagator now includes all the terms. The all the cubes are turned
 % into: a (Nx*Ny*Nm) x (Nx*Ny*Nm) linear operator and N^3 density vector
 %
 % Everything is sparsified
 %
-% Program never actually calculates the propagator, but uses expv from
+% Program never actually calculates the Lopagator, but uses expv from
 % ExpoKit. Way Faster.
 %
 % Interactions handled using Mayer function.
@@ -60,7 +62,7 @@ end
 
 j_record = 2;     %Record holder
 
-%Set up Diffusion operator, discrete k-space propagator, and interaction
+%Set up Diffusion operator, discrete k-space Lopagator, and interaction
 [Lop] = DiffOpBuilderDr(DiffMobObj,GridObj,Nm,N2,N3);
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,8 +79,51 @@ else
     fprintf(wfid,'Interacts are off my Lord\n');
 end
 
-% Take the first step- Euler
-[rhoVec_FT_next,ticExpInt] = DenStepperAB1(Lop,rhoVec_FT, GammaExVec_FT,TimeObj.delta_t);
+% Take first step- Euler
+if( ParamObj.StepMeth == 0 ) 
+  NlPf =  TimeObj.delta_t;
+%  [rhoVec_FTnext, ticExpInt] = DenStepperAB1( ...
+%  Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
+ [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf(...
+  Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
+elseif( ParamObj.StepMeth == 1 )
+  NlPf = 3 * TimeObj.delta_t / 2;
+  NlPrevPf = TimeObj.delta_t / 2;
+   %[rhoVec_FTnext, ticExpInt] = DenStepperAB1( ...
+   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT,NlPf, TimeObj.delta_t  );
+elseif( ParamObj.StepMeth == 2 ) 
+  NlPf = TimeObj.delta_t;
+   %[rhoVec_FTnext, ticExpInt] = DenStepperHAB1( ...
+   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
+elseif( ParamObj.StepMeth == 3 )
+  NlPf = 3 * TimeObj.delta_t / 2 ;
+  NlPrevPf = TimeObj.delta_t / 2 ;
+   %[rhoVec_FTnext, ticExpInt] = DenStepperHAB1( ...
+   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
+elseif( ParamObj.StepMeth == 4 )
+  NlPf = TimeObj.delta_t / 2;
+   %[rhoVec_FTnext, ticExpInt] = DenStepperBHAB1( ...
+   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
+elseif( ParamObj.StepMeth == 5 )
+  NlPf = TimeObj.delta_t ;
+  NlPrevPf = TimeObj.delta_t / 2;
+  NlExpPf =  TimeObj.delta_t / 2;
+  
+  %[rhoVec_FTnext, ticExpInt] = DenStepperBHAB1( ...
+  %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
+else
+  fprintf('No stepping method selected');
+end
 
 tic
 ShitIsFucked = 0;
@@ -93,7 +138,7 @@ for t = 1:TimeObj.N_time-1
     rhoVec_FTprev  = rhoVec_FT;
     
     %Need to update rho!!!
-    rhoVec_FT      = rhoVec_FT_next;
+    rhoVec_FT      = rhoVec_FTnext;
     
     % Calculate rho if there is driving or interactions
     if ParamObj.Interactions || ParamObj.Drive
@@ -109,12 +154,40 @@ for t = 1:TimeObj.N_time-1
             N3,1);
     end
        
-    %Take a step in k-space using AB
-    [rhoVec_FT_next,ticExptemp] = DenStepperAB1( ...
-        Lop,rhoVec_FT, GammaExVec_FT,TimeObj.delta_t);
-    
-    
-    %Make sure things are taking too long. This is a sign density---> inf
+    % Take step
+    if( ParamObj.StepMeth == 0 ) 
+%      [rhoVec_FTnext, ticExptemp] = DenStepperAB1( ...
+%      Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
+     [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
+     Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
+    elseif( ParamObj.StepMeth == 1 )
+       %[rhoVec_FTnext, ticExptemp] = DenStepperAB2(... 
+          %Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, TimeObj.delta_t );
+      [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, TimeObj.delta_t  );
+    elseif( ParamObj.StepMeth == 2 ) 
+       %[rhoVec_FTnext, ticExptemp] = DenStepperHAB1( ...
+       %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+      [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
+    elseif( ParamObj.StepMeth == 3 )
+       %[rhoVec_FTnext, ticExptemp] = DenStepperHAB2( ...
+          %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,TimeObj.delta_t );
+      [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
+         Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FT, NlPf, NlPrevPf, TimeObj.delta_t  );
+    elseif( ParamObj.StepMeth == 4 )
+       %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB1( ...
+       %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+      [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
+    elseif( ParamObj.StepMeth == 5 )
+      %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB2( ...
+      %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,TimeObj.delta_t );
+      [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, TimeObj.delta_t );
+    end
+
+        %Make sure things are taking too long. This is a sign density---> inf
     [ShitIsFucked] = ExpTooLongChecker(...
         wfid,ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,j_record);
     if ShitIsFucked
@@ -150,7 +223,7 @@ if ParamObj.SaveMe
     if ShitIsFucked == 0 && SteadyState == 0
         t =  t + 1;
         rhoVec_FTprev  = rhoVec_FT;
-        rhoVec_FT      = rhoVec_FT_next;
+        rhoVec_FT      = rhoVec_FTnext;
         rho_FT         = reshape(rhoVec_FT,Nx,Ny,Nm);
         if ParamObj.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...

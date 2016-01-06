@@ -119,7 +119,7 @@ elseif( ParamObj.StepMeth == 5 )
   [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
 elseif( ParamObj.StepMeth == 6 ) 
   GamProp = ( Prop - 1 ) ./ Lop;
-  [rho_FTnext] = DenStepperEEMc1( Prop, GamProp, rho_FT,GammaCube_FT);
+  [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
 %   keyboard
 else
   fprintf('No stepping method selected');
@@ -186,7 +186,7 @@ for t = 1:TimeObj.N_time-1
       [rho_FTnext] = DenStepperBHAB2cPf( ...
         Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
     elseif( ParamObj.StepMeth == 6 ) 
-      [rho_FTnext] = DenStepperEEMc1( Prop, GamProp, rho_FT,GammaCube_FT);
+      [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
     end
 
    

@@ -1,7 +1,5 @@
-% Input creater for HR2DrotMainDrIDCube
-%
-% All subroutines must be located in current directory
-% Add path
+% Input creater for HR2DrotMainIdC
+% Isotropic diffusion
 
 CurrentDir = pwd;
 addpath( genpath( CurrentDir) );
@@ -111,7 +109,7 @@ Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...
-    sprintf('HRdiffIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%ism%d',...
+    sprintf('HrIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%ism%d',...
     Nx,Ny,Nm,bc,Interactions,vD,IntCond,trial,StepMeth);
 FileInpt = ...
     sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%i.txt', ...

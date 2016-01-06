@@ -1,3 +1,7 @@
+% Hybrid AB 2
+% Exponentiate actual propagator
+
+
 function [rhoVec_FT_next,ticExpInt] = DenStepperHAB2(Lop,rhoVec_FT, GammaEx_FT,GammaEx_FT_prev,dt)
 
 %Take the first step in k-space using Euler. Save the time it takes
