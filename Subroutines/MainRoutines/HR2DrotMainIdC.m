@@ -172,18 +172,27 @@ try
         ky0 = ParamObj.Ny / 2 + 1;
         km0 = ParamObj.Nm / 2 + 1;
         Nrec = length( DenRecObj.TimeRecVec);
-        
+
+        FTind2plot = zeros( 8, 3 );
         FTmat2plot = zeros( 8, Nrec );
-        FTmat2plot(1,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(2,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(3,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0 + 1, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(4,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0 + 1, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(5,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0, km0 + 2,: ), [ 1, Nrec]  );
-        FTmat2plot(6,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0, km0 + 2,: ), [ 1, Nrec]  );
-        FTmat2plot(7,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0 + 1, km0 + 2,: ), [ 1, Nrec]  );
-        FTmat2plot(8,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0 + 1, km0 + 2,: ), [ 1, Nrec]  );
         
-        ampPlotterFT(FTmat2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
+        FTind2plot(1,:) = [kx0     ky0     km0 + 1];
+        FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
+        FTind2plot(3,:) = [kx0     ky0 + 1 km0 + 1];
+        FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 + 1];
+        FTind2plot(5,:) = [kx0     ky0     km0 + 2];
+        FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
+        FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
+        FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
+        
+        for i = 1:8 
+            FTmat2plot(i,:) =  reshape(... 
+            DenRecObj.DensityFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...   
+            [ 1, Nrec ]  );   
+        end
+        
+%         keyboard
+        ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
             ParamObj.Nm, DenRecObj.bc,ParamObj.vD,  ParamObj.SaveMe, ParamObj.trial)
         
     end % if OP
