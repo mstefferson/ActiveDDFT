@@ -121,6 +121,9 @@ elseif( ParamObj.StepMeth == 5 )
   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
   [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
    Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
+elseif( ParamObj.StepMeth == 6 )
+  [rhoVec_FTnext, ticExpInt] = DenStepperPhiV( ...
+   Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
 else
   fprintf('No stepping method selected');
 end
@@ -185,6 +188,9 @@ for t = 1:TimeObj.N_time-1
       %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,TimeObj.delta_t );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, TimeObj.delta_t );
+    elseif( ParamObj.StepMeth == 6 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
+         Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
     end
 
         %Make sure things are taking too long. This is a sign density---> inf

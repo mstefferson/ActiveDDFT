@@ -48,6 +48,7 @@ try
         'Mob_par',ParamVec(25),'Mob_perp',ParamVec(26),...
         'Mob_rot',ParamVec(27), 'vD', ParamVec(28) );
     
+    fprintf('Read input and made ParamObj\n')
     
     %     keyboard
     % Create a file that holds warning print statements
@@ -70,11 +71,13 @@ try
     % Fix the time
     [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
         TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
-    
+    fprintf(lfid,'Made Time Obj\n');
+    fprintf('Made Time Obj\n')
     %%%Make all the grid stuff%%%%%%%%%%%%%%
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
-    fprintf(lfid,'Made grid\n');
+    fprintf(lfid,'Made Grid\n');
+    fprintf('Made Grid\n')
     
     %Make diffusion coeff (send smallest dx dy for stability
     [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
@@ -83,6 +86,7 @@ try
         GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
     
     fprintf(lfid,'Made diffusion object\n');
+    fprintf('Made diffusion object\n');
     
     %Initialze density
     [rho] = MakeConc(GridObj,ParamObj);
@@ -90,6 +94,8 @@ try
     % Equilib distribution
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
     feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
+    fprintf(lfid,'Made initial density\n');
+    fprintf('Made initial density\n');
     
     %     keyboard
     % Run the main code
@@ -101,6 +107,8 @@ try
     BodyRunTime  = toc(tBodyID);
     fprintf(lfid,'Made density object\n');
     fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
+    fprintf('Made density object\n');
+    fprintf('Body Run Time = %f\n\n', BodyRunTime);
     
     % Store final density and transform
     DenFinal   = DenRecObj.Density_rec(:,:,:,end);
@@ -128,6 +136,7 @@ try
         end
         OpRunTime       = toc(tOpID);
         fprintf(lfid,'Made interaction order paramater object\n');
+        fprintf('Made interaction order paramater object\n');
         
         if ParamObj.MakeMovies == 1
             % Build OP records
@@ -137,11 +146,24 @@ try
             %         keyboard
             HoldX = ParamObj.Nx /2 + 1;
             HoldY = ParamObj.Ny /2 + 1;
-            OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+            
+            if DenRecObj.DidIBreak == 0
+          
+                OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
                 reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
                 DenRecObj.TimeRecVec)
             
+            else
+                
+                OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+                OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
+                reshape( DenRecObj.Density_rec(HoldX, HoldY, : ,1 :end - 1), [ParamObj.Nm length(DenRecObj.TimeRecVec) - 1] ),...
+                DenRecObj.TimeRecVec(1:end - 1 ) )
+                
+            end
+
+
             %        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
             %              DenRecObj.Density_rec,feq);
             %                 keyboard
@@ -159,19 +181,29 @@ try
         ky0 = ParamObj.Ny / 2 + 1;
         km0 = ParamObj.Nm / 2 + 1;
         Nrec = length( DenRecObj.TimeRecVec);
-        
+
+        FTind2plot = zeros( 8, 3 );
         FTmat2plot = zeros( 8, Nrec );
-        FTmat2plot(1,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(2,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(3,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0 + 1, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(4,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0 + 1, km0 + 1,: ), [ 1, Nrec]  );
-        FTmat2plot(5,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0, km0 + 2,: ), [ 1, Nrec]  );
-        FTmat2plot(6,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0, km0 + 2,: ), [ 1, Nrec]  );
-        FTmat2plot(7,:) =  reshape( DenRecObj.DensityFT_rec( kx0, ky0 + 1, km0 + 2,: ), [ 1, Nrec]  );
-        FTmat2plot(8,:) =  reshape( DenRecObj.DensityFT_rec( kx0 + 1, ky0 + 1, km0 + 2,: ), [ 1, Nrec]  );
         
-        ampPlotterFT(FTmat2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-            ParamObj.Nm, DenRecObj.bc,ParamObj.vD, ParamObj.trial, ParamObj.SaveMe)
+        FTind2plot(1,:) = [kx0     ky0     km0 + 1];
+        FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
+        FTind2plot(3,:) = [kx0     ky0 + 1 km0 + 1];
+        FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 + 1];
+        FTind2plot(5,:) = [kx0     ky0     km0 + 2];
+        FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
+        FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
+        FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
+        
+        for i = 1:8 
+            FTmat2plot(i,:) =  reshape(... 
+            DenRecObj.DensityFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...   
+            [ 1, Nrec ]  );   
+        end
+        
+%         keyboard
+        ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
+            ParamObj.Nm, DenRecObj.bc,ParamObj.vD,  ParamObj.SaveMe, ParamObj.trial)
+   
     end % if OP
     
     if ParamObj.SaveMe
@@ -243,5 +275,5 @@ catch err %Catch errors
 end %End try and catch
 
 % clc
-close all
+%close all
 end % End HR2DrotVgrExeMain.m

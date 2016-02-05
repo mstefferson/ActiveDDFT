@@ -1,6 +1,7 @@
 % Input creater for HR2DrotMainIdC
 % Isotropic diffusion
 
+cd ~/DDFT/HardRodML
 CurrentDir = pwd;
 addpath( genpath( CurrentDir) );
 
@@ -17,9 +18,9 @@ SaveMe       = 1;
 MakeMovies   = 1; % Movies won't run if save is zero
 MakeOP       = 1;
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 16;
-Ny      = 16;
-Nm      = 16;
+Nx      = 32;
+Ny      = 32;
+Nm      = 32;
 
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
@@ -56,13 +57,6 @@ WeightPos   = 1e-3;
 WeightAng   = 1e-3;
 Random      = 0;       % Random perturbation coeffs
 
-%%%%%%%%%%%%%%%%%%%%% Physical Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Tmp      = 1;            % Temperature
-% mobility
-Mob_same = 1;
-Mob_pos  = Mob_same;
-Mob_rot  = Mob_same;
-
 % Stepping method
 % 0: AB1
 % 1: AB2
@@ -72,17 +66,26 @@ Mob_rot  = Mob_same;
 % 5: BHAB2
 % 6: Exponential Euler
 
-StepMeth = 0; 
+StepMeth = 6; 
+
+%%%%%%%%%%%%%%%%%%%%% Physical Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Tmp      = 1;            % Temperature
+% mobility
+Mob_same = 1;
+Mob_pos  = Mob_same;
+Mob_rot  = Mob_same;
+
+
 
 [IntConcStr] =  IntDenNameWriter( IntCond );
 
-if IntEqPw == 1 || IntSepPw == 1
+if  strcmp( IntConcStr,'PlaneWaveEq' ) || strcmp( IntConcStr,'SepPWeq' )
     if 1.499 < bc && bc < 1.501
         bc = 1.502;
     end
 end
 
-if IntLoad
+if strcmp( IntConcStr,'Loaded' )
     IntDenName = sprintf('DenBlow2');
 else
     IntDenName = sprintf('Irrelevant');

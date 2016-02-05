@@ -1,7 +1,18 @@
 % Anisotropic diffusion
 % Input creater for HR2DrotMainDr
+
+cd ~/DDFT/HardRodML
+CurrentDir = pwd;
+addpath( genpath( CurrentDir) );
+
+
+% Now can change number of grid points in the x, y, phi direction
+Run  = 1; % Run main from here
+Move = 0; % Move files to a nice location
+
+
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 7;
+trial    = 8;
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
@@ -9,24 +20,24 @@ SaveMe       = 1;
 MakeMovies   = 1; % Movies won't run if save is zero
 MakeOP       = 1;
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 16;
-Ny      = 16;
-Nm      = 16;
+Nx      = 128;
+Ny      = 128;
+Nm      = 128;
 
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
 % perturbing about equilbrum
-bc      = 1.35;
+bc      = 1.65;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
 AspctRt = 8;                  % L / W
-vD      = 0;                  %Driving velocity
+vD      = 60.0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
 t_record    = 1e-1; %time interval for recording dynamics
-t_tot       = 1;   %total time
+t_tot       = 6e0;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -38,15 +49,25 @@ ss_epsilon  = 1e-8;                          %steady state condition
 % 4: Seperate plane waves over an isotropic distribution (non-sensical)
 % 5: Seperate plane waves over an nematic distribution (non-sensical)
 % 6: A gaussian initial condition
-IntCond     = 1;
-NumModesX   = 4;
-NumModesY   = 4;
-NumModesM   = 4;
+IntCond     = 0;
+NumModesX   = 8;
+NumModesY   = 8;
+NumModesM   = 8;
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbations added to rho(i,j,k) = 1. Must be small
 WeightPos   = 1e-3;
 WeightAng   = 1e-3;
 Random      = 0;       % Random perturbation coeffs
+
+% Stepping method
+% 0: AB1
+% 1: AB2
+% 2: HAB1
+% 3: HAB2
+% 4: BHAB1
+% 5: BHAB2
+% 6: phiV
+StepMeth = 6; 
 
 %%%%%%%%%%%%%%%%%%%%% Physical Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Tmp      = 1;            % Temperature
@@ -56,24 +77,16 @@ Mob_par   = 2*Mob;
 Mob_perp  = Mob;
 Mob_rot   = 6 * Mob / L_rod^2;
 
-% Stepping method
-% 0: AB1
-% 1: AB2
-% 2: HAB1
-% 3: HAB2
-% 4: BHAB1
-% 5: BHAB2
-StepMeth = 0; 
 
 [IntConcStr] =  IntDenNameWriter( IntCond );
 
-if IntEqPw == 1 || IntSepPw == 1
+if  strcmp( IntConcStr,'PlaneWaveEq' ) || strcmp( IntConcStr,'SepPWeq' )
     if 1.499 < bc && bc < 1.501
         bc = 1.502;
     end
 end
 
-if IntLoad
+if strcmp( IntConcStr,'Loaded' )
     IntDenName = sprintf('DenBlow2');
 else
     IntDenName = sprintf('Irrelevant');

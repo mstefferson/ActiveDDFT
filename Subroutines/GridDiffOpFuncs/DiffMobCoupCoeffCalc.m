@@ -14,14 +14,20 @@ StabCoeffRot  = D_rot  .* delta_t / (delta_phi ^2 );
 if StabCoeffPar > 1/2
     fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The parallel diffusion coefficien is to blame\n');
     fprintf(wfid,'StabCoeffPar = %f (should be less than 1/2) \n', StabCoeffPar);
+    fprintf('My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The parallel diffusion coefficien is to blame\n');
+    fprintf('StabCoeffPar = %f (should be less than 1/2) \n', StabCoeffPar);
 end
 if StabCoeffPerp > 1/2
     fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The perpendicular diffusion coefficien is to blame\n');
+    fprintf(wfid,'StabCoeffPerp = %f (should be less than 1/2) \n', StabCoeffPerp);
+    fprintf('My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The perpendicular diffusion coefficien is to blame\n');
     fprintf('StabCoeffPerp = %f (should be less than 1/2) \n', StabCoeffPerp);
 end
 if StabCoeffRot > 1/2
-    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n')
+    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n');
     fprintf(wfid,'StabCoeffRot = %f (should be less than 1/2) \n', StabCoeffRot);
+    fprintf('My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n');
+    fprintf('StabCoeffRot = %f (should be less than 1/2) \n', StabCoeffRot);
 end
 
 %Aniso diffusion coupling
@@ -39,3 +45,5 @@ DiffMobObj = struct('Mob_par', Mob_par, 'Mob_perp', Mob_perp, 'Mob_rot',Mob_rot,
     'D_par',D_par, 'D_perp',D_perp, 'D_rot',D_rot, ...
     'CfMplus2',CoupFacMplus2,'CfMminus2',CoupFacMminus2, ...
     'CfMplus1',CoupFacMplus1,'CfMminus1',CoupFacMminus1);
+
+

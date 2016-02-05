@@ -49,6 +49,8 @@ try
         'NumModesM', ParamVec(22),'bc',ParamVec(23), ...
         'c', ParamVec(24), ...
         'Mob_pos',ParamVec(25),'Mob_rot',ParamVec(26), 'vD', ParamVec(27) );
+    
+     fprintf('Read input and made ParamObj\n')
     %     keyboard
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
@@ -70,16 +72,19 @@ try
     % Fix the time
     [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
         TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
-    
+    fprintf(lfid,'Made Time Obj\n');
+    fprintf('Made Time Obj\n')
     %%%Make all the grid stuff%%%%%%%%%%%%%%
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
     fprintf(lfid,'Made grid\n');
+    fprintf('Made grid\n');
     
     %Make diffusion coeff (send smallest dx dy for stability
     [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
         ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
     fprintf(lfid,'Made diffusion object\n');
+    fprintf('Made diffusion object\n');
     
     %Initialze density
     [rho] = MakeConc(GridObj,ParamObj);
@@ -87,6 +92,8 @@ try
     % Equilib distribution
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
     feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
+    fprintf(lfid,'Made initial density\n');
+    fprintf('Made initial density\n');
     
 
     % Run the main code
@@ -133,11 +140,21 @@ try
             %         keyboard
             HoldX = ParamObj.Nx /2 + 1;
             HoldY = ParamObj.Ny /2 + 1;
+                    if DenRecObj.DidIBreak == 0
+          
             OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
-                reshape( DenRecObj.Density_rec(HoldX, HoldY, : , 1:length(OrderParamObj.TimeRec) ),...
-                [ ParamObj.Nm length(OrderParamObj.TimeRec) ] ),...
-                OrderParamObj.TimeRec)
+                reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
+                DenRecObj.TimeRecVec)
+            
+            else
+                
+                OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+                OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
+                reshape( DenRecObj.Density_rec(HoldX, HoldY, : ,1 :end - 1), [ParamObj.Nm length(DenRecObj.TimeRecVec) - 1] ),...
+                DenRecObj.TimeRecVec(1:end - 1 ) )
+                
+            end
             
             %        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
             %              DenRecObj.Density_rec,feq);
