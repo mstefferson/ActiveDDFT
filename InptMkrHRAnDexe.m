@@ -12,7 +12,7 @@ Move = 0; % Move files to a nice location
 
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 8;
+trial    = 1234;
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
@@ -20,14 +20,14 @@ SaveMe       = 1;
 MakeMovies   = 1; % Movies won't run if save is zero
 MakeOP       = 1;
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 128;
-Ny      = 128;
-Nm      = 128;
+Nx      = 32;
+Ny      = 32;
+Nm      = 32;
 
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
 % perturbing about equilbrum
-bc      = 1.65;
+bc      = 1.45;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
@@ -36,8 +36,8 @@ vD      = 60.0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 1e-1; %time interval for recording dynamics
-t_tot       = 6e0;   %total time
+t_record    = 1e-2; %time interval for recording dynamics
+t_tot       = 1e-1;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -50,9 +50,9 @@ ss_epsilon  = 1e-8;                          %steady state condition
 % 5: Seperate plane waves over an nematic distribution (non-sensical)
 % 6: A gaussian initial condition
 IntCond     = 0;
-NumModesX   = 8;
-NumModesY   = 8;
-NumModesM   = 8;
+NumModesX   = 2;
+NumModesY   = 2;
+NumModesM   = 2;
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbations added to rho(i,j,k) = 1. Must be small
 WeightPos   = 1e-3;

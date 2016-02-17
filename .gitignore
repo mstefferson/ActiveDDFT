@@ -8,6 +8,7 @@
 *.txt
 *.swp
 *.avi
+*.m~
 
 # Directories
 Outputs/
