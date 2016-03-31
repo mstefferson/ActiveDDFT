@@ -1,7 +1,6 @@
 % Input creater for HR2DrotMainIdC
 % Isotropic diffusion
-
-cd ~/DDFT/HardRodML
+cd ~/DDFT/HardRodML 
 CurrentDir = pwd;
 addpath( genpath( CurrentDir) );
 
@@ -10,13 +9,32 @@ Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 7;
+trial    = 10;
+
+% Date
+DateTimeStart =  datestr(now);
+
+ if SaveMe
+     if ~exist('Outputs', 'dir'); mkdir('Outputs'); end
+     DiaryStr = sprintf('DiarySingRunt%d.txt',trial);
+     diary(DiaryStr);
+     runfile  = 'IsoRunLog.log';
+     rlId = fopen(runfile,'a+');
+%      fprintf(rlId, 'Isotropic Hard Rod \n');
+    
+ end
+
+% Print what you are doing
+
+fprintf('Isotropic Hard Rod \n')
+fprintf('Start: %s\n', DateTimeStart)
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
 SaveMe       = 1;
-MakeMovies   = 1; % Movies won't run if save is zero
-MakeOP       = 1;
+MakeMovies   = 0; % Movies won't run if save is zero
+MakeOP       = 0;
+
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
 Nx      = 32;
 Ny      = 32;
@@ -75,8 +93,6 @@ Mob_same = 1;
 Mob_pos  = Mob_same;
 Mob_rot  = Mob_same;
 
-
-
 [IntConcStr] =  IntDenNameWriter( IntCond );
 
 if  strcmp( IntConcStr,'PlaneWaveEq' ) || strcmp( IntConcStr,'SepPWeq' )
@@ -119,7 +135,7 @@ FileInpt = ...
     Nx,Ny,Nm,bc,Interactions,vD,IntCond,...
     trial);
 
-Where2SavePath    = sprintf('%s/%s/%s',pwd,'Outputs',FileDir);
+Where2SavePath   = sprintf('%s/%s/%s',pwd,'Outputs',FileDir);
 
 [fid,msg] = fopen(FileInpt,'w+');  % Note the 'wt' for writing in text mode
 
@@ -148,13 +164,16 @@ if Run == 1
     [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
         DidIBreak,SteadyState,MaxReldRho] = ...
         HR2DrotMainIdC(FileInpt);
-
+    toc
+    disp('Params');disp(ParamObj);disp('Time');disp(TimeObj);      
+    fprintf('Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
+        DidIBreak,SteadyState,MaxReldRho)
+    DateTimeEnd =  datestr(now);
+    fprintf('End: %s\n\n', DateTimeEnd);
+    
     if SaveMe
-        mkdir Outputs
-        DiaryStr = sprintf('DiarySingRunt%d.txt',trial);
-        diary(DiaryStr);
-        disp('Params');disp(ParamObj);disp('Time');disp(TimeObj);
-        mkdir(Where2SavePath)
+        diary off; 
+        if ~exist(Where2SavePath, 'dir'); mkdir(Where2SavePath); end
         movefile('*.mat', Where2SavePath)
         movefile('*.txt', Where2SavePath)
         if MakeMovies
@@ -163,14 +182,16 @@ if Run == 1
         if MakeOP
             movefile('*.fig', Where2SavePath)
             movefile('*.jpg', Where2SavePath)
-        end  
-        
-    end
-    toc
-    fprintf('Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
-        DidIBreak,SteadyState,MaxReldRho)
-    diary off
-    %     cd /home/mws/Documents/MATLAB/Research/BG/DDFT/HRddft/Drive/IsoDiffCube
+        end         
+        rlId = fopen(runfile,'a+');
+        fprintf(rlId,'%s\n', FileInpt(1:end-4));
+        fprintf(rlId,'Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
+        DidIBreak,SteadyState,MaxReldRho);
+        fprintf(rlId, 'Start: %s\n', DateTimeStart);
+        fprintf(rlId,'End: %s\n\n', DateTimeEnd);
+        fclose('all');
+   end
+
 end
 
 

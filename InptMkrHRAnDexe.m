@@ -12,7 +12,25 @@ Move = 0; % Move files to a nice location
 
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 6;
+trial    = 7;
+
+% Date
+DateTimeStart =  datestr(now);
+
+ if SaveMe
+     if ~exist('Outputs', 'dir'); mkdir('Outputs'); end
+     DiaryStr = sprintf('DiarySingRunt%d.txt',trial);
+     diary(DiaryStr);
+     runfile  = 'AnisRunLog.log';
+     rlId = fopen(runfile,'a+');
+%      fprintf(rlId, 'Anisotropic Hard Rod Hard Rod \n');
+    
+ end
+
+% Print what you are doing
+
+fprintf('Anisotropic Hard Rod \n')
+fprintf('Start: %s\n', DateTimeStart)
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
@@ -149,13 +167,16 @@ if Run == 1
     [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
         DidIBreak,SteadyState,MaxReldRho] = ...
         HR2DrotMain(FileInpt);
-
+    toc
+    disp('Params');disp(ParamObj);disp('Time');disp(TimeObj);      
+    fprintf('Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
+        DidIBreak,SteadyState,MaxReldRho)
+    DateTimeEnd =  datestr(now);
+    fprintf('End: %s\n\n', DateTimeEnd);
+    
     if SaveMe
-        mkdir Outputs
-        DiaryStr = sprintf('DiarySingRunt%d.txt',trial);
-        diary(DiaryStr);
-        disp('Params');disp(ParamObj);disp('Time');disp(TimeObj);
-        mkdir(Where2SavePath)
+        diary off; 
+        if ~exist(Where2SavePath, 'dir'); mkdir(Where2SavePath); end
         movefile('*.mat', Where2SavePath)
         movefile('*.txt', Where2SavePath)
         if MakeMovies
@@ -164,14 +185,16 @@ if Run == 1
         if MakeOP
             movefile('*.fig', Where2SavePath)
             movefile('*.jpg', Where2SavePath)
-        end  
-        
-    end
-    toc
-    fprintf('Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
-        DidIBreak,SteadyState,MaxReldRho)
-    diary off
-    %     cd /home/mws/Documents/MATLAB/Research/BG/DDFT/HRddft/Drive/IsoDiffCube
+        end         
+        rlId = fopen(runfile,'a+');
+        fprintf(rlId,'%s\n', FileInpt(1:end-4));
+        fprintf(rlId,'Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
+        DidIBreak,SteadyState,MaxReldRho);
+        fprintf(rlId, 'Start: %s\n', DateTimeStart);
+        fprintf(rlId,'End: %s\n\n', DateTimeEnd);
+        fclose('all');
+   end
+
 end
 
 
