@@ -11,9 +11,10 @@ ParamStrNy = sprintf('Ny = %d', Ny);
 ParamStrNm = sprintf('Nm = %d', Nm);
 ParamStrBc = sprintf('bc = %.2f', bc);
 ParamStrVd = sprintf('vD = %.2f', vD);
+ParamStrTr = sprintf('trial = %d', trial);
 
 ParamStrCell = {ParamStrNx;  ParamStrNy; ParamStrNm;' ';...
-                         ParamStrBc; ParamStrVd;' ';' ' };
+                         ParamStrTr;ParamStrBc; ParamStrVd;' ' };
     
 
 figure()
@@ -32,15 +33,6 @@ for i = 1:8
     
     textbp(ParamStrCell{i})
 end
-textbp(ParamStrNy)
-
-textbp(ParamStrNm)
-
-subplot(2,4,5)
-
-textbp(ParamStrVd)
-
-textbp(ParamStrBc)
 
 if SaveMe
 figtl = sprintf('AmpFT%d',trial);
