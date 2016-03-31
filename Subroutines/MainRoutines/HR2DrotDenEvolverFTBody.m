@@ -40,6 +40,9 @@ Nm  = ParamObj.Nm;
 N3 = Nx*Ny*Nm;
 N2 = Nx*Ny;
 
+% Declare dt since it's used so much
+dt = TimeObj.delta_t;
+
 % FT initial density and max density
 TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
@@ -80,50 +83,52 @@ else
 end
 
 % Take first step- Euler
-if( ParamObj.StepMeth == 0 ) 
-  NlPf =  TimeObj.delta_t;
-%  [rhoVec_FTnext, ticExpInt] = DenStepperAB1( ...
-%  Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
+if( ParamObj.StepMeth == 0 ) % AB 1
+
+  NlPf =  dt;
  [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf(...
-  Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
-elseif( ParamObj.StepMeth == 1 )
-  NlPf = 3 * TimeObj.delta_t / 2;
-  NlPrevPf = TimeObj.delta_t / 2;
-   %[rhoVec_FTnext, ticExpInt] = DenStepperAB1( ...
-   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
+
+elseif( ParamObj.StepMeth == 1 ) % AB 2
+
+  NlPf = 3 * dt / 2;
+  NlPrevPf = dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf( ...
-   Lop, rhoVec_FT, GammaExVec_FT,NlPf, TimeObj.delta_t  );
-elseif( ParamObj.StepMeth == 2 ) 
-  NlPf = TimeObj.delta_t;
-   %[rhoVec_FTnext, ticExpInt] = DenStepperHAB1( ...
-   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
-  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
-   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
-elseif( ParamObj.StepMeth == 3 )
-  NlPf = 3 * TimeObj.delta_t / 2 ;
-  NlPrevPf = TimeObj.delta_t / 2 ;
-   %[rhoVec_FTnext, ticExpInt] = DenStepperHAB1( ...
-   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
-  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
-   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
-elseif( ParamObj.StepMeth == 4 )
-  NlPf = TimeObj.delta_t / 2;
-   %[rhoVec_FTnext, ticExpInt] = DenStepperBHAB1( ...
-   %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
-  [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
-   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
-elseif( ParamObj.StepMeth == 5 )
-  NlPf = TimeObj.delta_t ;
-  NlPrevPf = TimeObj.delta_t / 2;
-  NlExpPf =  TimeObj.delta_t / 2;
+   Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
+
+elseif( ParamObj.StepMeth == 2 )  % HAB 1
   
-  %[rhoVec_FTnext, ticExpInt] = DenStepperBHAB1( ...
-  %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+  NlPf = dt;
+  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
+
+elseif( ParamObj.StepMeth == 3 ) % HAB 2
+
+  NlPf = 3 * dt / 2 ;
+  NlPrevPf = dt / 2 ;
+  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
+
+elseif( ParamObj.StepMeth == 4 ) % BHAB 1
+  
+  NlPf = dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
-   Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
-elseif( ParamObj.StepMeth == 6 )
+   Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
+
+elseif( ParamObj.StepMeth == 5 ) % BHAB 2
+  
+  NlPf = dt ;
+  NlPrevPf = dt / 2;
+  NlExpPf =  dt / 2;
+  
+  [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
+   Lop, rhoVec_FT, GammaExVec_FT, dt / 2, dt );
+
+elseif( ParamObj.StepMeth == 6 ) % phiV
+
   [rhoVec_FTnext, ticExpInt] = DenStepperPhiV( ...
-   Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
+   Lop, rhoVec_FT, GammaExVec_FT, dt );
+
 else
   fprintf('No stepping method selected');
 end
@@ -160,37 +165,37 @@ for t = 1:TimeObj.N_time-1
     % Take step
     if( ParamObj.StepMeth == 0 ) 
 %      [rhoVec_FTnext, ticExptemp] = DenStepperAB1( ...
-%      Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
+%      Lop, rhoVec_FT, GammaExVec_FT, dt );
      [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
-     Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
+     Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
     elseif( ParamObj.StepMeth == 1 )
        %[rhoVec_FTnext, ticExptemp] = DenStepperAB2(... 
-          %Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, TimeObj.delta_t );
+          %Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, TimeObj.delta_t  );
+      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
     elseif( ParamObj.StepMeth == 2 ) 
        %[rhoVec_FTnext, ticExptemp] = DenStepperHAB1( ...
-       %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+       %Lop, rhoVec_FT, GammaExVec_FT,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t );
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
     elseif( ParamObj.StepMeth == 3 )
        %[rhoVec_FTnext, ticExptemp] = DenStepperHAB2( ...
-          %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,TimeObj.delta_t );
+          %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
-         Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FT, NlPf, NlPrevPf, TimeObj.delta_t  );
+         Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FT, NlPf, NlPrevPf, dt  );
     elseif( ParamObj.StepMeth == 4 )
        %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB1( ...
-       %Lop, rhoVec_FT, GammaExVec_FT,TimeObj.delta_t );
+       %Lop, rhoVec_FT, GammaExVec_FT,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, NlPf, TimeObj.delta_t  );
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
     elseif( ParamObj.StepMeth == 5 )
       %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB2( ...
-      %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,TimeObj.delta_t );
+      %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, TimeObj.delta_t );
+      Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
     elseif( ParamObj.StepMeth == 6 )
       [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
-         Lop, rhoVec_FT, GammaExVec_FT, TimeObj.delta_t );
+         Lop, rhoVec_FT, GammaExVec_FT, dt );
     end
 
         %Make sure things are taking too long. This is a sign density---> inf

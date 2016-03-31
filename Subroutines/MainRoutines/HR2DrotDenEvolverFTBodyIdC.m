@@ -33,6 +33,9 @@ Ny  = ParamObj.Ny;
 Nm  = ParamObj.Nm;
 N3 = Nx*Ny*Nm;
 
+% Declare dt since it's used so much
+dt = TimeObj.delta_t;
+
 % FT initial density and max density
 TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
@@ -58,7 +61,7 @@ j_record = 2;     %Record holder
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 %Set up Diffusion operator in cube form
 [Lop] = DiffOpBuilderIsoDiffCube(DiffMobObj,GridObj);
-Prop = exp(Lop .* TimeObj.delta_t);   % Exponentiate the elements
+Prop = exp(Lop .* dt);   % Exponentiate the elements
 
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -89,38 +92,45 @@ end
 GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
 
 % Take the first step- Euler. Element by element mulitplication
-  % Take a step
-if( ParamObj.StepMeth == 0 ) 
-  NlPf =  TimeObj.delta_t;
- %[rho_FTnext] = DenStepperAB1c( Prop, rho_FT, GammaCube_FT, TimeObj.delta_t );
+if( ParamObj.StepMeth == 0 ) % AB 1
+  
+  NlPf =  dt;
  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
-elseif( ParamObj.StepMeth == 1 )
-  NlPf = 3 * TimeObj.delta_t / 2;
-  NlPrevPf = TimeObj.delta_t / 2;
-%   [rho_FTnext] = DenStepperAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
-  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,NlPf );
-elseif( ParamObj.StepMeth == 2 ) 
-  NlPf = TimeObj.delta_t .* Prop;
-%   [rho_FTnext] = DenStepperHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
-  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
-elseif( ParamObj.StepMeth == 3 )
-  NlPf = 3 * TimeObj.delta_t / 2 .* Prop;
-  NlPrevPf = TimeObj.delta_t / 2 .* Prop .* Prop;
-%   [rho_FTnext] = DenStepperHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+
+elseif( ParamObj.StepMeth == 1 ) % AB 2 
+  
+  NlPf = 3 * dt / 2;
+  NlPrevPf = dt / 2;
+  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,dt);
+
+elseif( ParamObj.StepMeth == 2 ) % HAB1
+  
+  NlPf = dt .* Prop;
   [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
-elseif( ParamObj.StepMeth == 4 )
-  NlPf = TimeObj.delta_t / 2 .* ( 1 + Prop);
-%   [rho_FTnext] = DenStepperBHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
-  [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
-elseif( ParamObj.StepMeth == 5 )
-  NlPf = TimeObj.delta_t / 2 * ( 2 + Prop );
-  NlPrevPf = TimeObj.delta_t / 2;
-%   [rho_FTnext] = DenStepperBHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
+
+elseif( ParamObj.StepMeth == 3 ) % HAB2
+
+  NlPf = 3 * dt / 2 .* Prop;
+  NlPrevPf = dt / 2 .* Prop .* Prop;
+  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, dt .* Prop );
+
+elseif( ParamObj.StepMeth == 4 ) % BHAB1
+  
+  NlPf = dt / 2 .* ( 1 + Prop);
   [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
-elseif( ParamObj.StepMeth == 6 ) 
+
+elseif( ParamObj.StepMeth == 5 ) % BHAB2
+  
+  NlPf = dt / 2 * ( 2 + Prop );
+  NlPrevPf = dt / 2;
+  [rho_FTnext] = DenStepperBHAB1cPf( ...
+  Prop, rho_FT, GammaCube_FT, dt / 2 .* ( 1 + Prop) );
+
+elseif( ParamObj.StepMeth == 6 ) % Exponential Euler
+
   GamProp = ( Prop - 1 ) ./ Lop;
   [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
-%   keyboard
+
 else
   fprintf('No stepping method selected');
 end
@@ -158,38 +168,27 @@ for t = 1:TimeObj.N_time-1
             rho,ParamObj.vD,GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
     end
     
-    
     GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
     % Take a step
     if( ParamObj.StepMeth == 0 ) 
-%         [rho_FTnext] = DenStepperAB1c( Prop, rho_FT, GammaCube_FT, TimeObj.delta_t  );
         [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
     elseif( ParamObj.StepMeth == 1 )
-%       [rho_FTnext] = DenStepperAB2c( ...
-%         Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,TimeObj.delta_t );
         [rho_FTnext] = DenStepperAB2cPf( ...
              Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,NlPf, NlPrevPf );
     elseif( ParamObj.StepMeth == 2 ) 
-%       [rho_FTnext] = DenStepperHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
       [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
     elseif( ParamObj.StepMeth == 3 )
-%       [rho_FTnext] = DenStepperHAB2c( ...
-%         Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, TimeObj.delta_t );
         [rho_FTnext] = DenStepperHAB2cPf( ...
             Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
     elseif( ParamObj.StepMeth == 4 )
-%       [rho_FTnext] = DenStepperBHAB1c( Prop, rho_FT, GammaCube_FT,TimeObj.delta_t );
       [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
     elseif( ParamObj.StepMeth == 5 )
-%       [rho_FTnext] = DenStepperBHAB2c( ...
-%         Prop, rho_FT, GammaCube_FT,GammaCube_FTprev,TimeObj.delta_t );
       [rho_FTnext] = DenStepperBHAB2cPf( ...
         Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
     elseif( ParamObj.StepMeth == 6 ) 
       [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
     end
 
-   
     %Save everything (this includes the initial state)
     if (mod(t,TimeObj.N_count)== 0)
         if ParamObj.SaveMe

@@ -25,7 +25,7 @@ Nm      = 32;
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
 % perturbing about equilbrum
-bc      = 1.35;
+bc      = 1.15;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
@@ -34,8 +34,8 @@ vD      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 1e-1; %time interval for recording dynamics
-t_tot       = 1;   %total time
+t_record    = 1e-2; %time interval for recording dynamics
+t_tot       = 1e-2;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
