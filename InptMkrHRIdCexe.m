@@ -16,7 +16,7 @@ DateTimeStart =  datestr(now);
 
  if SaveMe
      if ~exist('Outputs', 'dir'); mkdir('Outputs'); end
-     DiaryStr = sprintf('DiarySingRunt%d.txt',trial);
+     DiaryStr = sprintf('DiarySingRunt%d.log',trial);
      diary(DiaryStr);
      runfile  = 'IsoRunLog.log';
      rlId = fopen(runfile,'a+');
