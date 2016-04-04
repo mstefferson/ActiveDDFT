@@ -7,9 +7,10 @@ addpath( genpath( CurrentDir) );
 % Now can change number of grid points in the x, y, phi direction
 Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
+SaveMe = 1;
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 10;
+trial    = 12;
 
 % Date
 DateTimeStart =  datestr(now);
@@ -31,14 +32,13 @@ fprintf('Start: %s\n', DateTimeStart)
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
-SaveMe       = 1;
 MakeMovies   = 0; % Movies won't run if save is zero
 MakeOP       = 0;
 
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 32;
-Ny      = 32;
-Nm      = 32;
+Nx      = 16;
+Ny      = 16;
+Nm      = 16;
 
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
@@ -66,14 +66,20 @@ ss_epsilon  = 1e-8;                          %steady state condition
 % 5: Seperate plane waves over an nematic distribution (non-sensical)
 % 6: A gaussian initial condition
 IntCond     = 1;
-NumModesX   = 4;
-NumModesY   = 4;
-NumModesM   = 4;
+NumModesX   = 8;
+NumModesY   = 8;
+NumModesM   = 8;
+
+% Don't perturb more more than you are allowed to
+if( NumModesX >= Nx / 2 ); NumModesX = floor(Nx / 2) - 2; end;
+if( NumModesY >= Ny / 2 ); NumModesY = floor(Ny / 2) - 2; end;
+if( NumModesM >= Nm / 2 ); NumModesM = floor(Nm / 2) - 2; end;
+% keyboard
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbations added to rho(i,j,k) = 1. Must be small
 WeightPos   = 1e-3;
 WeightAng   = 1e-3;
-Random      = 0;       % Random perturbation coeffs
+RandomAmp   = 1;       % Random perturbation coeffs
 
 % Stepping method
 % 0: AB1
@@ -122,7 +128,7 @@ if vD  == 0; Drive = 0; else Drive = 1;end
 
 % Parameter vectors
 Paramtmp = [trial Interactions Drive StepMeth IntCond MakeOP MakeMovies SaveMe Nx Ny Nm...
-    Lx Ly L_rod Tmp Norm WeightPos WeightAng Random ...
+    Lx Ly L_rod Tmp Norm WeightPos WeightAng RandomAmp ...
     NumModesX NumModesY NumModesM bc c Mob_pos Mob_rot vD];
 Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
@@ -170,21 +176,32 @@ if Run == 1
         DidIBreak,SteadyState,MaxReldRho)
     DateTimeEnd =  datestr(now);
     fprintf('End: %s\n\n', DateTimeEnd);
-    
+%     keyboard
     if SaveMe
         diary off; 
         if ~exist(Where2SavePath, 'dir'); mkdir(Where2SavePath); end
         movefile('*.mat', Where2SavePath)
         movefile('*.txt', Where2SavePath)
+        movefile('Diary*', Where2SavePath)
         if MakeMovies
             movefile('*.avi', Where2SavePath)
         end
         if MakeOP
             movefile('*.fig', Where2SavePath)
             movefile('*.jpg', Where2SavePath)
-        end         
+        end       
+        
         rlId = fopen(runfile,'a+');
         fprintf(rlId,'%s\n', FileInpt(1:end-4));
+        fprintf(rlId,'( dt t_rec t_tot ss_eps ): ( %.2e %.2e %.2e %.2e )\n',...
+            Timetmp);
+        fprintf(rlId,'( Nx, Ny, Nm ): ( %d, %d, %d )\n', Nx, Ny, Nm);
+        fprintf(rlId,'( Lx, Ly, Lrod ) = ( %.1f, %.1f, %.1f )\n',...
+         Lx, Ly, L_rod);
+        fprintf(rlId,'( bc, vD, Mob_pos, Mob_rot ) = ( %.2f, %.2f, %.1f, %.1f )\n',...
+         bc, vD, Mob_pos, Mob_rot);
+        fprintf(rlId,'( MdX, MdY, MdM, rand) = ( %d, %d, %d, %d )\n',...
+         NumModesX, NumModesY, NumModesM, RandomAmp);
         fprintf(rlId,'Break = %d Steady = %d Max dRho/Rho = %.2e\n',...
         DidIBreak,SteadyState,MaxReldRho);
         fprintf(rlId, 'Start: %s\n', DateTimeStart);
