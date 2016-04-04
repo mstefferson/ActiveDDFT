@@ -7,7 +7,7 @@ addpath( genpath( CurrentDir) );
 % Now can change number of grid points in the x, y, phi direction
 Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
-SaveMe = 1;
+SaveMe = 0;
 
 %%%%%%%% Trial %%%%%%%%%%%%
 trial    = 12;
@@ -32,8 +32,8 @@ fprintf('Start: %s\n', DateTimeStart)
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
-MakeMovies   = 0; % Movies won't run if save is zero
-MakeOP       = 0;
+MakeMovies   = 1; % No movies if save is zero
+MakeOP       = 1; % No OPs if save is zero
 
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
 Nx      = 16;
@@ -120,7 +120,7 @@ Norm    = c * Lx * Ly;              % number of particles
 Diam    = L_rod / AspctRt;              % "Diameter" aka width of the rods
 
 % Turn movies off is Save is off
-if SaveMe == 0; MakeMovies = 0;end
+if SaveMe == 0; MakeOP = 0; MakeMovies = 0; end
 if MakeMovies == 1; MakeOP = 1; end % if make movie, make OP first
 
 % Turn off Drive parameter  is v0 = 0;

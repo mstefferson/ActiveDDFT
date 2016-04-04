@@ -9,7 +9,7 @@ addpath( genpath( CurrentDir ) );
 % Now can change number of grid points in the x, y, phi direction
 Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
-SaveMe = 1;
+SaveMe = 0;
 
 %%%%%%%% Trial %%%%%%%%%%%%
 trial    = 4;
@@ -18,7 +18,7 @@ trial    = 4;
 DateTimeStart =  datestr(now);
 
  if SaveMe
-     if ~exist('Outputs', 'dir'); mkdir('Outputs'); end
+     if ~exist('Outputs', 'dir'); mkdir('Outputs'); end;
      DiaryStr = sprintf('DiarySingRunt%d.log',trial);
      diary(DiaryStr);
      runfile  = 'AnisRunLog.log';
@@ -34,8 +34,9 @@ fprintf('Start: %s\n', DateTimeStart)
 
 %%%%%% Turn on/off interactions%%%%%%%%%
 Interactions = 1;
-MakeMovies   = 1; % Movies won't run if save is zero
-MakeOP       = 1;
+MakeMovies   = 1; % No movies if save is zero
+MakeOP       = 1; % No OPs if save is zero
+
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
 Nx      = 16;
 Ny      = 16;
@@ -121,7 +122,7 @@ Norm    = c * Lx * Ly;              % number of particles
 Diam    = L_rod / AspctRt;              % "Diameter" aka width of the rods
 
 % Turn movies off is Save is off
-if SaveMe == 0; MakeMovies = 0;end
+if SaveMe == 0; MakeOP = 0; MakeMovies = 0;;end
 if MakeMovies == 1; MakeOP = 1; end % if make movie, make OP first
 
 % Turn off Drive parameter  is v0 = 0;

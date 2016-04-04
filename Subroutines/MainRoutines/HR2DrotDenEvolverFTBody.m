@@ -136,6 +136,7 @@ end
 tic
 ShitIsFucked = 0;
 SteadyState  = 0;
+MaxReldRho   = 0; % Initialize this so things don't get messed up
 
 % keyboard
 fprintf(lfid,'Starting master time loop\n');
