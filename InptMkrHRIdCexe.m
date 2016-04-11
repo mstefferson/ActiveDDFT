@@ -7,10 +7,10 @@ addpath( genpath( CurrentDir) );
 % Now can change number of grid points in the x, y, phi direction
 Run  = 1; % Run main from here
 Move = 0; % Move files to a nice location
-SaveMe = 0;
+SaveMe = 1;
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 12;
+trial    = 20;
 
 % Date
 DateTimeStart =  datestr(now);
@@ -36,14 +36,14 @@ MakeMovies   = 1; % No movies if save is zero
 MakeOP       = 1; % No OPs if save is zero
 
 %%%%%%%%%%%%% Box and Rod Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nx      = 16;
-Ny      = 16;
-Nm      = 16;
+Nx      = 64;
+Ny      = 64;
+Nm      = 64;
 
 %%%%%%%%% Initial density parameters%%%%%%%%%%%%%%%%%%
 % Dimensionless  scaled concentration bc > 1.501 or bc < 1.499 if
 % perturbing about equilbrum
-bc      = 1.15;
+bc      = 1.65;
 L_rod   = 1;                  % Length of the rods
 Lx      = 10*L_rod;               % Box length
 Ly      = 10*L_rod;               % Box length
@@ -52,8 +52,8 @@ vD      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 1e-2; %time interval for recording dynamics
-t_tot       = 1e-2;   %total time
+t_record    = 0.4; %time interval for recording dynamics
+t_tot       = 40.0;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -134,12 +134,11 @@ Timetmp  = [delta_t t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...
-    sprintf('HrIDC_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%ism%d',...
-    Nx,Ny,Nm,bc,Interactions,vD,IntCond,trial,StepMeth);
+    sprintf('HrIdC%i%i%i_bc%.2f_Int%i_v%.1f_IC%dsm%dt%d',...
+    Nx,Ny,Nm,bc,Interactions,vD,IntCond,StepMeth,trial);
 FileInpt = ...
-    sprintf('Inpt_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dt%i.txt', ...
-    Nx,Ny,Nm,bc,Interactions,vD,IntCond,...
-    trial);
+    sprintf('InptIdC_N%i%i%i_bc%.2f_Int%i_v%.1f_IC%dsm%dt%d.txt', ...
+    Nx,Ny,Nm,bc,Interactions,vD,IntCond,StepMeth,trial);
 
 Where2SavePath   = sprintf('%s/%s/%s',pwd,'Outputs',FileDir);
 
