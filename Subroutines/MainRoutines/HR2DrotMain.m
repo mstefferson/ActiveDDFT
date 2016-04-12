@@ -14,7 +14,9 @@ try
     
     %     keyboard
     tMainID  = tic;
+
     %Grab the parameters
+    tParamID = tic;
     % keyboard
     DataTemp    = importdata(InputFile);
     ParamVec    = DataTemp.data(1,:);
@@ -49,7 +51,10 @@ try
         'Mob_rot',ParamVec(27), 'vD', ParamVec(28) );
     
     fprintf('Read input and made ParamObj\n')
-    
+    ParamRunTime = toc(tParamID);
+    disp(ParamRunTime);
+
+ 
     %     keyboard
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
@@ -60,6 +65,7 @@ try
     fprintf(lfid,'Starting main, current code\n');
     
     %Time Recording
+    tTimeID = tic;
     N_time   = ceil(TimeVec(3)/TimeVec(1)); %number of time steps
     N_record = ceil(TimeVec(3)/TimeVec(2)); %number of time points to record. Does not include initial density
     N_count  = ceil(TimeVec(2)/TimeVec(1)); %spacing between times to record
@@ -73,13 +79,20 @@ try
         TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
     fprintf(lfid,'Made Time Obj\n');
     fprintf('Made Time Obj\n')
-    %%%Make all the grid stuff%%%%%%%%%%%%%%
+    TimeRunTime = toc(tTimeID);
+    disp(TimeRunTime);
+
+%%%Make all the grid stuff%%%%%%%%%%%%%%
+    tGridID = tic;
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
     fprintf(lfid,'Made Grid\n');
     fprintf('Made Grid\n')
-    
+    GridRunTime = toc(tGridID);
+    disp(GridRunTime);
+  
     %Make diffusion coeff (send smallest dx dy for stability
+    tDiffID = tic;
     [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
         ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
         TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
@@ -87,8 +100,11 @@ try
     
     fprintf(lfid,'Made diffusion object\n');
     fprintf('Made diffusion object\n');
-    
+    DiffRunTime = toc(tDiffID);
+    disp(DiffRunTime);
+ 
     %Initialze density
+    tIntDenID = tic;
     [rho] = MakeConc(GridObj,ParamObj);
     Nc    = 20;
     % Equilib distribution
@@ -96,19 +112,21 @@ try
     feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
     fprintf(lfid,'Made initial density\n');
     fprintf('Made initial density\n');
-    
-    %     keyboard
+    IntDenRunTime = toc(tIntDenID);
+    disp(IntDenRunTime);
+
     % Run the main code
     tBodyID      = tic;
     
-    [DenRecObj]  = HR2DrotDenEvolverFTBody(wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
+    [DenRecObj]  = HR2DrotDenEvolverFTBody(...
+    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
     %     keyboard
     EvolvedDen = 1;
     BodyRunTime  = toc(tBodyID);
     fprintf(lfid,'Made density object\n');
+    BodyRunTime  = toc(tBodyID);
+    disp(BodyRunTime);
     fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
-    fprintf('Made density object\n');
-    fprintf('Body Run Time = %f\n\n', BodyRunTime);
     
     % Store final density and transform
     DenFinal   = DenRecObj.Density_rec(:,:,:,end);
@@ -116,8 +134,6 @@ try
     DidIBreak  = DenRecObj.DidIBreak;
     SteadyState = DenRecObj.SteadyState;
     MaxReldRho  = DenRecObj.MaxReldRho;
-    
-    %         keyboard
     
     % Run movies if you want
     if ParamObj.MakeOP  == 1
@@ -134,9 +150,11 @@ try
                 DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
                 feq);
         end
-        OpRunTime       = toc(tOpID);
         fprintf(lfid,'Made interaction order paramater object\n');
         fprintf('Made interaction order paramater object\n');
+        OpRunTime = toc(tOpID);
+        disp(OpRunTime);
+        fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
         
         if ParamObj.MakeMovies == 1
             % Build OP records
@@ -152,11 +170,6 @@ try
             
             if DenRecObj.DidIBreak == 0
                 
-
-%                 OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
-%                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
-%                 reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
-%                 DenRecObj.TimeRecVec)
                 OPMovieMakerTgtherDirAvi(ParamObj.trial,...
                     GridObj.x,GridObj.y,GridObj.phi,OrderParamObj,...
                     DistRec,OrderParamObj.TimeRec);
@@ -164,27 +177,17 @@ try
             
             else
                 
-%                 OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
-%                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
-%                 reshape( DenRecObj.Density_rec(HoldX, HoldY, : ,1 :end - 1), [ParamObj.Nm length(DenRecObj.TimeRecVec) - 1] ),...
-%                 DenRecObj.TimeRecVec(1:end - 1 ) )
                 OPMovieMakerTgtherDirAvi(ParamObj.trial,...
                     GridObj.x,GridObj.y,GridObj.phi,OrderParamObj,...
                     DistRec,OrderParamObj.TimeRec(1:end-1) );
             end
 
-
-            %        MovieObj = OPMovieMakerTgtherMat(GridObj,ParamObj,OrderParamObj,...
-            %              DenRecObj.Density_rec,feq);
-            %                 keyboard
-            MovRunTime   = toc(tMovID);
-            %         keyboard
             fprintf(lfid,'Made movies\n');
+            MovRunTime   = toc(tMovID);
+            disp(MovRunTime);
             % Record how long it took
-            fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
-            fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);
-            
-            
+            fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);      
+
         end % End if movies
         
         kx0 = ParamObj.Nx / 2 + 1;
@@ -239,18 +242,10 @@ try
     % Save how long everything took
     fprintf(lfid,'Everything saved\n');
     TotRunTime = toc(tMainID);
+    disp(TotRunTime);
     fprintf(lfid,'Total Run time = %f\n', TotRunTime);
     
     fclose('all');
-    % keyboard
-    %     if ParamObj.SaveMe
-    % Move everything
-    %         MoveStrTxt = sprintf('*%i.txt', ParamObj.trial);
-    %         MoveStrMat = sprintf('*%i.mat', ParamObj.trial);
-    %         movefile(MoveStrTxt,Path2Save{1});
-    %         movefile(MoveStrMat,Path2Save{1});
-    %         cd /home/mws/Documents/Research/BG/DDFT/Outputs
-    %     end
     
 catch err %Catch errors
     
