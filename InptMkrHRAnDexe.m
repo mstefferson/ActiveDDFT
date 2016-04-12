@@ -12,7 +12,7 @@ Move = 0; % Move files to a nice location
 SaveMe = 1;
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 14;
+trial    = 20;
 
 % Date
 DateTimeStart =  datestr(now);
@@ -90,7 +90,7 @@ RandomAmp      = 1;       % Random perturbation coeffs
 % 4: BHAB1
 % 5: BHAB2
 % 6: phiV
-StepMeth = 0; 
+StepMeth = 6; 
 
 %%%%%%%%%%%%%%%%%%%%% Physical Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Tmp      = 1;            % Temperature
