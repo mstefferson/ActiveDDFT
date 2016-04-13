@@ -116,7 +116,8 @@ try
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
         wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
     EvolvedDen = 1;
-    fprintf(lfid,'Made density object\n');
+    fprintf(lfid,'Ran Main Body\n');
+    fprintf('Ran Main Body\n');
     BodyRunTime  = toc(tBodyID);
     disp(BodyRunTime);
     fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
@@ -176,6 +177,7 @@ try
             end
             
             fprintf(lfid,'Made movies\n');
+            fprintf('Made movies\n');
             MovRunTime   = toc(tMovID);
             disp(MovRunTime);
             % Record how long it took
@@ -233,7 +235,8 @@ try
         end
     end
     % Save how long everything took
-    fprintf(lfid,'Everything saved\n');
+    fprintf(lfid,'Everything saved. Run finished\n');
+    fprintf('Everything saved. Run Finished. \n');
     TotRunTime = toc(tMainID);
     disp(TotRunTime);
     fprintf(lfid,'Total Run time = %f\n', TotRunTime);

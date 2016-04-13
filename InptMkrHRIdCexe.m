@@ -10,7 +10,7 @@ Move = 0; % Move files to a nice location
 SaveMe = 1;
 
 %%%%%%%% Trial %%%%%%%%%%%%
-trial    = 20;
+trial    = 100;
 
 % Date
 DateTimeStart =  datestr(now);
@@ -52,8 +52,8 @@ vD      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
 delta_t     = 1e-3; %time step
-t_record    = 0.4; %time interval for recording dynamics
-t_tot       = 40.0;   %total time
+t_record    = 0.1; %time interval for recording dynamics
+t_tot       = 1.0;   %total time
 ss_epsilon  = 1e-8;                          %steady state condition
 
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -90,7 +90,7 @@ RandomAmp   = 1;       % Random perturbation coeffs
 % 5: BHAB2
 % 6: Exponential Euler
 
-StepMeth = 6; 
+StepMeth = 4; 
 
 %%%%%%%%%%%%%%%%%%%%% Physical Parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Tmp      = 1;            % Temperature
