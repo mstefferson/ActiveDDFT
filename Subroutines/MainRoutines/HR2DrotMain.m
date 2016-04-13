@@ -280,6 +280,22 @@ catch err %Catch errors
     
 end %End try and catch
 
+%% Run Time Stuff
+global TimeCollector;
+global tind;
+
+TimeCollector(1,tind)  = ParamObj.Nx;
+TimeCollector(2,tind)  = TimeObj.N_time;
+TimeCollector(3,tind)  = ParamRunTime;
+TimeCollector(4,tind)  = TimeRunTime;
+TimeCollector(5,tind)  = GridRunTime;
+TimeCollector(6,tind)  = DiffRunTime;
+TimeCollector(7,tind)  = IntDenRunTime;
+TimeCollector(8,tind)  = BodyRunTime;
+TimeCollector(9,tind)  = OpRunTime;
+TimeCollector(10,tind)  = MovRunTime;
+TimeCollector(11,tind) = TotRunTime;
+
 % clc
 %close all
 end % End HR2DrotVgrExeMain.m
