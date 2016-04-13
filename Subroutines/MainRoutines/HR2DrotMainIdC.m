@@ -51,9 +51,9 @@ try
         'c', ParamVec(24), ...
         'Mob_pos',ParamVec(25),'Mob_rot',ParamVec(26), 'vD', ParamVec(27) );
    
-    fprintf('Read input and made ParamObj\n')
     ParamRunTime = toc(tParamID);
-    disp(ParamRunTime);
+    fprintf('Read input and made ParamObj: %.3g \n',ParamRunTime)
+    %disp(ParamRunTime);
 
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
@@ -77,27 +77,27 @@ try
     [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
         TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
     fprintf(lfid,'Made Time Obj\n');
-    fprintf('Made Time Obj\n')
     TimeRunTime = toc(tTimeID);
-    disp(TimeRunTime);
+    fprintf('Made Time Obj: %.3g \n', TimeRunTime)
+    %disp(TimeRunTime);
 
     %%%Make all the grid stuff%%%%%%%%%%%%%%
     tGridID = tic;
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
     fprintf(lfid,'Made grid\n');
-    fprintf('Made grid\n');
     GridRunTime = toc(tGridID);
-    disp(GridRunTime);
+    fprintf('Made grid: %.3g \n', GridRunTime);
+    %disp(GridRunTime);
     
     %Make diffusion coeff (send smallest dx dy for stability
     tDiffID = tic;
     [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
         ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
     fprintf(lfid,'Made diffusion object\n');
-    fprintf('Made diffusion object\n');
     DiffRunTime = toc(tDiffID);
-    disp(DiffRunTime);
+    fprintf('Made diffusion object: %.3g\n', DiffRunTime);
+    %disp(DiffRunTime);
     
     %Initialze density
     tIntDenID = tic;
@@ -107,9 +107,9 @@ try
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
     feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
     fprintf(lfid,'Made initial density\n');
-    fprintf('Made initial density\n');
     IntDenRunTime = toc(tIntDenID);
-    disp(IntDenRunTime);
+    fprintf('Made initial density: %.3g \n', IntDenRunTime);
+   %disp(IntDenRunTime);
 
     % Run the main code
     tBodyID      = tic;
@@ -117,9 +117,9 @@ try
         wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
     EvolvedDen = 1;
     fprintf(lfid,'Ran Main Body\n');
-    fprintf('Ran Main Body\n');
     BodyRunTime  = toc(tBodyID);
-    disp(BodyRunTime);
+    fprintf('Ran Main Body: %.3g \n', BodyRunTime);
+    %disp(BodyRunTime);
     fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
     
     % Store final density and transform
@@ -145,9 +145,9 @@ try
                 feq);
         end
         fprintf(lfid,'Made interaction order paramater object\n');
-        fprintf('Made interaction order paramater object\n');
         OpRunTime = toc(tOpID);
-        disp(OpRunTime);
+        fprintf('Made interaction order paramater object: %.3g \n', OpRunTime);
+        %disp(OpRunTime);
         fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
         
         if ParamObj.MakeMovies == 1
@@ -177,9 +177,9 @@ try
             end
             
             fprintf(lfid,'Made movies\n');
-            fprintf('Made movies\n');
             MovRunTime   = toc(tMovID);
-            disp(MovRunTime);
+            fprintf('Made movies: %.3g \n', MovRunTime);
+            %disp(MovRunTime);
             % Record how long it took
             fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);      
         end % End if movies
@@ -236,9 +236,9 @@ try
     end
     % Save how long everything took
     fprintf(lfid,'Everything saved. Run finished\n');
-    fprintf('Everything saved. Run Finished. \n');
     TotRunTime = toc(tMainID);
-    disp(TotRunTime);
+    fprintf('Everything saved. Run Finished: %.3g \n', TotRunTime);
+    %disp(TotRunTime);
     fprintf(lfid,'Total Run time = %f\n', TotRunTime);
     
     fclose('all');
