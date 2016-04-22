@@ -61,7 +61,7 @@ rho = real(rho);
 % Normalize it again just in case
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
+CurrentNorm = trapz_periodic(GridObj.x,trapz_periodic(GridObj.y,trapz_periodic(GridObj.phi,rho,3),2),1);
 rho = rho .* ParamObj.Norm ./ CurrentNorm;
 
 end
