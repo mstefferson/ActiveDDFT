@@ -10,6 +10,7 @@
 *.avi
 *~
 *.log
+*.mat
 
 # Directories
 Outputs/
