@@ -70,12 +70,9 @@ for ii = 1:numRuns
   disp(RhoInit);
   disp(TimeObj);
 
-  if Flags.AnisoDiff == 1
-    [ DidIBreak,SteadyState,MaxReldRho] = ...
-      HR2DrotMain( filename, ParamObj, TimeObj, RhoInit, Flags );
-  else
-    fprintf('Not written yet\n');
-  end
+  [DidIBreak,SteadyState,MaxReldRho] = ...
+      HR2DrotMain( filename, ParamObj, TimeObj, RhoInit, Flags )
+      
   
 end
 %%

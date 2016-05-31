@@ -11,6 +11,12 @@ try
     EvolvedDen = 0;DenFinal = 0;DenFTFinal = 0;GridObj = 0;
     DidIBreak = 0;SteadyState = 0;MaxReldRho = 0;
     
+    if Flags.AnisoDiff == 1
+        fprintf('Running Anisotropic Diffusion\n');
+    else
+        fprintf('Running Isotropic Diffusion\n');
+    end
+    
     %     keyboard
     tMainID  = tic;
 
@@ -33,11 +39,16 @@ try
   
     %Make diffusion coeff (send smallest dx dy for stability
     tDiffID = tic;
-    [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
-        ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
-        TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
-        GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
-    
+    if Flags.AnisoDiff == 1
+      [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
+          ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
+          TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
+          GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
+    else
+       [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
+            ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
+    end
+
     fprintf(lfid,'Made diffusion object\n');
     DiffRunTime = toc(tDiffID);
     fprintf('Made diffusion object: %.3g\n', DiffRunTime);
@@ -61,8 +72,13 @@ try
     % Run the main code
     tBodyID      = tic;
     
-    [DenRecObj]  = HR2DrotDenEvolverFTBody(...
-    wfid, lfid, rho, ParamObj, TimeObj, GridObj,DiffMobObj, Flags, RhoInit.feq);
+    if Flags.AnisoDiff == 1
+      [DenRecObj]  = HR2DrotDenEvolverFTBody(...
+        wfid, lfid, rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq);
+    else
+      [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
+        wfid,lfid,rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq);
+    end
     %     keyboard
     EvolvedDen = 1;
     fprintf(lfid,'Ran Main Body\n');
@@ -91,7 +107,7 @@ try
             [OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
                 TimeRecVecTemp,GridObj,...
                 DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
-                feq);
+                RhoInit.feq);
         end
         fprintf(lfid,'Made interaction order paramater object\n');
         OpRunTime = toc(tOpID);
@@ -107,7 +123,7 @@ try
             %         keyboard
             HoldX = ParamObj.Nx /2 + 1;
             HoldY = ParamObj.Ny /2 + 1;
-            
+           
             DistRec =  reshape( DenRecObj.Density_rec(HoldY, HoldY, : , :),...
                     [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
             

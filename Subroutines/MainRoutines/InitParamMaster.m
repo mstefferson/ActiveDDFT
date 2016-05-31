@@ -28,7 +28,7 @@ ParamMaster.bc      = 1.45; % Scaled concentration (vec)
 ParamMaster.L_rod   = 1;  % Length of the rods
 ParamMaster.Lx      = [10]*ParamMaster.L_rod;  % Box length (vec)
 ParamMaster.Ly      = [10]*ParamMaster.L_rod;  % Box length (vec)
-ParamMaster.vD      = 30.0; % Driving velocity (vec)
+ParamMaster.vD      = [0]; % Driving velocity (vec)
 ParamMaster.Tmp      = 1;            % Temperature
 % mobility
 Mob = 1;
@@ -43,7 +43,7 @@ ParamMaster.Mob_rot   = 6 * Mob / ParamMaster.L_rod^2;
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
 TimeObj.delta_t     = 1e-3; % time step
 TimeObj.t_record    = 0.1; % time interval for recording dynamics
-TimeObj.t_tot       = 10.0; % total time
+TimeObj.t_tot       = 1.0; % total time
 TimeObj.ss_epsilon  = 1e-8;  % steady state condition
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
