@@ -20,3 +20,4 @@ data/*
 
 # Certain files
 Runner.m
+InitParams.m

@@ -1,5 +1,6 @@
-% Anisotropic diffusion
-% Input creater for HR2DrotMainDr
+% InitParamMaster
+%
+% Parameter inializer for RunHardRod
 
 %cd ~/DDFT/HardRodML
 CurrentDir = pwd;
@@ -98,9 +99,6 @@ end
 b       = ParamMaster.L_rod^2/pi;               % Average excluded volume per particle
 c       = ParamMaster.bc / b;                   % Concentration
 ParamMaster.Mob_pos = Mob;
-
-%%%%%%%%%%%%%% DO THIS IN RUN %%%%%%%%%%%%%
-
 
 % Fix the time
 [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
