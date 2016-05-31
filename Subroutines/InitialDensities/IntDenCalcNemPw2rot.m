@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcPerturbNemPw2Drot(GridObj,ParamObj)
+function [rho] = IntDenCalcNemPw2rot(GridObj,ParamObj, RhoInit)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -25,7 +25,7 @@ bc = 1.6;    %Just give nem concentration
 % Distribution stuff
 Nc    = 20;            % Number of Coefficients
 
-[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,GridObj.phi,bc); % Calculate coeff
+[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,GridObj.phi,bc); % Calculate coeff
 f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
 % plot(GridObj.phi,f)
 
@@ -53,5 +53,5 @@ CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(G
 rho_eq = rho .* ParamObj.Norm ./ CurrentNorm;
 % keyboard
 % Perturb it
-[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj);
+[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj, RhoInit);
 % keyboard

@@ -3,56 +3,16 @@
 % Program is the main() for running the diffusion of 2D hard rods with
 % orientation. Program handles interactions using DDFT
 
-function  [DenFinal, DenFTFinal, GridObj, ParamObj,TimeObj,...
-    DidIBreak,SteadyState,MaxReldRho] = ...
-    HR2DrotMain(InputFile)
+function  [ DidIBreak,SteadyState,MaxReldRho] = ...
+    HR2DrotMain( filename, ParamObj, TimeObj, RhoInit, Flags ) 
 % Add paths (this should already be added, but just to be careful)
 % Save error messages in file
 try
-    EvolvedDen = 0;DenFinal = 0;DenFTFinal = 0;GridObj = 0;ParamObj = 0;
-    TimeObj = 0;DidIBreak = 0;SteadyState = 0;MaxReldRho = 0;
+    EvolvedDen = 0;DenFinal = 0;DenFTFinal = 0;GridObj = 0;
+    DidIBreak = 0;SteadyState = 0;MaxReldRho = 0;
     
     %     keyboard
     tMainID  = tic;
-
-    %Grab the parameters
-    tParamID = tic;
-    % keyboard
-    DataTemp    = importdata(InputFile);
-    ParamVec    = DataTemp.data(1,:);
-    TimeVec     = DataTemp.data(2,~isnan(DataTemp.data(2,:)));    %Pull out the time stuff
-    FileNameMat = DataTemp.textdata(1);
-    Path2Save   = DataTemp.textdata(2);
-    IntDenType  = DataTemp.textdata(3);
-    LoadName    = DataTemp.textdata(4);
-    
-    % Make some  objects
-    %     ParamNmVec = {'trial' 'Interactions' 'Nx' 'Ny' 'Nm' 'Lx' 'Ly' 'L_rod' 'Diam' 'Eta_visc'...
-    %         'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' 'NumModesM' 'bc'};
-    ParamNmVec = {'trial' 'Interactions' 'Drive' 'StepMeth' 'IntCond' 'Movies' 'SaveMe'...
-        'Nx' 'Ny' 'Nm' 'Lx' 'Ly' 'L_rod' 'Diam' 'Eta_visc'...
-        'kB' 'Tmp' 'Norm' 'WeightPos' 'WeightAng' 'NumModesX' 'NumModesY' ...
-        'NumModesM' 'bc' 'Mob_pos','Mob_rot'  };
-    TimeNmVec  = {'delta_t' 't_record' 't_tot' 'ss_epsilon'};
-    
-    ParamObj   = struct('NmVec',{ParamNmVec},'ValVec',...
-        ParamVec,'trial',ParamVec(1),...
-        'Interactions',ParamVec(2), 'Drive',ParamVec(3),...
-        'StepMeth', ParamVec(4), 'IntCond', ParamVec(5),...
-        'MakeOP',ParamVec(6),'MakeMovies',ParamVec(7),'SaveMe',ParamVec(8),...
-        'Nx', ParamVec(9),'Ny', ParamVec(10),'Nm', ParamVec(11),...
-        'Lx', ParamVec(12),'Ly', ParamVec(13),'L_rod', ParamVec(14), ...
-        'Tmp',ParamVec(15), 'Norm',ParamVec(16), 'WeightPos',ParamVec(17), ...
-        'WeightAng',ParamVec(18), 'Random',ParamVec(19),...
-        'NumModesX',ParamVec(20), 'NumModesY',ParamVec(21), ...
-        'NumModesM', ParamVec(22),'bc',ParamVec(23), ...
-        'c', ParamVec(24), ...
-        'Mob_par',ParamVec(25),'Mob_perp',ParamVec(26),...
-        'Mob_rot',ParamVec(27), 'vD', ParamVec(28) );
-    
-    ParamRunTime = toc(tParamID);
-    fprintf('Read input and made ParamObj: %.3g \n',ParamRunTime)
-    %disp(ParamRunTime);
 
     % Create a file that holds warning print statements
     WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
@@ -62,32 +22,14 @@ try
     lfid      = fopen(LocString,'a+');    % a+ allows to append data
     fprintf(lfid,'Starting main, current code\n');
     
-    %Time Recording
-    tTimeID = tic;
-    N_time   = ceil(TimeVec(3)/TimeVec(1)); %number of time steps
-    N_record = ceil(TimeVec(3)/TimeVec(2)); %number of time points to record. Does not include initial density
-    N_count  = ceil(TimeVec(2)/TimeVec(1)); %spacing between times to record
-    
-    TimeObj = struct('TimeNmVec',{TimeNmVec},'TimeVecOrg',{TimeVec},...
-        'delta_t',TimeVec(1), 't_record',TimeVec(2), 't_tot',TimeVec(3), 'ss_epsilon',TimeVec(4),...
-        'N_time', N_time, 'N_record',N_record,'N_count',N_count);
-    
-    % Fix the time
-    [TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
-        TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
-    fprintf(lfid,'Made Time Obj\n');
-    TimeRunTime = toc(tTimeID);
-    fprintf('Made Time Obj: %.3g \n', TimeRunTime)
-    %disp(TimeRunTime);
-
-%%%Make all the grid stuff%%%%%%%%%%%%%%
+    % Make remaining objects
+    % Make all the grid stuff % 
     tGridID = tic;
     [GridObj] = GridMakerPBCxk(...
         ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
     fprintf(lfid,'Made Grid\n');
     GridRunTime = toc(tGridID);
     fprintf('Made grid: %.3g \n', GridRunTime);
-    %disp(GridRunTime);
   
     %Make diffusion coeff (send smallest dx dy for stability
     tDiffID = tic;
@@ -99,31 +41,34 @@ try
     fprintf(lfid,'Made diffusion object\n');
     DiffRunTime = toc(tDiffID);
     fprintf('Made diffusion object: %.3g\n', DiffRunTime);
-    %disp(DiffRunTime);
  
     %Initialze density
     tIntDenID = tic;
-    [rho] = MakeConc(GridObj,ParamObj);
+    [rho] = MakeConc(GridObj,ParamObj,RhoInit);
     Nc    = 20;
-    % Equilib distribution
-    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
-    feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
+    % Equilib distribution. Don't let bc = 1.5
+    if 1.499 < ParamObj.bc && ParamObj.bc < 1.501
+      RhoInit.bc = 1.502;
+    else
+      RhoInit.bc = ParamObj.bc;
+    end
+    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,RhoInit.bc); % Calculate coeff
+    RhoInit.feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
     fprintf(lfid,'Made initial density\n');
     IntDenRunTime = toc(tIntDenID);
     fprintf('Made initial density: %.3g \n', IntDenRunTime);
-    %disp(IntDenRunTime);
 
     % Run the main code
     tBodyID      = tic;
     
     [DenRecObj]  = HR2DrotDenEvolverFTBody(...
-    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq);
+    wfid, lfid, rho, ParamObj, TimeObj, GridObj,DiffMobObj, Flags, RhoInit.feq);
     %     keyboard
     EvolvedDen = 1;
     fprintf(lfid,'Ran Main Body\n');
     BodyRunTime  = toc(tBodyID);
     fprintf('Ran Main Body: %.3g \n', BodyRunTime);
-    %disp(BodyRunTime);
+    
     fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
     
     % Store final density and transform
@@ -134,13 +79,13 @@ try
     MaxReldRho  = DenRecObj.MaxReldRho;
     
     % Run movies if you want
-    if ParamObj.MakeOP  == 1
+    if Flags.MakeOP  == 1
         tOpID           = tic ;
         %                 keyboard
         if  DenRecObj.DidIBreak == 0
             [OrderParamObj] = CPNrecMaker(...
                 ParamObj.Nx,ParamObj.Ny,DenRecObj.TimeRecVec,...
-                GridObj,DenRecObj.Density_rec,feq);
+                GridObj,DenRecObj.Density_rec,RhoInit.feq);
         else %Don't incldue the blowed up denesity for movies. They don't like it.
             TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1);
             [OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
@@ -154,7 +99,7 @@ try
         %disp(OpRunTime);
         fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
         
-        if ParamObj.MakeMovies == 1
+        if Flags.MakeMovies == 1
             % Build OP records
             
             % Make matlab movies
@@ -171,7 +116,6 @@ try
                 OPMovieMakerTgtherDirAvi(ParamObj.trial,...
                     GridObj.x,GridObj.y,GridObj.phi,OrderParamObj,...
                     DistRec,OrderParamObj.TimeRec);
-
             
             else
                 
@@ -214,11 +158,11 @@ try
         
 %         keyboard
         ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-            ParamObj.Nm, DenRecObj.bc,ParamObj.vD,  ParamObj.SaveMe, ParamObj.trial)
+            ParamObj.Nm, DenRecObj.bc,ParamObj.vD,  Flags.SaveMe, ParamObj.trial)
    
     end % if OP
     
-    if ParamObj.SaveMe
+    if Flags.SaveMe
         MemObj = 0;
         % Save all parameters
         
@@ -233,7 +177,7 @@ try
         save(ParamStr,'ParamObj','-v7.3')
         save(GridStr,'GridObj','-v7.3')
         
-        if ParamObj.MakeOP
+        if Flags.MakeOP
             OpStr = sprintf('OP_%i',ParamObj.trial);
             save(OpStr,'OrderParamObj','-v7.3')
         end
@@ -263,7 +207,7 @@ catch err %Catch errors
     
     keyboard
     %    keyboard
-    if ParamObj.SaveMe
+    if Flags.SaveMe
         
         TimeStr = sprintf('TimeObj_%i',ParamObj.trial);
         ParamStr = sprintf('ParamObj_%i',ParamObj.trial);

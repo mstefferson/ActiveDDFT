@@ -1,8 +1,8 @@
-function [rho] = IntDenCalcGauss2Drot(GridObj,ParamObj)
+function [rho] = IntDenCalcGauss2Drot(GridObj,ParamObj,RhoInit)
 
 %Add in some slight deviation from a uniform density at specific modes.
 % Here, our perturbation is a gaussian.
-% Now for modes: 0 means uniform, 1 means Gaussian 
+% Now for modes: 0 means uniform, 1 means Gaussian
 % Density is normalized so that
 %
 % # of particles           = int( rho(x,y,phi) dx dy dphi )
@@ -20,11 +20,11 @@ AngMax = 2*pi * rand();
 %find closest angle
 ClosestMaxAngInd = find( GridObj.phi  - AngMax ==  min(abs( GridObj.phi - AngMax) ) ) ;
 GaussVecTemp = [ exp( - ( GridObj.phi(1:ParamObj.Nm/2) ) .^2 / var^2 ) ...
-                 exp( - ( GridObj.phi(ParamObj.Nm/2+1:end) - 2*pi ) .^2 / var^2 )];
+  exp( - ( GridObj.phi(ParamObj.Nm/2+1:end) - 2*pi ) .^2 / var^2 )];
 distTemp = circshift(GaussVecTemp',ClosestMaxAngInd)';
- 
+
 for i = 1:ParamObj.Nm
-rho(:,:,i) = distTemp(i);
+  rho(:,:,i) = distTemp(i);
 end
 
 % keyboard
@@ -33,6 +33,6 @@ end
 CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
 rho = rho .* ParamObj.Norm ./ CurrentNorm;
 
-[rho] = PwDenPerturber2Drot(rho,ParamObj,GridObj);
+[rho] = PwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit);
 
 end %end function

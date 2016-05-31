@@ -1,12 +1,11 @@
-% IntDen2DrotCalcPerturbEqSepPw.m
-%
+% IntDen2DrotCalcPerturbEqPw.m 
 % Description: creates the initial density in 2 spatial directions and one
 % rotation DoF. The initial density of the form
-% rho = rho_equilibrium + \sum A_k exp( i k_x x ) + \sum A_k exp( i k_y y ) ...
-%       + \sum A_k exp( i k_m phi )
+% rho = rho_equilbrium + \sum A_k exp( i (k_x x + k_y y + k_phi phi)
 % A_k is an input parameter
 
-function [rho] = IntDenCalcPerturbEqSepPw2Drot(GridObj,ParamObj)
+
+function [rho] = IntDenCalcEqPw2Drot(GridObj,ParamObj, RhoInit)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -21,14 +20,14 @@ function [rho] = IntDenCalcPerturbEqSepPw2Drot(GridObj,ParamObj)
 % 1                        = int( f(phi) dphi)
 
 % Distribution stuff
-Nc    = 10;            % Number of Coefficients
+Nc    = 20;            % Number of Coefficients
 
-[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
+[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
 f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
 % plot(GridObj.phi,f)
 
 % Initialize rho
-rho = ParamObj.Norm / (2 .* pi .* ParamObj.Lx .* ParamObj.Lx) .* ...
+rho = ParamObj.c .* ...
     ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
 
 % Map distribution to a homogeneous system
@@ -36,12 +35,20 @@ for i = 1:ParamObj.Nm
     rho(:,:,i) = rho(:,:,i) .* f(i);
 end
 
-
+% ParamObj.Norm / (ParamObj.Lx .* ParamObj.Lx);
+% b = ParamObj.L_rod^2 / pi;
+% c =  ParamObj.bc / b;
+% f_reshape =  reshape(rho(17,17,:) / c  , 1, 32 );
+% trapz_periodic(GridObj.phi,f)
+% trapz_periodic(GridObj.phi,f_reshape)
+% keyboard
+% Normalize it
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho = rho .* ParamObj.Norm ./ CurrentNorm;
+CurrentNorm = trapz_periodic(GridObj.x,trapz_periodic(GridObj.y,trapz_periodic(GridObj.phi,rho,3),2),1);
+rho_eq = rho .* ParamObj.Norm ./ CurrentNorm;
+% keyboard
 % Perturb it
-[rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj);
-
+[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj,RhoInit);
+% keyboard
 end %end function

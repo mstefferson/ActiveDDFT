@@ -24,7 +24,7 @@
 
 
 function [DenRecObj] = HR2DrotDenEvolverFTBody(...
-    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj,feq)
+    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj, Flags,feq)
 
 fprintf(lfid,'In body of code\n');
 % Create a text file that tells user what percent of the program has
@@ -51,9 +51,9 @@ rhoVec_FT = reshape(rho_FT,N3,1);
 global Density_rec
 global DensityFT_rec
 %Initialize matrices that change size the +1 is to include initial density
-if ParamObj.SaveMe == 1
-    Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_record + 1 );      % Store density amplitudes
-    DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_record + 1 );      % Store k-space amplitdues
+if Flags.SaveMe == 1
+    Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_rec );      % Store density amplitudes
+    DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_rec );      % Store k-space amplitdues
     
     %Initialize records
     DensityFT_rec(:,:,:,1)   = rho_FT;
@@ -73,7 +73,7 @@ Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
     Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ));
 
 %Hard rod interactions
-if ParamObj.Interactions
+if Flags.Interactions
     GammaExVec_FT  = reshape( ...
         dRhoIntCalcVcFt( rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj), ...
         N3,1);
@@ -83,39 +83,39 @@ else
 end
 
 % Take first step- Euler
-if( ParamObj.StepMeth == 0 ) % AB 1
+if( Flags.StepMeth == 0 ) % AB 1
 
   NlPf =  dt;
  [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf(...
   Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
 
-elseif( ParamObj.StepMeth == 1 ) % AB 2
+elseif( Flags.StepMeth == 1 ) % AB 2
 
   NlPf = 3 * dt / 2;
   NlPrevPf = dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf( ...
    Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
 
-elseif( ParamObj.StepMeth == 2 )  % HAB 1
+elseif( Flags.StepMeth == 2 )  % HAB 1
   
   NlPf = dt;
   [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
    Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
 
-elseif( ParamObj.StepMeth == 3 ) % HAB 2
+elseif( Flags.StepMeth == 3 ) % HAB 2
 
   NlPf = 3 * dt / 2 ;
   NlPrevPf = dt / 2 ;
   [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
    Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
 
-elseif( ParamObj.StepMeth == 4 ) % BHAB 1
+elseif( Flags.StepMeth == 4 ) % BHAB 1
   
   NlPf = dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
    Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
 
-elseif( ParamObj.StepMeth == 5 ) % BHAB 2
+elseif( Flags.StepMeth == 5 ) % BHAB 2
   
   NlPf = dt ;
   NlPrevPf = dt / 2;
@@ -124,7 +124,7 @@ elseif( ParamObj.StepMeth == 5 ) % BHAB 2
   [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
    Lop, rhoVec_FT, GammaExVec_FT, dt / 2, dt );
 
-elseif( ParamObj.StepMeth == 6 ) % phiV
+elseif( Flags.StepMeth == 6 ) % phiV
 
   [rhoVec_FTnext, ticExpInt] = DenStepperPhiV( ...
    Lop, rhoVec_FT, GammaExVec_FT, dt );
@@ -150,13 +150,13 @@ for t = 1:TimeObj.N_time-1
     rhoVec_FT      = rhoVec_FTnext;
     
     % Calculate rho if there is driving or interactions
-    if ParamObj.Interactions || ParamObj.Drive
+    if Flags.Interactions || ParamObj.Drive
         rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
         rho    = real(ifftn(ifftshift(rho_FT)));
     end
     
     %Hard rod interactions
-    if ParamObj.Interactions == true
+    if Flags.Interactions == true
         GammaExVec_FT  = reshape( ...
             dRhoIntCalcVcFt( ...
             rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj),...
@@ -164,37 +164,37 @@ for t = 1:TimeObj.N_time-1
     end
        
     % Take step
-    if( ParamObj.StepMeth == 0 ) 
+    if( Flags.StepMeth == 0 ) 
 %      [rhoVec_FTnext, ticExptemp] = DenStepperAB1( ...
 %      Lop, rhoVec_FT, GammaExVec_FT, dt );
      [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
-    elseif( ParamObj.StepMeth == 1 )
+    elseif( Flags.StepMeth == 1 )
        %[rhoVec_FTnext, ticExptemp] = DenStepperAB2(... 
           %Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
-    elseif( ParamObj.StepMeth == 2 ) 
+    elseif( Flags.StepMeth == 2 ) 
        %[rhoVec_FTnext, ticExptemp] = DenStepperHAB1( ...
        %Lop, rhoVec_FT, GammaExVec_FT,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
-    elseif( ParamObj.StepMeth == 3 )
+    elseif( Flags.StepMeth == 3 )
        %[rhoVec_FTnext, ticExptemp] = DenStepperHAB2( ...
           %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
          Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FT, NlPf, NlPrevPf, dt  );
-    elseif( ParamObj.StepMeth == 4 )
+    elseif( Flags.StepMeth == 4 )
        %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB1( ...
        %Lop, rhoVec_FT, GammaExVec_FT,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
-    elseif( ParamObj.StepMeth == 5 )
+    elseif( Flags.StepMeth == 5 )
       %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB2( ...
       %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
-    elseif( ParamObj.StepMeth == 6 )
+    elseif( Flags.StepMeth == 6 )
       [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
          Lop, rhoVec_FT, GammaExVec_FT, dt );
     end
@@ -209,7 +209,7 @@ for t = 1:TimeObj.N_time-1
     
     %Save everything (this includes the initial state)
     if (mod(t,TimeObj.N_count)== 0)
-        if ParamObj.SaveMe
+        if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTracker(wfid,tfid,TimeObj,t,...
                 Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
@@ -231,13 +231,13 @@ fprintf(lfid,'Finished master time loop\n');
 %  keyboard
 
 % Update last rho
-if ParamObj.SaveMe 
+if Flags.SaveMe 
     if ShitIsFucked == 0 && SteadyState == 0
         t =  t + 1;
         rhoVec_FTprev  = rhoVec_FT;
         rhoVec_FT      = rhoVec_FTnext;
         rho_FT         = reshape(rhoVec_FT,Nx,Ny,Nm);
-        if ParamObj.SaveMe
+        if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTracker(wfid,tfid,TimeObj,t,...
                 Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
@@ -263,7 +263,7 @@ end
 % Get rid of zeros in record matrices
 Record_hold   = 1:j_record;
 TimeRecVec    = (0:j_record-1) * TimeObj.t_record;
-if ParamObj.SaveMe 
+if Flags.SaveMe 
     Density_rec   = Density_rec(:,:,:,Record_hold);
     DensityFT_rec = DensityFT_rec(:,:,:,Record_hold);
 else

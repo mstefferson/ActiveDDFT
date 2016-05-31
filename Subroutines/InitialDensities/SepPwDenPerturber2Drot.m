@@ -4,31 +4,31 @@
 % \sum epsilon_k exp( i k_x x ) + \sum epsilon_k exp( i k_y y ) ...
 %       + \sum epsilon_k exp( i k_m phi )
 
-function [rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj)
+function [rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit)
 
 %Perturbation coeff
-Coeff = ParamObj.WeightPos;
+Coeff = RhoInit.WeightPos;
 %Change in x
-for i = -ParamObj.NumModesX:ParamObj.NumModesX
-    
-    
-    rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-        .* exp( sqrt(-1) .* GridObj.kx(ParamObj.Nx/2+1+i) .* GridObj.x3D ) ; ...
+for i = -RhoInit.NumModesX:RhoInit.NumModesX
+  
+  
+  rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
+    .* exp( sqrt(-1) .* GridObj.kx(ParamObj.Nx/2+1+i) .* GridObj.x3D ) ; ...
 end
 
 %Change in y
-for i = -ParamObj.NumModesY:ParamObj.NumModesY
-     
-    rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-        .* exp( sqrt(-1) .* GridObj.ky(ParamObj.Ny/2+1+i) .* GridObj.y3D ) ; ...
+for i = -RhoInit.NumModesY:RhoInit.NumModesY
+  
+  rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
+    .* exp( sqrt(-1) .* GridObj.ky(ParamObj.Ny/2+1+i) .* GridObj.y3D ) ; ...
 end
 
-Coeff = ParamObj.WeightAng;
+Coeff = RhoInit.WeightAng;
 %Change in phi
-for i = -ParamObj.NumModesM:ParamObj.NumModesM
-     
-    rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-        .* exp( sqrt(-1) .* GridObj.km(ParamObj.Nm/2+1+i) .* GridObj.phi3D ) ; ...
+for i = -RhoInit.NumModesM:RhoInit.NumModesM
+  
+  rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
+    .* exp( sqrt(-1) .* GridObj.km(ParamObj.Nm/2+1+i) .* GridObj.phi3D ) ; ...
 end
 
 % Take real part

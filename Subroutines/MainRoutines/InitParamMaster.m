@@ -51,6 +51,7 @@ RhoInitMaster.IntCond     = [1]; % IC indicator (vec)
 RhoInitMaster.NumModesX   = 8; % Perturb # modes x
 RhoInitMaster.NumModesY   = 8; % Perturb # modes y
 RhoInitMaster.NumModesM   = 8; % Perturb # modes m
+RhoInitMaster.LoadName    = ''; % File name to load if IC 3
 % Don't perturb more more than you are allowed to
 if( RhoInitMaster.NumModesX >= ParamMaster.Nx / 2 ); 
   RhoInitMaster.NumModesX = floor(ParamMaster.Nx / 2) - 2; 
@@ -96,8 +97,7 @@ end
 
 
 % Concentration and rod stuff
-b       = ParamMaster.L_rod^2/pi;               % Average excluded volume per particle
-c       = ParamMaster.bc / b;                   % Concentration
+ParamMaster.b  = ParamMaster.L_rod^2/pi;               % Average excluded volume per particle
 ParamMaster.Mob_pos = Mob;
 
 % Fix the time
