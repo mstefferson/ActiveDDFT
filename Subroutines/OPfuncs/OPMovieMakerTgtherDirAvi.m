@@ -11,11 +11,24 @@ DeltaY  = floor(Ny / DivNumY);
 SubIndX = 1:DeltaX:(Nx + 1 - DeltaX);
 SubIndY = 1:DeltaY:(Ny + 1 - DeltaY);
 
-% Set up figure
+% Set up figure, make it a square 0.8 of
+% smallest screen dimension
+ScreenSize = get(0,'screensize');
+ScreenWidth = ScreenSize(3); ScreenHeight = ScreenSize(4);
+FigWidth    = floor( ScreenHeight * .8 );
+FigHeight   =  floor( ScreenHeight * .8);
+FigPos      = [ floor( 0.5 * ( ScreenWidth - FigWidth ) ) ...
+  floor( 0.5 * (ScreenHeight - FigHeight ) ) ...
+  FigWidth FigHeight];
+
+%Build a square box set by smallest dimension of screen
+
 Fig = figure();
 set(Fig, 'WindowStyle', 'normal');
-PosVec = [680 558 1200 800];
-Fig.Position = PosVec;
+Fig.Position = FigPos;
+
+%PosVec = [680 558 1200 800];
+%Fig.Position = PosVec;
 
 %Initialize the movie structure
 Mov = VideoWriter(MovStr);
@@ -25,7 +38,6 @@ open(Mov);
 %%%% Concentration %%%%%
 nFrames = length(TimeRec);
 
-% keyboard
 set(gcf,'renderer','zbuffer')
 
 axh1 = subplot(2,2,1); % Save the handle of the subplot
@@ -66,7 +78,6 @@ set(axh4,'NextPlot','replaceChildren',...
 axis square
 xlabel('x'); ylabel('y')
 
-% keyboard
 for ii = 1:nFrames
 %     keyboard
     %     set(axh1,'position',axpos1,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbarsubplot(1,2,2);
@@ -77,7 +88,6 @@ for ii = 1:nFrames
     title(axh1,TitlStr)
     
     % Polar order
-%     keyboard
     subplot(axh2);
     set(axh2,'NextPlot','replaceChildren',...
         'CLim',[0 max(max(max(OP.POP_rec)))],'YDir','normal');
@@ -119,7 +129,8 @@ for ii = 1:nFrames
     %     keyboard
     
 %     Fr = getframe(Fig,[74 47 650 350]);
-    Fr = getframe(Fig,[0 0 PosVec(3) PosVec(4)]);
+    Fr = getframe(Fig);
+    %Fr = getframe(Fig,[0 0 PosVec(3) PosVec(4)]);
     writeVideo(Mov,Fr);
     
 %     if ii ~= nFrames

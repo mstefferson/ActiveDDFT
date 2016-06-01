@@ -84,7 +84,7 @@ for ii = 1:numRuns
   disp(TimeObj);
 
   [DidIBreak,SteadyState,MaxReldRho] = ...
-      HR2DrotMain( filename, ParamObj, TimeObj, RhoInit, Flags )
+      HR2DrotMain( filename, ParamObj, TimeObj, RhoInit, Flags );
       
   
 end
