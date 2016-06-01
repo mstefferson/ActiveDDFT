@@ -1,4 +1,4 @@
-function ampPlotterFT(FTmat2plot, FTind2plot, TimeRec, Nx, Ny, Nm, bc, vD, SaveMe,trial)
+function ampPlotterFT(FTmat2plot, FTind2plot, TimeRec, Nx, Ny, Nm, bc, vD, trial)
 
 kx0 = Nx / 2 + 1;
 ky0 = Ny / 2 + 1;
@@ -35,11 +35,6 @@ for i = 1:8
 %     textbp('helloasdfadfa')
 end
 
-if SaveMe
-figtl = sprintf('AmpFT%d',trial);
-savefig(gcf,figtl)
-saveas(gcf, figtl,'jpg')
-end
 
 % keyboard
 end

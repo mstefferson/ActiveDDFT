@@ -14,7 +14,7 @@ FlagMaster.MakeMovies   = 1; % No movies if save is zero
 FlagMaster.MakeOP       = 1; % No OPs if save is zero
 FlagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
 FlagMaster.SquareBox    = 0; % Forces box to be square
-FlagMaster.StepMeth     = [1]; % Stepping (integrating) method (vec)
+FlagMaster.StepMeth     = [0]; % Stepping (integrating) method (vec)
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
@@ -105,7 +105,7 @@ ParamMaster.Mob_pos = Mob;
         TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
 
 % Turn movies off is Save is off
-if FlagMaster.SaveMe == 0; FlagMaster.MakeOP = 0; FlagMaster.MakeMovies = 0;;end
+if FlagMaster.SaveMe == 0; FlagMaster.MakeOP = 0; FlagMaster.MakeMovies = 0;end
 if FlagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
 if ParamMaster.vD  == 0; FlagMaster.Drive = 0; else FlagMaster.Drive = 1;end
 

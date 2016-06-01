@@ -3,6 +3,11 @@
 DateTimeStart =  datestr(now);
 fprintf('Starting RunHardRod: %s\n', DateTimeStart);
 
+% Make Output Directories
+if ~exist('runfiles', 'dir'); mkdir('./runfiles'); end;
+if ~exist('runOPfiles', 'dir'); mkdir('./runOPfiles'); end;
+if ~exist('analyzedfiles', 'dir'); mkdir('./analyzedfiles'); end;
+
 % Grab initial parameters
 if exist('Params.mat','file') == 0;
   if exist('InitParams.m','file') == 0;

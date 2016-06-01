@@ -1,4 +1,4 @@
-function OPMovieMakerTgtherAvi(trial,x,y,phi,Crec,NOrec,POrec,DistRec,TimeRec)
+function OPMovieMakerTgtherAvi(MovStr,x,y,phi,Crec,NOrec,POrec,DistRec,TimeRec)
 
 % keyboard
 
@@ -9,7 +9,6 @@ PosVec = [680 558 1200 800];
 Fig.Position = PosVec;
 
 %Initialize the movie structure
-MovStr = sprintf('OPmov%.d.avi',trial);
 Mov = VideoWriter(MovStr);
 Mov.FrameRate = 4;
 open(Mov);

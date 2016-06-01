@@ -1,5 +1,5 @@
 
-function OPMovieMakerTgtherDirAvi(trial,x,y,phi,OP,DistRec,TimeRec)
+function OPMovieMakerTgtherDirAvi(MovStr,x,y,phi,OP,DistRec,TimeRec)
 % Set up a indice vector so quiver is too crowded
 Nx = length(x);
 Ny = length(y);
@@ -18,7 +18,6 @@ PosVec = [680 558 1200 800];
 Fig.Position = PosVec;
 
 %Initialize the movie structure
-MovStr = sprintf('OPmovDir%.d.avi',trial);
 Mov = VideoWriter(MovStr);
 Mov.FrameRate = 4;
 open(Mov);
