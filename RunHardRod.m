@@ -3,6 +3,10 @@
 DateTimeStart =  datestr(now);
 fprintf('Starting RunHardRod: %s\n', DateTimeStart);
 
+% Add Subroutine path
+CurrentDir = pwd;
+addpath( genpath( [CurrentDir '/Subroutines'] ) );
+
 % Make Output Directories
 if ~exist('runfiles', 'dir'); mkdir('./runfiles'); end;
 if ~exist('runOPfiles', 'dir'); mkdir('./runOPfiles'); end;
@@ -28,6 +32,10 @@ if Flags.AnisoDiff  == 1;
 else
   fprintf('Isotropic Hard Rod \n')
 end
+
+% Fix the time
+[TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
+        TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
 
 % Make paramMat 
 [paramMat, numRuns] = MakeParamMat( ParamObj, RhoInit, Flags );
@@ -80,6 +88,8 @@ for ii = 1:numRuns
       
   
 end
+
+delete Params.mat
 %%
 %if  strcmp( IntConcStr,'PlaneWaveEq' ) || strcmp( IntConcStr,'SepPWeq' )
 %if 1.499 < bc && bc < 1.501

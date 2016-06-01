@@ -2,15 +2,11 @@
 %
 % Parameter inializer for RunHardRod
 
-%cd ~/DDFT/HardRodML
-CurrentDir = pwd;
-addpath( genpath( CurrentDir ) );
-
 % Main FlagMaster
 FlagMaster.SaveMe       = 1; % Saving
 FlagMaster.AnisoDiff    = 1; % Aniso = 1. Iso = 0
 FlagMaster.Interactions = 1; % Int = 1. No Int = 0
-FlagMaster.MakeMovies   = 1; % No movies if save is zero
+FlagMaster.MakeMovies   = 0; % No movies if save is zero
 FlagMaster.MakeOP       = 1; % No OPs if save is zero
 FlagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
 FlagMaster.SquareBox    = 0; % Forces box to be square
@@ -99,10 +95,6 @@ end
 % Concentration and rod stuff
 ParamMaster.b  = ParamMaster.L_rod^2/pi;               % Average excluded volume per particle
 ParamMaster.Mob_pos = Mob;
-
-% Fix the time
-[TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
-        TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
 
 % Turn movies off is Save is off
 if FlagMaster.SaveMe == 0; FlagMaster.MakeOP = 0; FlagMaster.MakeMovies = 0;end

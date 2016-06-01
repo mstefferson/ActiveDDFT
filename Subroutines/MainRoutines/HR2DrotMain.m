@@ -9,7 +9,7 @@ function  [ DidIBreak,SteadyState,MaxReldRho] = ...
 % Save error messages in file
 try
   
-  % Set-up a SaveObj
+  % Set-up save paths, file names, and matfile
   if Flags.SaveMe
     if Flags.MakeOP == 0
       SaveName   = ['run_' filename];
@@ -18,15 +18,15 @@ try
       SaveName   = ['runOP_' filename];
       if Flags.MakeMovies == 1
         DirName  = filename(1:end-4) ;
-        cd ./analyzedfiles/
-        if exist(DirName,'dir') == 0; mkdir(DirName); end
-        cd ../
-        DirName  = ['./analyzedfiles/' DirName ];
+        DirPath  = ['./analyzedfiles/' DirName ];
+        if exist(DirPath,'dir') == 0;
+          mkdir('./analyzedfiles', DirName); 
+        end
+        DirName = DirPath;
       else
         DirName    =  './runOPfiles';
       end
     end
-    
     MasterSave = matfile(SaveName,'Writable',true);
   end
   
@@ -151,9 +151,12 @@ try
     fprintf('Made interaction order paramater object: %.3g \n', OpRunTime);
     %disp(OpRunTime);
     fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
+    if Flags.SaveMe
+      MasterSave.OrderParamObj = OrderParamObj;
+    end
     
     if Flags.MakeMovies == 1
-      % Build OP records
+      MovieSuccess = 0;
       
       % Make matlab movies
       tMovID       = tic;
@@ -161,7 +164,7 @@ try
       HoldX = ParamObj.Nx /2 + 1;
       HoldY = ParamObj.Ny /2 + 1;
       
-      DistRec =  reshape( DenRecObj.Density_rec(HoldY, HoldY, : , :),...
+      DistRec =  reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :),...
         [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
       
       % Save Name
@@ -180,6 +183,7 @@ try
           DistRec,OrderParamObj.TimeRec(1:end-1) );
       end
       
+      MovieSuccess = 1;
       % Move it
       movefile( MovStr, DirName  )
       
@@ -217,6 +221,8 @@ try
       %         keyboard
       ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
         ParamObj.Nm, DenRecObj.bc,ParamObj.vD, ParamObj.trial)
+      
+      % Save it
       figtl = sprintf('AmpFT_%d_%d',ParamObj.trial, ParamObj.runID);
       savefig(gcf,figtl)
       saveas(gcf, figtl,'jpg')
@@ -225,12 +231,8 @@ try
       movefile([figtl '.fig'], DirName  )
       movefile([figtl '.jpg'], DirName  )
       
-      
     end % End if movies
     
-    if Flags.SaveMe
-      MasterSave.OrderParamObj = OrderParamObj;
-    end
   end % if OP
   
   % Move saved things
@@ -281,7 +283,24 @@ catch err %Catch errors
   fclose(efid);
   fclose('all');
   
-  keyboard
+  % Movies can have issues to box size. If they do, just move files
+  % to ./runOPfiles
+  % Move saved things
+
+  if Flags.SaveMe
+    if Flags.MakeMovies == 1
+      if MovieSuccess == 0
+        fprintf('Movies failed\n');
+        rmdir(DirName);
+        delete(MovStr);
+        DirName    =  './runOPfiles';
+      end
+      movefile(SaveName,DirName);
+    end
+  end
+  
+  
+  
   %    keyboard
   %if Flags.SaveMe
   
@@ -300,6 +319,6 @@ catch err %Catch errors
   
 end %End try and catch
 
-% clc
+%  clc
 %close all
 end % End HR2DrotVgrExeMain.m
