@@ -24,14 +24,11 @@
 
 
 function [DenRecObj] = HR2DrotDenEvolverFTBody(...
-    wfid,lfid,rho,ParamObj, TimeObj,GridObj,DiffMobObj, Flags,feq)
+    rho,ParamObj, TimeObj,GridObj,DiffMobObj, Flags,feq,lfid)
 
 fprintf(lfid,'In body of code\n');
 % Create a text file that tells user what percent of the program has
 % finished
-
-PrgmTrackNm = sprintf('PrgmTracker_%i.txt',ParamObj.trial);
-tfid        = fopen(PrgmTrackNm,'w');
 
 %Set N since it used so frequently
 Nx  = ParamObj.Nx;
@@ -79,7 +76,6 @@ if Flags.Interactions
         N3,1);
 else
     GammaExVec_FT = zeros(N3,1);
-    fprintf(wfid,'Interacts are off my Lord\n');
 end
 
 % Take first step- Euler
@@ -130,7 +126,7 @@ elseif( Flags.StepMeth == 6 ) % phiV
    Lop, rhoVec_FT, GammaExVec_FT, dt );
 
 else
-  fprintf('No stepping method selected');
+  error('No stepping method selected');
 end
 
 tic
@@ -201,7 +197,7 @@ for t = 1:TimeObj.N_time-1
 
         %Make sure things are taking too long. This is a sign density---> inf
     [ShitIsFucked] = ExpTooLongChecker(...
-        wfid,ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,j_record);
+        ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,j_record);
     if ShitIsFucked
         j_record = j_record - 1;
         break
@@ -211,12 +207,12 @@ for t = 1:TimeObj.N_time-1
     if (mod(t,TimeObj.N_count)== 0)
         if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTracker(wfid,tfid,TimeObj,t,...
+                VarRecorderTracker(lfid,TimeObj,t,...
                 Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
             
         else
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerNoSave(wfid,tfid,TimeObj,t,Nx,Ny,Nm,...
+                VarRecorderTrackerNoSave(lfid,TimeObj,t,Nx,Ny,Nm,...
                 rhoVec_FT,rhoVec_FTprev,TotalDensity);
         end
         if ShitIsFucked == 1 || SteadyState == 1
@@ -239,12 +235,12 @@ if Flags.SaveMe
         rho_FT         = reshape(rhoVec_FT,Nx,Ny,Nm);
         if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTracker(wfid,tfid,TimeObj,t,...
+                VarRecorderTracker(lfid,TimeObj,t,...
                 Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
             
         else
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerNoSave(wfid,tfid,TimeObj,t,Nx,Ny,Nm,...
+                VarRecorderTrackerNoSave(lfid,TimeObj,t,Nx,Ny,Nm,...
                 rhoVec_FT,rhoVec_FTprev,TotalDensity);
         end
     end
@@ -252,12 +248,12 @@ end %end if save
 
 %If something broke, return zeros. Else, return the goods
 if ShitIsFucked 
-    fprintf(wfid,'Density is either negative or not conserved.\n');
-    fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
+    fprintf('Density is either negative or not conserved.\n');
+    fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
     
 elseif SteadyState 
-    fprintf(wfid,'Things are going steady if you know what I mean.\n');
-    fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
+    fprintf('Things are going steady if you know what I mean.\n');
+    fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
 end
 
 % Get rid of zeros in record matrices
@@ -273,12 +269,8 @@ end %end if save
 
 trun = toc;
 
-% See how much memory this used
-% [uVbody, sVbody] = memory;
 
-%Save the structure
-% keyboard
-
+% Save structure
 DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
     'TimeRecVec',TimeRecVec,...
     'RunTime', trun, ...
@@ -286,8 +278,4 @@ DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
     'Density_rec',Density_rec,'DensityFT_rec', DensityFT_rec,...
     'MaxReldRho',MaxReldRho,'feq',feq);
 
-
-fclose(wfid); %Close warning statement file
-fclose(tfid); %Close program tracker file
-% keyboard
 end %functi

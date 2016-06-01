@@ -4,6 +4,7 @@
 
 % Main FlagMaster
 FlagMaster.SaveMe       = 1; % Saving
+FlagMaster.Verbose      = 0; % Prints run times
 FlagMaster.AnisoDiff    = 1; % Aniso = 1. Iso = 0
 FlagMaster.Interactions = 1; % Int = 1. No Int = 0
 FlagMaster.MakeMovies   = 0; % No movies if save is zero

@@ -1,9 +1,9 @@
-function [ShitIsFucked] = ExpTooLongChecker(wfid,ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,j_record)
+function [ShitIsFucked] = ExpTooLongChecker(ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,j_record)
 ShitIsFucked = 0;
 %Make sure things are taking too long. This is a sign density---> inf
 if ticExptemp > 50 * ticExpInt
-    fprintf(wfid,'Forgive me, your grace. Using expv is beginning to take a long ass time\n');
-    fprintf(wfid,'I fear that something has gone wrong\n');
+    fprintf('Forgive me, your grace. Using expv is beginning to take a long ass time\n');
+    fprintf('I fear that something has gone wrong\n');
     
     %         keyboard
     rho = real(ifftn(ifftshift(reshape( rhoVec_FT,Nx,Ny,Nm ))));

@@ -17,15 +17,10 @@
 
 
 function [DenRecObj]  = ...
-    HR2DrotDenEvolverFTBodyIdC(wfid,lfid,rho,ParamObj,...
-    TimeObj,GridObj,DiffMobObj,Flags,feq)
+    HR2DrotDenEvolverFTBodyIdC(rho,ParamObj,...
+    TimeObj,GridObj,DiffMobObj,Flags,feq, lfid)
 
 fprintf(lfid,'In body of code\n');
-% Create a text file that tells user what percent of the program has
-% finished
-
-PrgmTrackNm = sprintf('PrgmTracker_%i.txt',ParamObj.trial);
-tfid        = fopen(PrgmTrackNm,'w');
 
 %Set N since it used so frequently
 Nx  = ParamObj.Nx;
@@ -75,7 +70,6 @@ if Flags.Interactions
         GridObj,DiffMobObj);
 else
     GammaExCube_FT = zeros(Nx,Ny,Nm);
-    fprintf(wfid,'Interacts are off my Lord\n');
 end
 
 %Driven Term
@@ -85,7 +79,6 @@ if Flags.Drive
         GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
 else
     GammaDrCube_FT = zeros(Nx,Ny,Nm);
-    fprintf(wfid,'Driving is off my Lord\n');
 end
 
 %Total
@@ -132,7 +125,7 @@ elseif( Flags.StepMeth == 6 ) % Exponential Euler
   [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
 
 else
-  fprintf('No stepping method selected');
+  error('No stepping method selected');
 end
 
 
@@ -194,11 +187,11 @@ for t = 1:TimeObj.N_time-1
     if (mod(t,TimeObj.N_count)== 0)
         if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerCube(wfid,tfid,TimeObj,t,...
+                VarRecorderTrackerCube(lfid,TimeObj,t,...
                 rho_FT,rho_FTprev,TotalDensity ,j_record);
         else
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerNoSaveCube(wfid,tfid,TimeObj,t,...
+                VarRecorderTrackerNoSaveCube(lfid,TimeObj,t,...
                 rho_FT,rho_FTprev,TotalDensity);
         end %if save
         if ShitIsFucked == 1 || SteadyState == 1
@@ -220,11 +213,11 @@ if Flags.SaveMe
         if (mod(t,TimeObj.N_count)==0)
             if Flags.SaveMe
                 [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                    VarRecorderTrackerCube(wfid,tfid,TimeObj,t,...
+                    VarRecorderTrackerCube(lfid,TimeObj,t,...
                     rho_FT,rho_FTprev,TotalDensity ,j_record);
             else
                 [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                    VarRecorderTrackerNoSaveCube(wfid,tfid,TimeObj,t,...
+                    VarRecorderTrackerNoSaveCube(lfid,TimeObj,t,...
                     rho_FT,rho_FTprev,TotalDensity);
             end %if save   [SteadyState,ShitIsFucked,MaxReldRho] = ...
             
@@ -234,12 +227,12 @@ end %end if save
 
 %If something broke, return zeros. Else, return the goods
 if ShitIsFucked
-    fprintf(wfid,'Density is either negative or not conserved.\n');
-    fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
+    fprintf('Density is either negative or not conserved.\n');
+    fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
     
 elseif SteadyState
-    fprintf(wfid,'Things are going steady if you know what I mean.\n');
-    fprintf(wfid,'I have done %i steps out of %i.\n',t, TimeObj.N_time);
+    fprintf('Things are going steady if you know what I mean.\n');
+    fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
 end
 
 % Get rid of zeros in record matrices
@@ -254,7 +247,7 @@ else
 end %end if save
 
 trun = toc;
-% keyboard
+
 %Save the structure
 DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
     'j_record', j_record,...
@@ -265,7 +258,4 @@ DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
     'MaxReldRho',MaxReldRho,'feq',feq);
 
 
-fclose(wfid); %Close warning statement file
-fclose(tfid); %Close program tracker file
-% keyboard
 end %function

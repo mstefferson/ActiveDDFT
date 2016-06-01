@@ -1,5 +1,5 @@
 function [DiffMobObj]...
-             = DiffMobCoupCoeffCalc(wfid,T,Mob_par,Mob_perp,Mob_rot,delta_t,delta_x,delta_phi,kx2D,ky2D,vd)
+             = DiffMobCoupCoeffCalc(T,Mob_par,Mob_perp,Mob_rot,delta_t,delta_x,delta_phi,kx2D,ky2D,vd)
          
 % Use Einstein diffusion relations
 D_par  = Mob_par * T;                                            % Parallel diffusion coeff
@@ -12,21 +12,12 @@ StabCoeffPerp = D_perp .* delta_t / (delta_x ^2 );
 StabCoeffRot  = D_rot  .* delta_t / (delta_phi ^2 );
 
 if StabCoeffPar > 1/2
-    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The parallel diffusion coefficien is to blame\n');
-    fprintf(wfid,'StabCoeffPar = %f (should be less than 1/2) \n', StabCoeffPar);
-    fprintf('My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The parallel diffusion coefficien is to blame\n');
     fprintf('StabCoeffPar = %f (should be less than 1/2) \n', StabCoeffPar);
 end
 if StabCoeffPerp > 1/2
-    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The perpendicular diffusion coefficien is to blame\n');
-    fprintf(wfid,'StabCoeffPerp = %f (should be less than 1/2) \n', StabCoeffPerp);
-    fprintf('My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The perpendicular diffusion coefficien is to blame\n');
     fprintf('StabCoeffPerp = %f (should be less than 1/2) \n', StabCoeffPerp);
 end
 if StabCoeffRot > 1/2
-    fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n');
-    fprintf(wfid,'StabCoeffRot = %f (should be less than 1/2) \n', StabCoeffRot);
-    fprintf('My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The rotational diffusion coefficien is to blame\n');
     fprintf('StabCoeffRot = %f (should be less than 1/2) \n', StabCoeffRot);
 end
 

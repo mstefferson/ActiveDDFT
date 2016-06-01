@@ -4,10 +4,23 @@
 % orientation. Program handles interactions using DDFT
 
 function  [ DidIBreak,SteadyState,MaxReldRho] = ...
-  HR2DrotMain( filename, ParamObj, TimeObj, RhoInit, Flags )
-% Add paths (this should already be added, but just to be careful)
-% Save error messages in file
+  HR2DrotMain( filename, paramVec, ParamObj, TimeObj, RhoInit, Flags )
 try
+  % Move parameter vector to obj
+  ParamObj.Nx = paramVec(1);
+  ParamObj.Ny = paramVec(2);
+  ParamObj.Nm = paramVec(3);
+  ParamObj.Lx = paramVec(4);
+  ParamObj.Ly = paramVec(5);
+  ParamObj.vD = paramVec(6);
+  ParamObj.bc = paramVec(7);
+  RhoInit.IntCond = paramVec(8);
+  Flags.StepMeth = paramVec(9);
+  ParamObj.runID = paramVec(10);
+  ParamObj.Norm  = ParamObj.bc / ( ParamObj.L_rod ^ 2 / pi ) *... % number of particles
+    ParamObj.Lx * ParamObj.Ly;
+  ParamObj.c = ParamObj.bc ./ ParamObj.b;
+  ParamObj.L_box = [ParamObj.Lx ParamObj.Ly];
   
   % Set-up save paths, file names, and matfile
   if Flags.SaveMe
@@ -20,7 +33,7 @@ try
         DirName  = filename(1:end-4) ;
         DirPath  = ['./analyzedfiles/' DirName ];
         if exist(DirPath,'dir') == 0;
-          mkdir('./analyzedfiles', DirName); 
+          mkdir('./analyzedfiles', DirName);
         end
         DirName = DirPath;
       else
@@ -30,23 +43,23 @@ try
     MasterSave = matfile(SaveName,'Writable',true);
   end
   
+  % Set some flags to 0
   EvolvedDen = 0;DenFinal = 0;DenFTFinal = 0;GridObj = 0;
   DidIBreak = 0;SteadyState = 0;MaxReldRho = 0;
   
-  if Flags.AnisoDiff == 1
-    fprintf('Running Anisotropic Diffusion\n');
-  else
-    fprintf('Running Isotropic Diffusion\n');
+  if Flags.Verbose
+    if Flags.AnisoDiff
+      fprintf('Running Anisotropic Diffusion\n');
+    else
+      fprintf('Running Isotropic Diffusion\n');
+    end
   end
   
-  %     keyboard
+  % Record how long things take
   tMainID  = tic;
   
   % Create a file that holds warning print statements
-  WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
-  wfid  = fopen(WarningStmtString,'a+');    % a+ allows to append data
-  
-  LocString = sprintf('Location_%i.txt',ParamObj.trial);
+  LocString = sprintf('Location_%d.%d.txt',ParamObj.trial,ParamObj.runID);
   lfid      = fopen(LocString,'a+');    % a+ allows to append data
   fprintf(lfid,'Starting main, current code\n');
   
@@ -55,14 +68,18 @@ try
   tGridID = tic;
   [GridObj] = GridMakerPBCxk(...
     ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,ParamObj.Lx,ParamObj.Ly);
-  fprintf(lfid,'Made Grid\n');
   GridRunTime = toc(tGridID);
-  fprintf('Made grid: %.3g \n', GridRunTime);
+  if Flags.Verbose
+    fprintf('Made grid t%d_%d: %.3g \n', ...
+      ParamObj.trial, ParamObj.runID, GridRunTime);
+  end
+  fprintf(lfid,'Made Grid: %.3g \n', GridRunTime);
+  RunTime.Grid = GridRunTime;
   
-  %Make diffusion coeff (send smallest dx dy for stability
+  %Make diffusion coeff
   tDiffID = tic;
   if Flags.AnisoDiff == 1
-    [DiffMobObj] =  DiffMobCoupCoeffCalc( wfid,ParamObj.Tmp,...
+    [DiffMobObj] =  DiffMobCoupCoeffCalc( ParamObj.Tmp,...
       ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
       TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
       GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
@@ -71,9 +88,13 @@ try
       ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
   end
   
-  fprintf(lfid,'Made diffusion object\n');
   DiffRunTime = toc(tDiffID);
-  fprintf('Made diffusion object: %.3g\n', DiffRunTime);
+  if Flags.Verbose
+    fprintf('Made diffusion object t%d_%d: %.3g\n', ...
+      ParamObj.trial, ParamObj.runID, DiffRunTime);
+  end
+  fprintf(lfid,'Made diffusion object: %.3g\n', DiffRunTime);
+  RunTime.Diff = DiffRunTime;
   
   %Initialze density
   tIntDenID = tic;
@@ -87,12 +108,13 @@ try
   end
   [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,RhoInit.bc); % Calculate coeff
   RhoInit.feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
-  fprintf(lfid,'Made initial density\n');
   IntDenRunTime = toc(tIntDenID);
-  fprintf('Made initial density: %.3g \n', IntDenRunTime);
-  
-  % Run the main code
-  tBodyID      = tic;
+  if Flags.Verbose
+    fprintf('Made initial density t%d_%d: %.3g \n', ...
+      ParamObj.trial, ParamObj.runID, IntDenRunTime);
+  end
+  fprintf(lfid,'Made initial density: %.3g\n', IntDenRunTime);
+  RunTime.IntDen = IntDenRunTime;
   
   % Save everything before running body of code
   if Flags.SaveMe
@@ -104,20 +126,25 @@ try
     MasterSave.ParamObj = ParamObj;
   end
   
+  % Run the main code
+  tBodyID      = tic;
+  
   if Flags.AnisoDiff == 1
     [DenRecObj]  = HR2DrotDenEvolverFTBody(...
-      wfid, lfid, rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq);
+      rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq, lfid);
   else
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
-      wfid,lfid,rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq);
+      rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq, lfid);
   end
-  %     keyboard
-  EvolvedDen = 1;
-  fprintf(lfid,'Ran Main Body\n');
-  BodyRunTime  = toc(tBodyID);
-  fprintf('Ran Main Body: %.3g \n', BodyRunTime);
   
+  EvolvedDen = 1;
+  BodyRunTime  = toc(tBodyID);
+  if Flags.Verbose
+    fprintf('Ran Main Body t%d_%d: %.3g \n', ...
+      ParamObj.trial, ParamObj.runID, BodyRunTime);
+  end
   fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
+  RunTime.Body = BodyRunTime;
   
   % Save it
   if Flags.SaveMe
@@ -146,11 +173,15 @@ try
         DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
         RhoInit.feq);
     end
-    fprintf(lfid,'Made interaction order paramater object\n');
+    
     OpRunTime = toc(tOpID);
-    fprintf('Made interaction order paramater object: %.3g \n', OpRunTime);
-    %disp(OpRunTime);
+    if Flags.Verbose
+      fprintf('Made OP object t%d_%d: %.3g \n', ...
+        ParamObj.trial, ParamObj.runID, OpRunTime);
+    end
     fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
+    RunTime.OP = OpRunTime;
+    
     if Flags.SaveMe
       MasterSave.OrderParamObj = OrderParamObj;
     end
@@ -187,12 +218,13 @@ try
       % Move it
       movefile( MovStr, DirName  )
       
-      fprintf(lfid,'Made movies\n');
       MovRunTime   = toc(tMovID);
-      fprintf('Made movies: %.3g \n', MovRunTime);
-      %disp(MovRunTime);
-      % Record how long it took
+      if Flags.Verbose
+        fprintf('Made movies t%d_%d: %.3g \n', ...
+          ParamObj.trial, ParamObj.runID, MovRunTime);
+      end
       fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);
+      RunTime.Mov = MovRunTime;
       
       % Make amplitude plot
       kx0 = ParamObj.Nx / 2 + 1;
@@ -218,7 +250,6 @@ try
           [ 1, Nrec ]  );
       end
       
-      %         keyboard
       ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
         ParamObj.Nm, DenRecObj.bc,ParamObj.vD, ParamObj.trial)
       
@@ -235,59 +266,32 @@ try
     
   end % if OP
   
+  % Save how long everything took
+  TotRunTime = toc(tMainID);
+  if Flags.Verbose
+    fprintf('Run Finished t%d_%d: %.3g \n', ...
+      ParamObj.trial, ParamObj.runID, TotRunTime);
+  end
+  fprintf(lfid,'Total Run time = %f\n', TotRunTime);
+  RunTime.Tot = TotRunTime;
+  
   % Move saved things
-%   keyboard
+  
   if Flags.SaveMe
+    MasterSave.RunTime = RunTime;
     movefile(SaveName,DirName);
   end
   
-  %if Flags.SaveMe
-  %MemObj = 0;
-  %% Save all parameters
-  
-  %% Save everything. Save seperately for big files
-  %%DenStr = sprintf('DenRec_%i',ParamObj.trial);
-  %%TimeStr = sprintf('TimeObj_%i',ParamObj.trial);
-  %%ParamStr = sprintf('ParamObj_%i',ParamObj.trial);
-  %%GridStr = sprintf('GridObj_%i',ParamObj.trial);
-  
-  %%save(DenStr,'DenRecObj','-v7.3')
-  %%save(TimeStr,'GridObj','-v7.3')
-  %%save(ParamStr,'ParamObj','-v7.3')
-  %%save(GridStr,'GridObj','-v7.3')
-  
-  %%if Flags.MakeOP
-  %%OpStr = sprintf('OP_%i',ParamObj.trial);
-  %%save(OpStr,'OrderParamObj','-v7.3')
-  %%end
-  %end
-  % Save how long everything took
-  % Save how long everything took
-  fprintf(lfid,'Everything saved. Run finished\n');
-  TotRunTime = toc(tMainID);
-  fprintf('Everything saved. Run Finished: %.3g \n', TotRunTime);
-  %disp(TotRunTime);
-  fprintf(lfid,'Total Run time = %f\n', TotRunTime);
-  
-  fclose('all');
-  
 catch err %Catch errors
   
-  
-  ErrFileNmStr = sprintf('errFile%i.txt',ParamObj.trial);
-  efid         = fopen(ErrFileNmStr,'a+');
   % write the error to file and to screen
-  % first line: message
-  %     fprintf(efid,'%s', err.getReport('extended', 'hyperlinks','off')) ;
   fprintf('%s', err.getReport('extended')) ;
-  disp(err.message);
-  fclose(efid);
-  fclose('all');
+  MasterSave.err = err;
   
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
-
+  
   if Flags.SaveMe
     if Flags.MakeMovies == 1
       if MovieSuccess == 0
@@ -296,30 +300,13 @@ catch err %Catch errors
         delete(MovStr);
         DirName    =  './runOPfiles';
       end
-      movefile(SaveName,DirName);
     end
+    movefile(SaveName,DirName);
   end
-  
-  
-  
-  %    keyboard
-  %if Flags.SaveMe
-  
-  %TimeStr = sprintf('TimeObj_%i',ParamObj.trial);
-  %ParamStr = sprintf('ParamObj_%i',ParamObj.trial);
-  %GridStr = sprintf('GridObj_%i',ParamObj.trial);
-  
-  %save(TimeStr,'GridObj','-v7.3')
-  %save(ParamStr,'ParamObj','-v7.3')
-  %save(GridStr,'GridObj','-v7.3')
-  %if EvolvedDen
-  %DenStr = sprintf('DenRec_%i',ParamObj.trial);
-  %save(DenStr,'DenRecObj','-v7.3');
-  %end
-  %end
   
 end %End try and catch
 
-%  clc
-%close all
+fclose(lfid);
+delete(LocString);
+
 end % End HR2DrotVgrExeMain.m
