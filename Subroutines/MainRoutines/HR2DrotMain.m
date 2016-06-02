@@ -24,6 +24,7 @@ try
   
   % Set-up save paths, file names, and matfile
   if Flags.SaveMe
+    global MasterSave
     if Flags.MakeOP == 0
       SaveName   = ['run_' filename];
       DirName    =  './runfiles';
@@ -124,7 +125,9 @@ try
     MasterSave.GridObj  = GridObj;
     MasterSave.RhoInit  = RhoInit;
     MasterSave.ParamObj = ParamObj;
-  end
+    MasterSave.Den_rec(:,:,:,1) = rho;
+    MasterSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
+   end
   
   % Run the main code
   tBodyID      = tic;

@@ -43,9 +43,11 @@ if mod(t_tot,t_write) ~= 0
 end
 
 % Calculate the outputs
-TimeObj.Nt = round(t_tot/dt);           % Number of time steps
-TimeObj.N_rec = round(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
-TimeObj.N_rec = round(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
-TimeObj.N_count = round(t_rec/dt);      % Number of time steps before recording
-
+TimeObj.N_time = round(t_tot/dt);            % Tot # of time steps
+TimeObj.N_rec = round(t_tot/t_rec) + 1;  % Tot # of recorded points. +1 includes 0
+TimeObj.N_recChuck = round(t_write/t_rec ); % # of rec points/write chuck
+TimeObj.N_chunks = round(t_tot/t_write); % # of record chunks / tot time
+TimeObj.N_dtRec = round(t_rec/dt);       % #  time steps / record
+TimeObj.N_dtChuck = round(t_write/dt ); % # of dt/write chuck
+   
 end

@@ -36,7 +36,7 @@ else
 end
 
 % Fix the time
-[TimeObj.t_tot,TimeObj.N_time,TimeObj.t_rec,TimeObj.N_rec,TimeObj.N_count]= ...
+[TimeObj]= ...
   TimeStepRecMaker(TimeObj.delta_t,TimeObj.t_tot,TimeObj.t_record);
 
 % Display everythin

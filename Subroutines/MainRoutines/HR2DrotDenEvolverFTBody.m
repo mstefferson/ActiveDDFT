@@ -45,12 +45,13 @@ TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
 rhoVec_FT = reshape(rho_FT,N3,1);
 
+global MasterSave
 global Density_rec
 global DensityFT_rec
 %Initialize matrices that change size the +1 is to include initial density
 if Flags.SaveMe == 1
-    Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_rec );      % Store density amplitudes
-    DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_rec );      % Store k-space amplitdues
+    Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_recChunk );    % Store density amplitudes
+    DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_recChunk );   % Store k-space amplitdues
     
     %Initialize records
     DensityFT_rec(:,:,:,1)   = rho_FT;
@@ -60,7 +61,10 @@ else
     DensityFT_rec = 0;
 end
 
-j_record = 2;     %Record holder
+%% COMMMENT ME
+jrectemp = 1;
+jrec     = 2;
+jchunk   = 1;
 
 %Set up Diffusion operator, discrete k-space Lopagator, and interaction
 [Lop] = DiffOpBuilderDr(DiffMobObj,GridObj,Nm,N2,N3);
@@ -161,33 +165,21 @@ for t = 1:TimeObj.N_time-1
        
     % Take step
     if( Flags.StepMeth == 0 ) 
-%      [rhoVec_FTnext, ticExptemp] = DenStepperAB1( ...
-%      Lop, rhoVec_FT, GammaExVec_FT, dt );
      [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
     elseif( Flags.StepMeth == 1 )
-       %[rhoVec_FTnext, ticExptemp] = DenStepperAB2(... 
-          %Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
     elseif( Flags.StepMeth == 2 ) 
-       %[rhoVec_FTnext, ticExptemp] = DenStepperHAB1( ...
-       %Lop, rhoVec_FT, GammaExVec_FT,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
     elseif( Flags.StepMeth == 3 )
-       %[rhoVec_FTnext, ticExptemp] = DenStepperHAB2( ...
-          %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
          Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FT, NlPf, NlPrevPf, dt  );
     elseif( Flags.StepMeth == 4 )
-       %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB1( ...
-       %Lop, rhoVec_FT, GammaExVec_FT,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
     elseif( Flags.StepMeth == 5 )
-      %[rhoVec_FTnext, ticExptemp] = DenStepperBHAB2( ...
-      %Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev,dt );
       [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
     elseif( Flags.StepMeth == 6 )
@@ -197,9 +189,9 @@ for t = 1:TimeObj.N_time-1
 
         %Make sure things are taking too long. This is a sign density---> inf
     [ShitIsFucked] = ExpTooLongChecker(...
-        ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,j_record);
+        ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,jrec);
     if ShitIsFucked
-        j_record = j_record - 1;
+        jrec = jrec - 1;
         break
     end
     
@@ -208,7 +200,7 @@ for t = 1:TimeObj.N_time-1
         if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTracker(lfid,TimeObj,t,...
-                Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
+                Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,jrectemp);
             
         else
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
@@ -218,7 +210,17 @@ for t = 1:TimeObj.N_time-1
         if ShitIsFucked == 1 || SteadyState == 1
             break
         end
-        j_record = j_record+1;
+
+        if mod(t, TimeObj.NdtChunk )
+          RecIndTemp = (jchunk-1) *  const.NrecChunk + 1 : jchunk * const.NrecChunk;
+          MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+          MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+          jrectemp = 0;
+          jchunk = jchunk + 1;
+        end
+        jrectemp = jrectemp + 1;
+        jrec = jrec + 1;
+
         %         keyboard
     end %end recording
     
@@ -236,7 +238,7 @@ if Flags.SaveMe
         if Flags.SaveMe
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
                 VarRecorderTracker(lfid,TimeObj,t,...
-                Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,j_record);
+                Nx,Ny,Nm,rhoVec_FT,rhoVec_FTprev,TotalDensity ,jrec);
             
         else
             [SteadyState,ShitIsFucked,MaxReldRho] = ...
@@ -257,8 +259,8 @@ elseif SteadyState
 end
 
 % Get rid of zeros in record matrices
-Record_hold   = 1:j_record;
-TimeRecVec    = (0:j_record-1) * TimeObj.t_record;
+Record_hold   = 1:jrec;
+TimeRecVec    = (0:jrec-1) * TimeObj.t_record;
 if Flags.SaveMe 
     Density_rec   = Density_rec(:,:,:,Record_hold);
     DensityFT_rec = DensityFT_rec(:,:,:,Record_hold);
@@ -271,11 +273,11 @@ trun = toc;
 
 
 % Save structure
-DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
-    'TimeRecVec',TimeRecVec,...
-    'RunTime', trun, ...
-    'bc',ParamObj.bc,...
-    'Density_rec',Density_rec,'DensityFT_rec', DensityFT_rec,...
-    'MaxReldRho',MaxReldRho,'feq',feq);
+DenRecObj.ShitIsFucked = ShitIsFucked;
+DenRecObj.SteadyState = SteadyState;
+DenRecObj.MaxReldRho = MaxReldRho;
+DenRecObj.TimeRecVec = TimeRecVec;
+DenRecObj.Density_rec = Density_rec;
+DenRecObj.DensityFT_rec = DensityFT_rec;
 
 end %functi
