@@ -39,9 +39,10 @@ ParamMaster.Mob_rot   = 6 * Mob / ParamMaster.L_rod^2;
 
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
 TimeObj.delta_t     = 1e-3; % time step
-TimeObj.t_record    = 0.1; % time interval for recording dynamics
-TimeObj.t_tot       = 1.0; % total time
-TimeObj.ss_epsilon  = 1e-8;  % steady state condition
+TimeObj.t_record    = 0.1;  % time elapsed before recording
+TimeObj.t_write     = 0.2;  % time elapsed before writing to file
+TimeObj.t_tot       = 1.0;  % total run time
+TimeObj.ss_epsilon  = 1e-8; % steady state condition
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 RhoInitMaster.IntCond     = [1]; % IC indicator (vec)

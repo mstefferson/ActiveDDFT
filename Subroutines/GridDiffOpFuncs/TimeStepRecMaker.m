@@ -17,21 +17,35 @@
 % t_tot   = Nt * dt
 % t_rec   = N_count * dt  
 
-function [t_tot,Nt,t_rec,N_rec,N_count] = TimeStepRecMaker(dt,t_tot,t_rec)
+function [TimeObj] = TimeStepRecMaker(dt,t_tot,t_rec,t_write)
 
-% Fix the recording time to be divisible by the time step
-if mod(t_rec,dt) ~= 0
-  t_rec = floor(t_rec/dt)*dt;
+% Stop the user if erroneous parameters are given
+if dt > t_rec;
+  error('Recorded interval is shorter then timestep fix before proceeding');
+end
+if t_rec > t_write;
+  error('File write interval is shorter than record interval fix before proceeding');
 end
 
-% Fix the total run time to be divisible by time step 
-if mod(t_tot,dt) ~= 0
-  t_tot = floor(t_tot/dt)*dt;
+% Fix the recording time to be divisible by the time step
+if mod(t_rec, dt) ~= 0
+  TimeObj.t_rec = floor(t_rec/dt) * dt;
+end
+
+% Fix the write time to be divisible by the record step
+if mod(t_write, t_rec) ~= 0
+  TimeObj.t_write = floor(t_write/t_rec) * t_rec;
+end
+
+% Fix the total run time to be divisible by t_write 
+if mod(t_tot,t_write) ~= 0
+  TimeObj.t_tot = floor(t_tot/t_write) * t_write;
 end
 
 % Calculate the outputs
-Nt = round(t_tot/dt);           % Number of time steps
-N_rec = round(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
-N_count = round(t_rec/dt);      % Number of time steps before recording
+TimeObj.Nt = round(t_tot/dt);           % Number of time steps
+TimeObj.N_rec = round(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
+TimeObj.N_rec = round(t_tot/t_rec) + 1; % Number of recorded points. +1 includes 0
+TimeObj.N_count = round(t_rec/dt);      % Number of time steps before recording
 
 end
