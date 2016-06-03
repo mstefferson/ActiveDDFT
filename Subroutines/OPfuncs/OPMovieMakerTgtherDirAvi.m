@@ -98,8 +98,8 @@ for ii = 1:nFrames
     % What I and Matlab call x/y are switched
     hold on
     quiver(axh2,x(SubIndX),y(SubIndY),...
-        OP.nx_POP_rec(SubIndX,SubIndY,ii)',...
-        OP.ny_POP_rec(SubIndX,SubIndY,ii)' ,'color',[1,1,1]);
+        OP.POPx_rec(SubIndX,SubIndY,ii)',...
+        OP.POPy_rec(SubIndX,SubIndY,ii)' ,'color',[1,1,1]);
     hold off
     title(axh2,TitlStr)
 

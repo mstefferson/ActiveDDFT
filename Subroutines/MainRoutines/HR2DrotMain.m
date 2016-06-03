@@ -3,7 +3,7 @@
 % Program is the main() for running the diffusion of 2D hard rods with
 % orientation. Program handles interactions using DDFT
 
-function  [ DidIBreak,SteadyState,MaxReldRho] = ...
+function  [ DenRecObj ] = ...
   HR2DrotMain( filename, paramVec, ParamObj, TimeObj, RhoInit, Flags )
 try
   % Move parameter vector to obj
@@ -134,10 +134,15 @@ try
   
   if Flags.AnisoDiff == 1
     [DenRecObj]  = HR2DrotDenEvolverFTBody(...
-      rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq, lfid);
+      rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, lfid);
   else
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
-      rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, RhoInit.feq, lfid);
+      rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, lfid);
+  end
+
+  % Save it
+  if Flags.SaveMe
+    MasterSave.DenRecObj = DenRecObj;
   end
   
   EvolvedDen = 1;
@@ -149,14 +154,9 @@ try
   fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
   RunTime.Body = BodyRunTime;
   
-  % Save it
-  if Flags.SaveMe
-    MasterSave.DenRecObj = DenRecObj;
-  end
   
   % Store final density and transform
-  DenFinal   = DenRecObj.Density_rec(:,:,:,end);
-  DenFTFinal = DenRecObj.DensityFT_rec(:,:,:,end);
+  DenFinal   = DenRecObj.rhoFinal;
   DidIBreak  = DenRecObj.DidIBreak;
   SteadyState = DenRecObj.SteadyState;
   MaxReldRho  = DenRecObj.MaxReldRho;
@@ -164,19 +164,64 @@ try
   % Run movies if you want
   if Flags.MakeOP  == 1
     tOpID           = tic ;
-    %                 keyboard
-    if  DenRecObj.DidIBreak == 0
-      [OrderParamObj] = CPNrecMaker(...
-        ParamObj.Nx,ParamObj.Ny,DenRecObj.TimeRecVec,...
-        GridObj,DenRecObj.Density_rec,RhoInit.feq);
-    else %Don't incldue the blowed up denesity for movies. They don't like it.
-      TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1);
-      [OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
-        TimeRecVecTemp,GridObj,...
-        DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
-        RhoInit.feq);
-    end
+        % Set up saving
+    MasterSave.OrderParamObj.C_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.OrderParamObj.POP_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.OrderParamObj.POPx_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.OrderParamObj.POPy_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.OrderParamObj.NOP_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.OrderParamObj.NOPx_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.OrderParamObj.NOPy_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+
+    %if  DenRecObj.DidIBreak == 0
+      %[OrderParamObj] = CPNrecMaker(...
+        %ParamObj.Nx,ParamObj.Ny,DenRecObj.TimeRecVec,...
+        %GridObj,DenRecObj.Density_rec,RhoInit.feq);
+    %else %Don't incldue the blowed up denesity for movies. They don't like it.
+      %TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1);
+      %[OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
+       %TimeRecVecTemp,GridObj,...
+        %DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
+        %RhoInit.feq);
+    %end
     
+    if  DenRecObj.DidIBreak == 0
+      totRec = length( DenRecObj.TimeRecVec );
+      TimeRecVecTemp = DenRecObj.TimeRecVec ;
+      MasterSave.TimeRecVec = TimeRecVecTemp;
+    else %Don't incldue the blowed up denesity for movies. They don't like it.
+      totRec = length( DenRecObj.TimeRecVec ) - 1;
+      TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1) ;
+      MasterSave.TimeRecVec = TimeRecVecTemp;
+    end
+
+    % Break it into chunks
+    NumChucks = TimeObj.N_chunks;
+    SizeChunk = ceil( totRec/ NumChucks );
+    for i = 1:NumChucks;
+      if i ~= NumChucks
+        Ind =  (i-1) * SizeChunk + 1: i * SizeChunk;
+      else
+        Ind = (i-1) * SizeChunk:totRec;
+      end
+
+      [OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
+       TimeRecVecTemp(Ind) ,GridObj,...
+        MasterSave.Den_rec(:,:,:,Ind) );
+
+        % Save it
+        MasterSave.OrderParamObj.C_rec(:,:,Ind) = OrderParamObj.C_rec;
+        MasterSave.OrderParamObj.POP_rec(:,:,Ind) = OrderParamObj.POP_rec;
+        MasterSave.OrderParamObj.POPx_rec(:,:,Ind) = OrderParamObj.POPx_rec;
+        MasterSave.OrderParamObj.POPy_rec(:,:,Ind) = OrderParamObj.POPy_rec;
+        MasterSave.OrderParamObj.NOP_rec(:,:,Ind) = OrderParamObj.NOP_rec;
+        MasterSave.OrderParamObj.NOPx_rec(:,:,Ind) = OrderParamObj.NOPx_rec;
+        MasterSave.OrderParamObj.NOPy_rec(:,:,Ind) = OrderParamObj.NOPy_rec;
+    end
+
+    [~,~,~,~,MasterSave.OrderParamObj.NOPeq,~,~] = ...
+          OpCPNCalc(1, 1, feq, GridObj.phi, 1, 1, GridObj.phi3D);
+  
     OpRunTime = toc(tOpID);
     if Flags.Verbose
       fprintf('Made OP object t%d_%d: %.3g \n', ...
@@ -184,10 +229,6 @@ try
     end
     fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
     RunTime.OP = OpRunTime;
-    
-    if Flags.SaveMe
-      MasterSave.OrderParamObj = OrderParamObj;
-    end
     
     if Flags.MakeMovies == 1
       MovieSuccess = 0;
@@ -198,7 +239,7 @@ try
       HoldX = ParamObj.Nx /2 + 1;
       HoldY = ParamObj.Ny /2 + 1;
       
-      DistRec =  reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :),...
+      DistRec =  reshape( MasterSave.Den_rec(HoldX, HoldY, : , :),...
         [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
       
       % Save Name
@@ -207,7 +248,7 @@ try
       if DenRecObj.DidIBreak == 0
         
         OPMovieMakerTgtherDirAvi(MovStr,...
-          GridObj.x,GridObj.y,GridObj.phi,OrderParamObj,...
+          GridObj.x,GridObj.y,GridObj.phi,MasterSave.OrderParamObj,...
           DistRec,OrderParamObj.TimeRec);
         
       else
