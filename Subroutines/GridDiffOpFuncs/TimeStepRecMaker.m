@@ -31,22 +31,28 @@ end
 TimeObj.dt = dt;
 
 % Fix the recording time to be divisible by the time step
-TimeObj.t_rec = floor(t_rec/dt) * dt;
+TimeObj.t_rec = floor(t_rec/TimeObj.dt) * TimeObj.dt;
 
 
 % Fix the write time to be divisible by the record step
-TimeObj.t_write = floor(t_write/t_rec) * t_rec;
+TimeObj.t_write = floor(t_write/TimeObj.t_rec) * TimeObj.t_rec;
 
 
 % Fix the total run time to be divisible by t_write 
-TimeObj.t_tot = floor(t_tot/t_write) * t_write;
+TimeObj.t_tot = floor(t_tot/TimeObj.t_write) * TimeObj.t_write;
 
 % Calculate the outputs
-TimeObj.N_time = round(t_tot/dt);            % Tot # of time steps
-TimeObj.N_rec = round(t_tot/t_rec) + 1;  % Tot # of recorded points. +1 includes 0
-TimeObj.N_recChunk = round(t_write/t_rec ); % # of rec points/write chuck
-TimeObj.N_chunks = round(t_tot/t_write); % # of record chunks / tot time
-TimeObj.N_dtRec = round(t_rec/dt);       % #  time steps / record
-TimeObj.N_dtChunk = round(t_write/dt ); % # of dt/write chuck
+% Tot # of time steps
+TimeObj.N_time = round(TimeObj.t_tot/TimeObj.dt); 
+% Tot # of recorded points. +1 includes 0
+TimeObj.N_rec = round(TimeObj.t_tot/TimeObj.t_rec) + 1;
+% # of rec points/write chuck
+TimeObj.N_recChunk = round(TimeObj.t_write/TimeObj.t_rec );
+% # of record chunks / tot time
+TimeObj.N_chunks = round(TimeObj.t_tot/TimeObj.t_write); 
+% #  time steps / record
+TimeObj.N_dtRec = round(TimeObj.t_rec/TimeObj.dt);      
+% # of dt/write chuck
+TimeObj.N_dtChunk = round(TimeObj.t_write/TimeObj.dt ); 
    
 end
