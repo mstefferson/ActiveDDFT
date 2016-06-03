@@ -18,7 +18,7 @@
 
 function [DenRecObj]  = ...
     HR2DrotDenEvolverFTBodyIdC(rho,ParamObj,...
-    TimeObj,GridObj,DiffMobObj,Flags,feq, lfid)
+    TimeObj,GridObj,DiffMobObj,Flags, lfid)
 
 fprintf(lfid,'In body of code\n');
 
@@ -29,29 +29,27 @@ Nm  = ParamObj.Nm;
 N3 = Nx*Ny*Nm;
 
 % Declare dt since it's used so much
-dt = TimeObj.delta_t;
+dt = TimeObj.dt;
 
 % FT initial density and max density
 TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
 
-global Density_rec
-global DensityFT_rec
+global MasterSave
+
 %Initialize matrices that change size the +1 is to include initial density
-if Flags.SaveMe
-    Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_rec + 1 );      % Store density amplitudes
-    DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_rec + 1 );      % Store k-space amplitdues
-    
-    %Initialize records
-    DensityFT_rec(:,:,:,1)   = rho_FT;
-    Density_rec(:,:,:,1)     = rho;
+if Flags.SaveMe == 1
+  Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_recChunk );    % Store density amplitudes
+  DensityFT_rec      = zeros( Nx, Ny, Nm, TimeObj.N_recChunk );   % Store k-space amplitdues
 else
-    Density_rec = 0;
-    DensityFT_rec = 0;
+  Density_rec = 0;
+  DensityFT_rec = 0;
 end
 
-% keyboard
-j_record = 2;     %Record holder
+% Recording indecies
+jrectemp = 1; % Temporary holder for Density_rec
+jrec     = 2; % Actual index for MasterSave
+jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 %Set up Diffusion operator in cube form
@@ -86,44 +84,30 @@ GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
 
 % Take the first step- Euler. Element by element mulitplication
 if( Flags.StepMeth == 0 ) % AB 1
-  
   NlPf =  dt;
  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
-
 elseif( Flags.StepMeth == 1 ) % AB 2 
-  
   NlPf = 3 * dt / 2;
   NlPrevPf = dt / 2;
   [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,dt);
-
 elseif( Flags.StepMeth == 2 ) % HAB1
-  
   NlPf = dt .* Prop;
   [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
-
 elseif( Flags.StepMeth == 3 ) % HAB2
-
   NlPf = 3 * dt / 2 .* Prop;
   NlPrevPf = dt / 2 .* Prop .* Prop;
   [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, dt .* Prop );
-
 elseif( Flags.StepMeth == 4 ) % BHAB1
-  
   NlPf = dt / 2 .* ( 1 + Prop);
   [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
-
 elseif( Flags.StepMeth == 5 ) % BHAB2
-  
   NlPf = dt / 2 * ( 2 + Prop );
   NlPrevPf = dt / 2;
   [rho_FTnext] = DenStepperBHAB1cPf( ...
   Prop, rho_FT, GammaCube_FT, dt / 2 .* ( 1 + Prop) );
-
 elseif( Flags.StepMeth == 6 ) % Exponential Euler
-
   GamProp = ( Prop - 1 ) ./ Lop;
   [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
-
 else
   error('No stepping method selected');
 end
@@ -140,7 +124,7 @@ for t = 1:TimeObj.N_time-1
     %Save the previous and take one step forward.
     % Save the old drho
     GammaCube_FTprev = GammaCube_FT;
-    rho_FTprev  = rho_FT;
+    rho_prev       = rho;
     
     %Need to update rho!!!
     rho_FT      = rho_FTnext;
@@ -183,47 +167,74 @@ for t = 1:TimeObj.N_time-1
       [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
     end
 
-    %Save everything (this includes the initial state)
-    if (mod(t,TimeObj.N_count)== 0)
-        if Flags.SaveMe
-            [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerCube(lfid,TimeObj,t,...
-                rho_FT,rho_FTprev,TotalDensity ,j_record);
-        else
-            [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                VarRecorderTrackerNoSaveCube(lfid,TimeObj,t,...
-                rho_FT,rho_FTprev,TotalDensity);
-        end %if save
-        if ShitIsFucked == 1 || SteadyState == 1
-%             keyboard
-            break
-        end
-        j_record = j_record+1;
-    end %end recording
+  %Save everything
+  if ( mod(t,TimeObj.N_dtRec) == 0 )
     
+    if Flags.SaveMe
+      fprintf(lfid,'%f percent done\n',t./TimeObj.N_time*100);
+      [SteadyState,ShitIsFucked,MaxReldRho] = ...
+        BrokenSteadyDenTracker(rho,rho_prev, TotalDensity ,TimeObj);
+      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+      Density_rec(:,:,:,jrectemp)     = rho;
+    else
+      [SteadyState,ShitIsFucked,MaxReldRho] = ...
+        BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
+    end
+    
+    % Break out if shit is fucked
+    if ShitIsFucked == 1 || SteadyState == 1; break; end;
+    
+    % Write a chunk to disk
+    if ( mod(t, TimeObj.N_dtChunk ) == 0 )
+      % Record Density_recs to file
+      RecIndTemp = ...
+        (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
+      % Shift by one because we include zero
+      RecIndTemp = RecIndTemp + 1;
+      MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      jrectemp = 0;
+      jchunk = jchunk + 1;
+    end
+    jrectemp = jrectemp + 1;
+    jrec = jrec + 1;
+  end %end recording
+  
 end %end time loop
 fprintf(lfid,'Finished master time loop\n');
 %  keyboard
 
 % Update last rho
-if Flags.SaveMe
-    if ShitIsFucked == 0 && SteadyState == 0
-        t =  t + 1;
-        rho_FT      = rho_FTnext;
-        if (mod(t,TimeObj.N_count)==0)
-            if Flags.SaveMe
-                [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                    VarRecorderTrackerCube(lfid,TimeObj,t,...
-                    rho_FT,rho_FTprev,TotalDensity ,j_record);
-            else
-                [SteadyState,ShitIsFucked,MaxReldRho] = ...
-                    VarRecorderTrackerNoSaveCube(lfid,TimeObj,t,...
-                    rho_FT,rho_FTprev,TotalDensity);
-            end %if save   [SteadyState,ShitIsFucked,MaxReldRho] = ...
-            
-        end % End recording
-    end
-end %end if save
+t =  t + 1;
+rho_prev  = rho;
+rho_FT    = rho_FTnext;
+rho       = real(ifftn(ifftshift(rho_FT)));
+
+%Save everything
+if ( mod(t,TimeObj.N_dtRec)== 0 )
+
+  if Flags.SaveMe
+    fprintf(lfid,'%f percent done\n',t./TimeObj.N_time*100);
+    [SteadyState,ShitIsFucked,MaxReldRho] = ...
+      BrokenSteadyDenTracker(rho,rho_prev, TotalDensity ,TimeObj);
+    DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+    Density_rec(:,:,:,jrectemp)     = rho;
+  else
+    [SteadyState,ShitIsFucked,MaxReldRho] = ...
+      BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
+  end
+  
+  if ( mod(t, TimeObj.N_dtChunk ) == 0 )
+      % Record Density_recs to file
+      RecIndTemp = ...
+        (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
+      % Shift by one because we include zero
+      RecIndTemp = RecIndTemp + 1;
+      MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+  end
+  jrec = jrec + 1; % Still +1. Programs assumes this always happens
+end %end recording
 
 %If something broke, return zeros. Else, return the goods
 if ShitIsFucked
@@ -235,27 +246,18 @@ elseif SteadyState
     fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
 end
 
-% Get rid of zeros in record matrices
-Record_hold   = 1:j_record;
-TimeRecVec    = (0:j_record-1) * TimeObj.t_record;
-if Flags.SaveMe
-    Density_rec   = Density_rec(:,:,:,Record_hold);
-    DensityFT_rec = DensityFT_rec(:,:,:,Record_hold);
-else
-    Density_rec   = rho;
-    DensityFT_rec = rho_FT;
-end %end if save
+% Create vector of recorded times 
+jrec = jrec - 1;
+TimeRecVec    = (0:jrec-1) * TimeObj.t_rec;
 
 trun = toc;
 
-%Save the structure
-DenRecObj = struct('DidIBreak', ShitIsFucked,'SteadyState', SteadyState,...
-    'j_record', j_record,...
-    'TimeRecVec',TimeRecVec,...
-    'RunTime', trun, ...
-    'bc',ParamObj.bc,...
-    'Density_rec',Density_rec,'DensityFT_rec', DensityFT_rec,...
-    'MaxReldRho',MaxReldRho,'feq',feq);
-
+% Save useful info
+DenRecObj.DidIBreak    = ShitIsFucked;
+DenRecObj.SteadyState  = SteadyState;
+DenRecObj.MaxReldRho   = MaxReldRho;
+DenRecObj.TimeRecVec   = TimeRecVec;
+DenRecObj.rhoFinal     = rho;
+DenRecObj.runTime      = trun;
 
 end %function

@@ -265,7 +265,7 @@ if SteadyState
   fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
 end
 
-% Get rid of zeros in record matrices
+% Create vector of recorded times 
 jrec = jrec - 1;
 TimeRecVec    = (0:jrec-1) * TimeObj.t_rec;
 
