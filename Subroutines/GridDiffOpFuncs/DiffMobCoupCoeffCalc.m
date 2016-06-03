@@ -1,5 +1,5 @@
 function [DiffMobObj]...
-             = DiffMobCoupCoeffCalc(T,Mob_par,Mob_perp,Mob_rot,delta_t,delta_x,delta_phi,kx2D,ky2D,vd)
+             = DiffMobCoupCoeffCalc(T,Mob_par,Mob_perp,Mob_rot,dt,delta_x,delta_phi,kx2D,ky2D,vd)
          
 % Use Einstein diffusion relations
 D_par  = Mob_par * T;                                            % Parallel diffusion coeff
@@ -7,9 +7,9 @@ D_perp = Mob_perp * T;                                           % Perpendicular
 D_rot  = Mob_rot * T;                                            % Rotational diffusion
 
 % Check stability condition
-StabCoeffPar  = D_par  .* delta_t / (delta_x ^2 );
-StabCoeffPerp = D_perp .* delta_t / (delta_x ^2 );
-StabCoeffRot  = D_rot  .* delta_t / (delta_phi ^2 );
+StabCoeffPar  = D_par  .* dt / (delta_x ^2 );
+StabCoeffPerp = D_perp .* dt / (delta_x ^2 );
+StabCoeffRot  = D_rot  .* dt / (delta_phi ^2 );
 
 if StabCoeffPar > 1/2
     fprintf('StabCoeffPar = %f (should be less than 1/2) \n', StabCoeffPar);

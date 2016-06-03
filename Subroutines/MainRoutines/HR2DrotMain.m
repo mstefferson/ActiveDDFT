@@ -5,6 +5,10 @@
 
 function  [ DenRecObj ] = ...
   HR2DrotMain( filename, paramVec, ParamObj, TimeObj, RhoInit, Flags )
+global MasterSave
+MasterSave = 0;
+DenRecObj = 0;
+
 try
   % Move parameter vector to obj
   ParamObj.Nx = paramVec(1);
@@ -24,7 +28,7 @@ try
   
   % Set-up save paths, file names, and matfile
   if Flags.SaveMe
-    global MasterSave
+    
     if Flags.MakeOP == 0
       SaveName   = ['run_' filename];
       DirName    =  './runfiles';
@@ -82,7 +86,7 @@ try
   if Flags.AnisoDiff == 1
     [DiffMobObj] =  DiffMobCoupCoeffCalc( ParamObj.Tmp,...
       ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
-      TimeObj.delta_t, min(GridObj.dx,GridObj.dy),...
+      TimeObj.dt, min(GridObj.dx,GridObj.dy),...
       GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
   else
     [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
@@ -125,9 +129,12 @@ try
     MasterSave.GridObj  = GridObj;
     MasterSave.RhoInit  = RhoInit;
     MasterSave.ParamObj = ParamObj;
+    MasterSave.Den_rec = zeros(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,2);
+    MasterSave.DenFT_rec = complex( ...
+      zeros(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,2), 0 );
     MasterSave.Den_rec(:,:,:,1) = rho;
     MasterSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
-   end
+  end
   
   % Run the main code
   tBodyID      = tic;
@@ -139,7 +146,7 @@ try
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
       rho, ParamObj, TimeObj, GridObj, DiffMobObj, Flags, lfid);
   end
-
+  
   % Save it
   if Flags.SaveMe
     MasterSave.DenRecObj = DenRecObj;
@@ -164,27 +171,7 @@ try
   % Run movies if you want
   if Flags.MakeOP  == 1
     tOpID           = tic ;
-        % Set up saving
-    MasterSave.OrderParamObj.C_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.OrderParamObj.POP_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.OrderParamObj.POPx_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.OrderParamObj.POPy_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.OrderParamObj.NOP_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.OrderParamObj.NOPx_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.OrderParamObj.NOPy_rec(:,:,2) = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-
-    %if  DenRecObj.DidIBreak == 0
-      %[OrderParamObj] = CPNrecMaker(...
-        %ParamObj.Nx,ParamObj.Ny,DenRecObj.TimeRecVec,...
-        %GridObj,DenRecObj.Density_rec,RhoInit.feq);
-    %else %Don't incldue the blowed up denesity for movies. They don't like it.
-      %TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1);
-      %[OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
-       %TimeRecVecTemp,GridObj,...
-        %DenRecObj.Density_rec(:,:,:,1:length(TimeRecVecTemp)),...
-        %RhoInit.feq);
-    %end
-    
+        
     if  DenRecObj.DidIBreak == 0
       totRec = length( DenRecObj.TimeRecVec );
       TimeRecVecTemp = DenRecObj.TimeRecVec ;
@@ -194,34 +181,69 @@ try
       TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1) ;
       MasterSave.TimeRecVec = TimeRecVecTemp;
     end
-
+    
+    % Set up saving
+    MasterSave.C_rec    = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    MasterSave.NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    if Flags.MakeMovies
+      OPobj.C_rec    = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+      OPobj.POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+      OPobj.POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+      OPobj.POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+      OPobj.NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+      OPobj.NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+      OPobj.NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
+    end
+    
     % Break it into chunks
-    NumChucks = TimeObj.N_chunks;
-    SizeChunk = ceil( totRec/ NumChucks );
-    for i = 1:NumChucks;
-      if i ~= NumChucks
+    NumChunks = TimeObj.N_chunks;
+    SizeChunk = floor( totRec/ NumChunks );
+    NumChunks = ceil( totRec/ SizeChunk);
+    
+    for i = 1:NumChunks;
+      if i ~= NumChunks
         Ind =  (i-1) * SizeChunk + 1: i * SizeChunk;
       else
         Ind = (i-1) * SizeChunk:totRec;
       end
-
-      [OrderParamObj] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
-       TimeRecVecTemp(Ind) ,GridObj,...
+      
+      [OPObjTemp] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
+        TimeRecVecTemp(Ind) ,GridObj,...
         MasterSave.Den_rec(:,:,:,Ind) );
-
-        % Save it
-        MasterSave.OrderParamObj.C_rec(:,:,Ind) = OrderParamObj.C_rec;
-        MasterSave.OrderParamObj.POP_rec(:,:,Ind) = OrderParamObj.POP_rec;
-        MasterSave.OrderParamObj.POPx_rec(:,:,Ind) = OrderParamObj.POPx_rec;
-        MasterSave.OrderParamObj.POPy_rec(:,:,Ind) = OrderParamObj.POPy_rec;
-        MasterSave.OrderParamObj.NOP_rec(:,:,Ind) = OrderParamObj.NOP_rec;
-        MasterSave.OrderParamObj.NOPx_rec(:,:,Ind) = OrderParamObj.NOPx_rec;
-        MasterSave.OrderParamObj.NOPy_rec(:,:,Ind) = OrderParamObj.NOPy_rec;
+      
+      % Save it
+      MasterSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
+      MasterSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
+      MasterSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
+      MasterSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
+      MasterSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
+      MasterSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
+      MasterSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+      
+      if Flags.MakeMovies
+        OPobj.C_rec(:,:,Ind)    = OPObjTemp.C_rec;
+        OPobj.POP_rec(:,:,Ind)  = OPObjTemp.POP_rec;
+        OPobj.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
+        OPobj.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
+        OPobj.NOP_rec(:,:,Ind)  = OPObjTemp.NOP_rec;
+        OPobj.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
+        OPobj.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+      end
+      
+    end % loop over chunks
+    
+    [~,~,~,~,MasterSave.NOPeq,~,~] = ...
+      OpCPNCalc(1, 1, RhoInit.feq, GridObj.phi, 1, 1, GridObj.phi3D);
+    if Flags.MakeMovies; 
+      OPobj.TimeRecVec = TimeRecVecTemp; 
+      OPobj.NOPeq = MasterSave.NOPeq; 
     end
-
-    [~,~,~,~,MasterSave.OrderParamObj.NOPeq,~,~] = ...
-          OpCPNCalc(1, 1, feq, GridObj.phi, 1, 1, GridObj.phi3D);
-  
+    
     OpRunTime = toc(tOpID);
     if Flags.Verbose
       fprintf('Made OP object t%d_%d: %.3g \n', ...
@@ -244,19 +266,10 @@ try
       
       % Save Name
       MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trial,ParamObj.runID);
-      
-      if DenRecObj.DidIBreak == 0
-        
-        OPMovieMakerTgtherDirAvi(MovStr,...
-          GridObj.x,GridObj.y,GridObj.phi,MasterSave.OrderParamObj,...
-          DistRec,OrderParamObj.TimeRec);
-        
-      else
-        
-        OPMovieMakerTgtherDirAvi(MovStr,...
-          GridObj.x,GridObj.y,GridObj.phi,OrderParamObj,...
-          DistRec,OrderParamObj.TimeRec(1:end-1) );
-      end
+     
+      OPMovieMakerTgtherDirAvi(MovStr,...
+        GridObj.x,GridObj.y,GridObj.phi,OPobj,...
+        DistRec,OPobj.TimeRecVec);
       
       MovieSuccess = 1;
       % Move it
@@ -290,12 +303,12 @@ try
       
       for i = 1:8
         FTmat2plot(i,:) =  reshape(...
-          DenRecObj.DensityFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
+          MasterSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
           [ 1, Nrec ]  );
       end
-      
+      % Plot Amplitudes
       ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-        ParamObj.Nm, DenRecObj.bc,ParamObj.vD, ParamObj.trial)
+        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trial)
       
       % Save it
       figtl = sprintf('AmpFT_%d_%d',ParamObj.trial, ParamObj.runID);
@@ -331,6 +344,7 @@ catch err %Catch errors
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
   MasterSave.err = err;
+  disp(err);
   
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
@@ -340,8 +354,8 @@ catch err %Catch errors
     if Flags.MakeMovies == 1
       if MovieSuccess == 0
         fprintf('Movies failed\n');
+        if exist(MovStr,'file'); delete(MovStr); end
         rmdir(DirName);
-        delete(MovStr);
         DirName    =  './runOPfiles';
       end
     end

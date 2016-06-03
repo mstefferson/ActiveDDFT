@@ -27,27 +27,26 @@ if t_rec > t_write;
   error('File write interval is shorter than record interval fix before proceeding');
 end
 
+% Start building object
+TimeObj.dt = dt;
+
 % Fix the recording time to be divisible by the time step
-if mod(t_rec, dt) ~= 0
-  TimeObj.t_rec = floor(t_rec/dt) * dt;
-end
+TimeObj.t_rec = floor(t_rec/dt) * dt;
+
 
 % Fix the write time to be divisible by the record step
-if mod(t_write, t_rec) ~= 0
-  TimeObj.t_write = floor(t_write/t_rec) * t_rec;
-end
+TimeObj.t_write = floor(t_write/t_rec) * t_rec;
+
 
 % Fix the total run time to be divisible by t_write 
-if mod(t_tot,t_write) ~= 0
-  TimeObj.t_tot = floor(t_tot/t_write) * t_write;
-end
+TimeObj.t_tot = floor(t_tot/t_write) * t_write;
 
 % Calculate the outputs
 TimeObj.N_time = round(t_tot/dt);            % Tot # of time steps
 TimeObj.N_rec = round(t_tot/t_rec) + 1;  % Tot # of recorded points. +1 includes 0
-TimeObj.N_recChuck = round(t_write/t_rec ); % # of rec points/write chuck
+TimeObj.N_recChunk = round(t_write/t_rec ); % # of rec points/write chuck
 TimeObj.N_chunks = round(t_tot/t_write); % # of record chunks / tot time
 TimeObj.N_dtRec = round(t_rec/dt);       % #  time steps / record
-TimeObj.N_dtChuck = round(t_write/dt ); % # of dt/write chuck
+TimeObj.N_dtChunk = round(t_write/dt ); % # of dt/write chuck
    
 end

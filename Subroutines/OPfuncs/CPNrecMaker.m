@@ -2,7 +2,8 @@ function [OrderParamObj] = ...
     CPNrecMaker(Nx,Ny,TimeRecVec,GridObj,Density_rec)
 
 % Number of frames and time vec
-OrderParamObj.nFrames    = length(TimeRecVec) ; 
+nFrames = length(TimeRecVec);
+OrderParamObj.nFrames    = nFrames; 
 OrderParamObj.TimeRecVec = TimeRecVec ; 
  % Concentration
 OrderParamObj.C_rec      = zeros(Nx,Ny,nFrames);
@@ -14,12 +15,12 @@ OrderParamObj.POPy_rec = zeros(Nx,Ny,nFrames);
 % Nematic order parameter-(max eigenvalue of NOP)
 OrderParamObj.NOP_rec    = zeros(Nx,Ny,nFrames);
 % Nematic alignment director-x,y dir (eigenvector of nematic order parameter)
-OrderParamObj.NADx_rec   = zeros(Nx,Ny,nFrames);
-OrderParamObj.NADy_rec   = zeros(Nx,Ny,nFrames);
+OrderParamObj.NOPx_rec   = zeros(Nx,Ny,nFrames);
+OrderParamObj.NOPy_rec   = zeros(Nx,Ny,nFrames);
 
 
 for ii = 1:nFrames
-    [C,POP,POPx,POPy,NOP,NADx,NADy] = ...
+    [C,POP,POPx,POPy,NOP,NOPx,NOPy] = ...
         OpCPNCalc(Nx,Ny,Density_rec(:,:,:,ii),...
         GridObj.phi,GridObj.x,GridObj.y,GridObj.phi3D);
     
@@ -30,8 +31,8 @@ for ii = 1:nFrames
     OrderParamObj.POPy_rec(:,:,ii) = real(POPy);
     
     OrderParamObj.NOP_rec(:,:,ii)  = real(NOP);
-    OrderParamObj.NADx_rec(:,:,ii) = real(NADx);
-    OrderParamObj.NADy_rec(:,:,ii) = real(NADy);
+    OrderParamObj.NOPx_rec(:,:,ii) = real(NOPx);
+    OrderParamObj.NOPy_rec(:,:,ii) = real(NOPy);
 %     keyboard 
 end
 

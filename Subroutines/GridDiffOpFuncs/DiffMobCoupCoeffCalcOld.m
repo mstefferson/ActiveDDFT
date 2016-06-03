@@ -2,7 +2,7 @@
 % and fluid
 
 function [DiffMobObj]...
-             = DiffMobCoupCoeffCalcOld(wfid,Eta_visc,L_rod,Diam,T,delta_t,delta_x,delta_phi,kx2D,ky2D)
+             = DiffMobCoupCoeffCalcOld(wfid,Eta_visc,L_rod,Diam,T,dt,delta_x,delta_phi,kx2D,ky2D)
 %Coefficients of the friction matrix
 Fric_par  = pi * Eta_visc * L_rod / (log(L_rod/Diam));          % for motion parallel to rods
 Fric_perp = 2*Fric_par;                                         % for motion perpendicular to rods
@@ -18,9 +18,9 @@ D_perp = Mob_perp * T;                                           % Perpendicular
 D_rot  = Mob_rot * T;                                            % Rotational diffusion
 
 % Check stability condition
-StabCoeffPar  = D_par  .* delta_t / (delta_x ^2 );
-StabCoeffPerp = D_perp .* delta_t / (delta_x ^2 );
-StabCoeffRot  = D_rot  .* delta_t / (delta_phi ^2 );
+StabCoeffPar  = D_par  .* dt / (delta_x ^2 );
+StabCoeffPerp = D_perp .* dt / (delta_x ^2 );
+StabCoeffRot  = D_rot  .* dt / (delta_phi ^2 );
 
 if StabCoeffPar > 1/2
     fprintf(wfid,'My lord! I foresee bad times ahead. Your gridspacing might not lead to convergence. The parallel diffusion coefficien is to blame\n');

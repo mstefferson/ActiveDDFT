@@ -18,7 +18,7 @@ AspctRt = 8;                  % L / W
 % v0      = 0;                  %Driving velocity
 
 %%%%%%%%%%%%%%%Time recording %%%%%%%%%%%%%%%%%%%%%%%%%%
-delta_t     = 1e-3; %time step
+dt     = 1e-3; %time step
 % t_tot       = 10;   %total time
 t_record    = t_tot/100; %time interval for recording dynamics
 ss_epsilon  = 1e-10;                          %steady state condition
@@ -81,7 +81,7 @@ if v0  == 0; Drive = 0; else Drive = 1;end
 Paramtmp = [trial Interactions Drive MakeOP MakeMovies SaveMe Nx Ny Nm...
     Lx Ly L_rod Tmp Norm WeightPos WeightAng Random ...
     NumModesX NumModesY NumModesM bc Mob_pos Mob_rot v0];
-Timetmp  = [delta_t t_record t_tot ss_epsilon];
+Timetmp  = [dt t_record t_tot ss_epsilon];
 
 % Make the output directory string and input file
 FileDir = ...

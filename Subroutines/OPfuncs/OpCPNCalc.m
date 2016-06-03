@@ -2,7 +2,7 @@
 % Function returns the spatial concentration and Order Parameters of a 2-D system of particles
 % with an orientation
 
-function [C,POP,nx_POP,ny_POP,NOP,NADx,NADy] = OpCPNCalc(Nx,Ny,rho,phi,x,y,phi3d)
+function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = OpCPNCalc(Nx,Ny,rho,phi,x,y,phi3d)
 
 % Director is chosen to be in the +y direction for all gridpoints
 
@@ -16,9 +16,9 @@ function [C,POP,nx_POP,ny_POP,NOP,NADx,NADy] = OpCPNCalc(Nx,Ny,rho,phi,x,y,phi3d
 % QeigMax_MB: Eigenvalue of the matrix nn - I/2
 % NOP: The nematic order parameter. Defined as 3/2*  max(eigenvalue( nematic
 % order parameter S_NOP)
-% NADx: Nematic alignment director in x direction. Nematic alignment
+% NOPx: Nematic alignment director in x direction. Nematic alignment
 % director is the eigenvector corresponding to max(eig(S_NOP))
-% NADy: Nematic alignment director in y direction. Nematic alignment
+% NOPy: Nematic alignment director in y direction. Nematic alignment
 % director is the eigenvector corresponding to max(eig(S_NOP))
 
 %Concentration is the first moment of the distribution. Integrate over all
@@ -52,8 +52,8 @@ POP = sqrt(nx_POP.^2 + ny_POP.^2);
 % keyboard
 
 eigMaxQ_NOP = zeros(Nx,Ny);    % Eigenvalue of nemativ order parameter matrix
-NADx = zeros(Nx,Ny);           % Nematic alignment x-direction
-NADy = zeros(Nx,Ny);           % Nematic alignment y-direction
+NOPx = zeros(Nx,Ny);           % Nematic alignment x-direction
+NOPy = zeros(Nx,Ny);           % Nematic alignment y-direction
 if Nx == 1 && Ny == 1
     Q_NOPxx_temp = trapz_periodic(phi,rho .* (cos(phi).*cos(phi) - 1/2)) ./ C;
     Q_NOPxy_temp = trapz_periodic(phi,rho .* (cos(phi).*sin(phi))) ./ C;
@@ -71,9 +71,9 @@ for i = 1:1:length(x)
         [EigVec,EigS] = eigs(Q_temp);
         eigMaxQ_NOP(i,j) = max(max(EigS));
         %Find the eigenvector corresponding to this eigenvalue
-        NADtemp = EigVec( EigS == repmat(max(EigS,[],2),[1,2]) );
-        NADx(i,j) = NADtemp(1);
-        NADy(i,j) = NADtemp(2);
+        NOPtemp = EigVec( EigS == repmat(max(EigS,[],2),[1,2]) );
+        NOPx(i,j) = NOPtemp(1);
+        NOPy(i,j) = NOPtemp(2);
     end
 end
 % We need to build 2x2 matrices and diagonalize them. But, we know how to
