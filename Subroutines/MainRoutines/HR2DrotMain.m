@@ -1,11 +1,12 @@
-% HR2DrotMain.m
+%Obj HR2DrotMain.m
 %
 % Program is the main() for running the diffusion of 2D hard rods with
 % orientation. Program handles interactions using DDFT
 
 function  [ DenRecObj ] = ...
   HR2DrotMain( filename, paramVec, ParamObj, TimeObj, RhoInit, Flags )
-global MasterSave
+
+global RunSave
 MasterSave = 0;
 DenRecObj = 0;
 
@@ -28,24 +29,29 @@ try
   
   % Set-up save paths, file names, and matfile
   if Flags.SaveMe
+     SaveNameRun   = ['run_' filename];
     
     if Flags.MakeOP == 0
-      SaveName   = ['run_' filename];
       DirName    =  './runfiles';
     else
-      SaveName   = ['runOP_' filename];
+      SaveNameOP   = ['OP_' filename];
+      DirName  = filename(1:end-4) ;
       if Flags.MakeMovies == 1
-        DirName  = filename(1:end-4) ;
         DirPath  = ['./analyzedfiles/' DirName ];
         if exist(DirPath,'dir') == 0;
           mkdir('./analyzedfiles', DirName);
         end
         DirName = DirPath;
       else
-        DirName    =  './runOPfiles';
+        DirPath  = ['./runOPfiles/' DirName ];
+        if exist(DirPath,'dir') == 0;
+          mkdir('./runOPfiles', DirName);
+        end
+        DirName = DirPath;
       end
+      OpSave = matfile(SaveNameOP,'Writable',true);
     end
-    MasterSave = matfile(SaveName,'Writable',true);
+    RunSave = matfile(SaveNameRun,'Writable',true);
   end
   
   % Set some flags to 0
@@ -123,17 +129,17 @@ try
   
   % Save everything before running body of code
   if Flags.SaveMe
-    MasterSave.Flags    = Flags;
-    MasterSave.ParamObj = ParamObj;
-    MasterSave.TimeObj  = TimeObj;
-    MasterSave.GridObj  = GridObj;
-    MasterSave.RhoInit  = RhoInit;
-    MasterSave.ParamObj = ParamObj;
-    MasterSave.Den_rec = zeros(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,2);
-    MasterSave.DenFT_rec = complex( ...
+    RunSave.Flags    = Flags;
+    RunSave.ParamObj = ParamObj;
+    RunSave.TimeObj  = TimeObj;
+    RunSave.GridObj  = GridObj;
+    RunSave.RhoInit  = RhoInit;
+    RunSave.ParamObj = ParamObj;
+    RunSave.Den_rec = zeros(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,2);
+    RunSave.DenFT_rec = complex( ...
       zeros(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,2), 0 );
-    MasterSave.Den_rec(:,:,:,1) = rho;
-    MasterSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
+    RunSave.Den_rec(:,:,:,1) = rho;
+    RunSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
   end
   
   % Run the main code
@@ -149,7 +155,7 @@ try
   
   % Save it
   if Flags.SaveMe
-    MasterSave.DenRecObj = DenRecObj;
+    RunSave.DenRecObj = DenRecObj;
   end
   
   EvolvedDen = 1;
@@ -175,21 +181,24 @@ try
     if  DenRecObj.DidIBreak == 0
       totRec = length( DenRecObj.TimeRecVec );
       TimeRecVecTemp = DenRecObj.TimeRecVec ;
-      MasterSave.TimeRecVec = TimeRecVecTemp;
+      OpSave.OpTimeRecVec = TimeRecVecTemp;
     else %Don't incldue the blowed up denesity for movies. They don't like it.
       totRec = length( DenRecObj.TimeRecVec ) - 1;
       TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1) ;
-      MasterSave.TimeRecVec = TimeRecVecTemp;
+      OpSave.OpTimeRecVec = TimeRecVecTemp;
     end
     
     % Set up saving
-    MasterSave.C_rec    = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    MasterSave.NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.Flags    = Flags;
+    OpSave.ParamObj = ParamObj;
+    OpSave.TimeObj  = TimeObj;
+    OpSave.C_rec    = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
     if Flags.MakeMovies
       OPobj.C_rec    = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
       OPobj.POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, totRec);
@@ -214,16 +223,16 @@ try
       
       [OPObjTemp] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
         TimeRecVecTemp(Ind) ,GridObj,...
-        MasterSave.Den_rec(:,:,:,Ind) );
+        RunSave.Den_rec(:,:,:,Ind) );
       
       % Save it
-      MasterSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
-      MasterSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
-      MasterSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
-      MasterSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
-      MasterSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
-      MasterSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
-      MasterSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+      OpSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
+      OpSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
+      OpSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
+      OpSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
+      OpSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
+      OpSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
+      OpSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
       
       if Flags.MakeMovies
         OPobj.C_rec(:,:,Ind)    = OPObjTemp.C_rec;
@@ -237,11 +246,11 @@ try
       
     end % loop over chunks
     
-    [~,~,~,~,MasterSave.NOPeq,~,~] = ...
+    [~,~,~,~,OpSave.NOPeq,~,~] = ...
       OpCPNCalc(1, 1, RhoInit.feq, GridObj.phi, 1, 1, GridObj.phi3D);
     if Flags.MakeMovies; 
       OPobj.TimeRecVec = TimeRecVecTemp; 
-      OPobj.NOPeq = MasterSave.NOPeq; 
+      OPobj.NOPeq = OpSave.NOPeq; 
     end
     
     OpRunTime = toc(tOpID);
@@ -261,7 +270,7 @@ try
       HoldX = ParamObj.Nx /2 + 1;
       HoldY = ParamObj.Ny /2 + 1;
       
-      DistRec =  reshape( MasterSave.Den_rec(HoldX, HoldY, : , :),...
+      DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
         [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
       
       % Save Name
@@ -303,7 +312,7 @@ try
       
       for i = 1:8
         FTmat2plot(i,:) =  reshape(...
-          MasterSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
+          RunSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
           [ 1, Nrec ]  );
       end
       % Plot Amplitudes
@@ -335,21 +344,26 @@ try
   % Move saved things
   
   if Flags.SaveMe
-    MasterSave.RunTime = RunTime;
-    movefile(SaveName,DirName);
+    RunSave.RunTime = RunTime;
+    movefile(SaveNameRun,DirName);
+
+    if Flags.MakeOP == 1
+      movefile( SaveNameOP,DirName);
+    end
+
   end
   
 catch err %Catch errors
   
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
-  MasterSave.err = err;
+  RunSave.err = err;
   disp(err);
   
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
-  
+keyboard
   if Flags.SaveMe
     if Flags.MakeMovies == 1
       if MovieSuccess == 0
@@ -359,7 +373,16 @@ catch err %Catch errors
         DirName    =  './runOPfiles';
       end
     end
-    movefile(SaveName,DirName);
+    if Flags.MakeOP == 1
+        DirName  = filename(1:end-4) ;
+        DirPath  = ['./runOPfiles/' DirName ];
+        if exist(DirPath,'dir') == 0;
+          mkdir('./runOPfiles', DirName);
+        end
+        DirName = DirPath;
+        movefile( SaveNameOP,DirName);
+    end
+    movefile(SaveNameRun,DirName);
   end
   
 end %End try and catch

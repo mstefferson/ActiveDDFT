@@ -20,6 +20,8 @@ function [DenRecObj]  = ...
     HR2DrotDenEvolverFTBodyIdC(rho,ParamObj,...
     TimeObj,GridObj,DiffMobObj,Flags, lfid)
 
+global RunSave
+
 fprintf(lfid,'In body of code\n');
 
 %Set N since it used so frequently
@@ -35,8 +37,6 @@ dt = TimeObj.dt;
 TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
 
-global MasterSave
-
 %Initialize matrices that change size the +1 is to include initial density
 if Flags.SaveMe == 1
   Density_rec       = zeros( Nx, Ny, Nm, TimeObj.N_recChunk );    % Store density amplitudes
@@ -48,7 +48,7 @@ end
 
 % Recording indecies
 jrectemp = 1; % Temporary holder for Density_rec
-jrec     = 2; % Actual index for MasterSave
+jrec     = 2; % Actual index for RunSave
 jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space propagator, and interaction
@@ -191,8 +191,8 @@ for t = 1:TimeObj.N_time-1
         (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
       % Shift by one because we include zero
       RecIndTemp = RecIndTemp + 1;
-      MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-      MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
       jrectemp = 0;
       jchunk = jchunk + 1;
     end
@@ -230,8 +230,8 @@ if ( mod(t,TimeObj.N_dtRec)== 0 )
         (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
       % Shift by one because we include zero
       RecIndTemp = RecIndTemp + 1;
-      MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-      MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
   end
   jrec = jrec + 1; % Still +1. Programs assumes this always happens
 end %end recording

@@ -104,4 +104,4 @@ if FlagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP fir
 if ParamMaster.vD  == 0; FlagMaster.Drive = 0; else FlagMaster.Drive = 1;end
 
 % Save the Params
-save('Params.mat','ParamMaster','TimeObj','FlagMaster','RhoInitMaster')
+save('Params.mat','ParamMaster','TimeMaster','FlagMaster','RhoInitMaster')

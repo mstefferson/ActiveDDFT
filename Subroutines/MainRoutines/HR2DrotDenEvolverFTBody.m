@@ -26,6 +26,8 @@
 function [DenRecObj] = HR2DrotDenEvolverFTBody(...
   rho,ParamObj, TimeObj,GridObj,DiffMobObj, Flags,lfid)
 
+global RunSave
+
 fprintf(lfid,'In body of code\n');
 % Create a text file that tells user what percent of the program has
 % finished
@@ -45,7 +47,6 @@ TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
 rhoVec_FT = reshape(rho_FT,N3,1);
 
-global MasterSave
 
 %Initialize matrices that change size the +1 is to include initial density
 if Flags.SaveMe == 1
@@ -58,7 +59,7 @@ end
 
 % Recording indecies
 jrectemp = 1; % Temporary holder for Density_rec
-jrec     = 2; % Actual index for MasterSave
+jrec     = 2; % Actual index for RunSave
 jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space Lopagator, and interaction
@@ -202,8 +203,8 @@ for t = 1:TimeObj.N_time-1
         (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
       % Shift by one because we include zero
       RecIndTemp = RecIndTemp + 1;
-      MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-      MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
       jrectemp = 0;
       jchunk = jchunk + 1;
     end
@@ -245,8 +246,8 @@ if ( mod(t,TimeObj.N_dtRec)== 0 )
         (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
       % Shift by one because we include zero
       RecIndTemp = RecIndTemp + 1;
-      MasterSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-      MasterSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
   end
   jrec = jrec + 1; % Still +1. Programs assumes this always happens
 end %end recording
