@@ -29,7 +29,7 @@ try
   
   % Set-up save paths, file names, and matfile
   if Flags.SaveMe
-     SaveNameRun   = ['run_' filename];
+    SaveNameRun   = ['run_' filename];
     
     if Flags.MakeOP == 0
       DirName    =  './runfiles';
@@ -177,7 +177,7 @@ try
   % Run movies if you want
   if Flags.MakeOP  == 1
     tOpID           = tic ;
-        
+    
     if  DenRecObj.DidIBreak == 0
       totRec = length( DenRecObj.TimeRecVec );
       TimeRecVecTemp = DenRecObj.TimeRecVec ;
@@ -248,9 +248,9 @@ try
     
     [~,~,~,~,OpSave.NOPeq,~,~] = ...
       OpCPNCalc(1, 1, RhoInit.feq, GridObj.phi, 1, 1, GridObj.phi3D);
-    if Flags.MakeMovies; 
-      OPobj.TimeRecVec = TimeRecVecTemp; 
-      OPobj.NOPeq = OpSave.NOPeq; 
+    if Flags.MakeMovies;
+      OPobj.OpTimeRecVec = TimeRecVecTemp;
+      OPobj.NOPeq = OpSave.NOPeq;
     end
     
     OpRunTime = toc(tOpID);
@@ -267,18 +267,17 @@ try
       % Make matlab movies
       tMovID       = tic;
       %         keyboard
-      HoldX = ParamObj.Nx /2 + 1;
-      HoldY = ParamObj.Ny /2 + 1;
-      
+      HoldX = ParamObj.Nx /2 + 1; % spatial pos placeholders
+      HoldY = ParamObj.Ny /2 + 1; % spatial pos placeholders
       DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
         [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
       
       % Save Name
       MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trial,ParamObj.runID);
-     
+      
       OPMovieMakerTgtherDirAvi(MovStr,...
         GridObj.x,GridObj.y,GridObj.phi,OPobj,...
-        DistRec,OPobj.TimeRecVec);
+        DistRec,OPobj.OpTimeRecVec);
       
       MovieSuccess = 1;
       % Move it
@@ -346,11 +345,11 @@ try
   if Flags.SaveMe
     RunSave.RunTime = RunTime;
     movefile(SaveNameRun,DirName);
-
+    
     if Flags.MakeOP == 1
       movefile( SaveNameOP,DirName);
     end
-
+    
   end
   
 catch err %Catch errors
@@ -363,7 +362,7 @@ catch err %Catch errors
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
-keyboard
+  
   if Flags.SaveMe
     if Flags.MakeMovies == 1
       if MovieSuccess == 0
@@ -374,13 +373,13 @@ keyboard
       end
     end
     if Flags.MakeOP == 1
-        DirName  = filename(1:end-4) ;
-        DirPath  = ['./runOPfiles/' DirName ];
-        if exist(DirPath,'dir') == 0;
-          mkdir('./runOPfiles', DirName);
-        end
-        DirName = DirPath;
-        movefile( SaveNameOP,DirName);
+      DirName  = filename(1:end-4) ;
+      DirPath  = ['./runOPfiles/' DirName ];
+      if exist(DirPath,'dir') == 0;
+        mkdir('./runOPfiles', DirName);
+      end
+      DirName = DirPath;
+      movefile( SaveNameOP,DirName);
     end
     movefile(SaveNameRun,DirName);
   end
