@@ -45,62 +45,69 @@ if numDirs
     TimeObj  = RunSave.TimeObj;
     Flags  = RunSave.Flags;
     GridObj  = RunSave.GridObj;
-
+    
     % Make matlab movies
     HoldX = ParamObj.Nx /2 + 1; % spatial pos placeholders
     HoldY = ParamObj.Ny /2 + 1; % spatial pos placeholders
-
+    
     DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
       [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
     
     % Save Name
     MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trial,ParamObj.runID);
     
-   % Call movie routine 
-    OPMovieMakerTgtherDirAvi(MovStr,...
-      GridObj.x,GridObj.y,GridObj.phi,OPobj,...
-      DistRec,OPobj.OpTimeRecVec);
+    % Call movie routine
+    try
+      OPMovieMakerTgtherDirAvi(MovStr,...
+        GridObj.x,GridObj.y,GridObj.phi,OPobj,...
+        DistRec,OPobj.OpTimeRecVec);
+      
+      MovieSuccess = 1;
+      
+      
+      % Make amplitude plot
+      kx0 = ParamObj.Nx / 2 + 1;
+      ky0 = ParamObj.Ny / 2 + 1;
+      km0 = ParamObj.Nm / 2 + 1;
+      Nrec = length( DenRecObj.TimeRecVec);
+      
+      FTind2plot = zeros( 8, 3 );
+      FTmat2plot = zeros( 8, Nrec );
+      
+      FTind2plot(1,:) = [kx0     ky0     km0 + 1];
+      FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
+      FTind2plot(3,:) = [kx0     ky0 + 1 km0 + 1];
+      FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 + 1];
+      FTind2plot(5,:) = [kx0     ky0     km0 + 2];
+      FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
+      FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
+      FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
+      
+      for jj = 1:8
+        FTmat2plot(jj,:) =  reshape(...
+          RunSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
+          [ 1, Nrec ]  );
+      end
+      % Plot Amplitudes
+      ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
+        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trial)
+      
+      % Save it
+      figtl = sprintf('AmpFT_%d_%d',ParamObj.trial, ParamObj.runID);
+      savefig(gcf,figtl)
+      saveas(gcf, figtl,'jpg')
+      
+      % move it
+      cd ../
+      movefile(dirTemp, '../analyzedfiles');
+    catch err
+      fprintf('Did not make movie \n');
+      disp(err.message);
+      cd ../
+    end % try catch
     
-    MovieSuccess = 1;
     
-    
-    % Make amplitude plot
-    kx0 = ParamObj.Nx / 2 + 1;
-    ky0 = ParamObj.Ny / 2 + 1;
-    km0 = ParamObj.Nm / 2 + 1;
-    Nrec = length( DenRecObj.TimeRecVec);
-    
-    FTind2plot = zeros( 8, 3 );
-    FTmat2plot = zeros( 8, Nrec );
-    
-    FTind2plot(1,:) = [kx0     ky0     km0 + 1];
-    FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
-    FTind2plot(3,:) = [kx0     ky0 + 1 km0 + 1];
-    FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 + 1];
-    FTind2plot(5,:) = [kx0     ky0     km0 + 2];
-    FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
-    FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
-    FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
-    
-    for jj = 1:8
-      FTmat2plot(jj,:) =  reshape(...
-        RunSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
-        [ 1, Nrec ]  );
-    end
-    % Plot Amplitudes
-    ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-      ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trial)
-    
-    % Save it
-    figtl = sprintf('AmpFT_%d_%d',ParamObj.trial, ParamObj.runID);
-    savefig(gcf,figtl)
-    saveas(gcf, figtl,'jpg')
-    
-    % move it
-    cd ../
-    movefile(dirTemp, '../analyzedfiles');
-  
-  end
+  end % loop over dir
   
   %Return to where you started
   cd ../

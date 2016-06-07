@@ -72,7 +72,7 @@ if numRuns > 1
     
     disp(filename);
     
-    [DidIBreak,SteadyState,MaxReldRho] = ...
+    [DenRecObj] = ...
       HR2DrotMain( filename, paramvec, ParamObj, TimeObj, RhoInit, Flags );
   end
 else
