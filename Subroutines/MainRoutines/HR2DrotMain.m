@@ -70,7 +70,7 @@ try
   tMainID  = tic;
   
   % Create a file that holds warning print statements
-  LocString = sprintf('Location_%d.%d.txt',ParamObj.trial,ParamObj.runID);
+  LocString = sprintf('Location_%d.%d.txt',ParamObj.trialID,ParamObj.runID);
   lfid      = fopen(LocString,'a+');    % a+ allows to append data
   fprintf(lfid,'Starting main, current code\n');
   
@@ -82,7 +82,7 @@ try
   GridRunTime = toc(tGridID);
   if Flags.Verbose
     fprintf('Made grid t%d_%d: %.3g \n', ...
-      ParamObj.trial, ParamObj.runID, GridRunTime);
+      ParamObj.trialID, ParamObj.runID, GridRunTime);
   end
   fprintf(lfid,'Made Grid: %.3g \n', GridRunTime);
   RunTime.Grid = GridRunTime;
@@ -102,7 +102,7 @@ try
   DiffRunTime = toc(tDiffID);
   if Flags.Verbose
     fprintf('Made diffusion object t%d_%d: %.3g\n', ...
-      ParamObj.trial, ParamObj.runID, DiffRunTime);
+      ParamObj.trialID, ParamObj.runID, DiffRunTime);
   end
   fprintf(lfid,'Made diffusion object: %.3g\n', DiffRunTime);
   RunTime.Diff = DiffRunTime;
@@ -122,7 +122,7 @@ try
   IntDenRunTime = toc(tIntDenID);
   if Flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
-      ParamObj.trial, ParamObj.runID, IntDenRunTime);
+      ParamObj.trialID, ParamObj.runID, IntDenRunTime);
   end
   fprintf(lfid,'Made initial density: %.3g\n', IntDenRunTime);
   RunTime.IntDen = IntDenRunTime;
@@ -162,7 +162,7 @@ try
   BodyRunTime  = toc(tBodyID);
   if Flags.Verbose
     fprintf('Ran Main Body t%d_%d: %.3g \n', ...
-      ParamObj.trial, ParamObj.runID, BodyRunTime);
+      ParamObj.trialID, ParamObj.runID, BodyRunTime);
   end
   fprintf(lfid,'Body Run Time = %f\n\n', BodyRunTime);
   RunTime.Body = BodyRunTime;
@@ -256,7 +256,7 @@ try
     OpRunTime = toc(tOpID);
     if Flags.Verbose
       fprintf('Made OP object t%d_%d: %.3g \n', ...
-        ParamObj.trial, ParamObj.runID, OpRunTime);
+        ParamObj.trialID, ParamObj.runID, OpRunTime);
     end
     fprintf(lfid,'OrderParam Run time = %f\n', OpRunTime);
     RunTime.OP = OpRunTime;
@@ -273,7 +273,7 @@ try
         [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
       
       % Save Name
-      MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trial,ParamObj.runID);
+      MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trialID,ParamObj.runID);
       
       OPMovieMakerTgtherDirAvi(MovStr,...
         GridObj.x,GridObj.y,GridObj.phi,OPobj,...
@@ -286,7 +286,7 @@ try
       MovRunTime   = toc(tMovID);
       if Flags.Verbose
         fprintf('Made movies t%d_%d: %.3g \n', ...
-          ParamObj.trial, ParamObj.runID, MovRunTime);
+          ParamObj.trialID, ParamObj.runID, MovRunTime);
       end
       fprintf(lfid,'Make Mov Run Time = %f\n',  MovRunTime);
       RunTime.Mov = MovRunTime;
@@ -316,10 +316,10 @@ try
       end
       % Plot Amplitudes
       ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trial)
+        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trialID)
       
       % Save it
-      figtl = sprintf('AmpFT_%d_%d',ParamObj.trial, ParamObj.runID);
+      figtl = sprintf('AmpFT_%d_%d',ParamObj.trialID, ParamObj.runID);
       savefig(gcf,figtl)
       saveas(gcf, figtl,'jpg')
       
@@ -335,7 +335,7 @@ try
   TotRunTime = toc(tMainID);
   if Flags.Verbose
     fprintf('Run Finished t%d_%d: %.3g \n', ...
-      ParamObj.trial, ParamObj.runID, TotRunTime);
+      ParamObj.trialID, ParamObj.runID, TotRunTime);
   end
   fprintf(lfid,'Total Run time = %f\n', TotRunTime);
   RunTime.Tot = TotRunTime;
@@ -388,5 +388,10 @@ end %End try and catch
 
 fclose(lfid);
 delete(LocString);
+
+if Flags.Verbose
+  fprintf('Leaving Main for t%d.%d\n', ...
+    ParamObj.trialID, ParamObj.runID);
+end
 
 end % End HR2DrotVgrExeMain.m

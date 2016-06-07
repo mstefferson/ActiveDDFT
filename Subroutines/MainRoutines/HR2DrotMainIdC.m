@@ -56,10 +56,10 @@ try
     %disp(ParamRunTime);
 
     % Create a file that holds warning print statements
-    WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trial);
+    WarningStmtString = sprintf('WarningStmts_%i.txt',ParamObj.trialID);
     wfid              = fopen(WarningStmtString,'a+');    % a+ allows to append data
     
-    LocString = sprintf('Location_%i.txt',ParamObj.trial);
+    LocString = sprintf('Location_%i.txt',ParamObj.trialID);
     lfid      = fopen(LocString,'a+');    % a+ allows to append data
     fprintf(lfid,'Starting main, current code\n');
     
@@ -160,7 +160,7 @@ try
             HoldY = ParamObj.Ny /2 + 1;
                     if DenRecObj.DidIBreak == 0
           
-            OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+            OPMovieMakerTgtherAvi(ParamObj.trialID,GridObj.x,GridObj.y, GridObj.phi, ...
                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
                 reshape( DenRecObj.Density_rec(HoldX, HoldY, : , :), ...
                 [ParamObj.Nm length(DenRecObj.TimeRecVec)] ),...
@@ -168,7 +168,7 @@ try
             
             else
                 
-                OPMovieMakerTgtherAvi(ParamObj.trial,GridObj.x,GridObj.y, GridObj.phi, ...
+                OPMovieMakerTgtherAvi(ParamObj.trialID,GridObj.x,GridObj.y, GridObj.phi, ...
                 OrderParamObj.C_rec, OrderParamObj.NOP_rec,OrderParamObj.POP_rec,...
                 reshape( DenRecObj.Density_rec(HoldX, HoldY, : ,1 :end - 1), ...
                 [ParamObj.Nm length(DenRecObj.TimeRecVec) - 1] ),...
@@ -210,7 +210,7 @@ try
         
 %         keyboard
         ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-            ParamObj.Nm, DenRecObj.bc,ParamObj.vD,  ParamObj.SaveMe, ParamObj.trial)
+            ParamObj.Nm, DenRecObj.bc,ParamObj.vD,  ParamObj.SaveMe, ParamObj.trialID)
         
     end % if OP
     
@@ -219,10 +219,10 @@ try
         % Save all parameters
         
         % Save everything. Save seperately for big files
-        DenStr = sprintf('DenRec_%i',ParamObj.trial);
-        TimeStr = sprintf('TimeObj_%i',ParamObj.trial);
-        ParamStr = sprintf('ParamObj_%i',ParamObj.trial);
-        GridStr = sprintf('GridObj_%i',ParamObj.trial);
+        DenStr = sprintf('DenRec_%i',ParamObj.trialID);
+        TimeStr = sprintf('TimeObj_%i',ParamObj.trialID);
+        ParamStr = sprintf('ParamObj_%i',ParamObj.trialID);
+        GridStr = sprintf('GridObj_%i',ParamObj.trialID);
         
         save(DenStr,'DenRecObj','-v7.3')
         save(TimeStr,'GridObj','-v7.3')
@@ -230,7 +230,7 @@ try
         save(GridStr,'GridObj','-v7.3')
         
         if ParamObj.MakeOP
-            OpStr = sprintf('OP_%i',ParamObj.trial);
+            OpStr = sprintf('OP_%i',ParamObj.trialID);
             save(OpStr,'OrderParamObj','-v7.3')
         end
     end
@@ -246,7 +246,7 @@ try
 catch err %Catch errors
     
     
-    ErrFileNmStr = sprintf('errFile%i.txt',ParamObj.trial);
+    ErrFileNmStr = sprintf('errFile%i.txt',ParamObj.trialID);
     efid         = fopen(ErrFileNmStr,'a+');
     % write the error to file and to screen
     % first line: message
@@ -260,15 +260,15 @@ catch err %Catch errors
     %    keyboard
     if ParamObj.SaveMe
         
-        TimeStr = sprintf('TimeObj_%i',ParamObj.trial);
-        ParamStr = sprintf('ParamObj_%i',ParamObj.trial);
-        GridStr = sprintf('GridObj_%i',ParamObj.trial);
+        TimeStr = sprintf('TimeObj_%i',ParamObj.trialID);
+        ParamStr = sprintf('ParamObj_%i',ParamObj.trialID);
+        GridStr = sprintf('GridObj_%i',ParamObj.trialID);
         
         save(TimeStr,'GridObj','-v7.3')
         save(ParamStr,'ParamObj','-v7.3')
         save(GridStr,'GridObj','-v7.3')
         if EvolvedDen
-            DenStr = sprintf('DenRec_%i',ParamObj.trial);
+            DenStr = sprintf('DenRec_%i',ParamObj.trialID);
             save(DenStr,'DenRecObj','-v7.3');
         end
     end

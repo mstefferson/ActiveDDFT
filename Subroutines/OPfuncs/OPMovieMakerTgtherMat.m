@@ -121,7 +121,7 @@ end
 
 MovieObj = struct('M_All',M_All);
 if ParamObj.SaveMe
-    MovStr = sprintf('MovieAll_%i',ParamObj.trial);
+    MovStr = sprintf('MovieAll_%i',ParamObj.trialID);
     save(MovStr,'M_All','-v7.3')
 end
 % keyboard

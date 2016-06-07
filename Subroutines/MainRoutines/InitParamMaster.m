@@ -16,8 +16,9 @@ FlagMaster.StepMeth     = [0]; % Stepping (integrating) method (vec)
 
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
 % Can be vector if (vec) is in comment
-ParamMaster.trial   = 1;  % Trial Indicator
-ParamMaster.runID   = 1;    % Run indicator *_trial.runID
+ParamMaster.num_trial =  1; % number of trials
+ParamMaster.trialID = 1; % Trial Indicator
+ParamMaster.runID   = 1; % Starting Run indicator *_trial.runID
 ParamMaster.Nx      = [64]; % Gridpoints in x dir (vec)
 ParamMaster.Ny      = [64]; % Gridpoints in y dir (vec) 
 ParamMaster.Nm      = [64]; % Gridpoints in angle (vec)

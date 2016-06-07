@@ -54,7 +54,7 @@ if numDirs
       [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
     
     % Save Name
-    MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trial,ParamObj.runID);
+    MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trialID,ParamObj.runID);
     
     % Call movie routine
     try
@@ -90,10 +90,10 @@ if numDirs
       end
       % Plot Amplitudes
       ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trial)
+        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trialID)
       
       % Save it
-      figtl = sprintf('AmpFT_%d_%d',ParamObj.trial, ParamObj.runID);
+      figtl = sprintf('AmpFT_%d_%d',ParamObj.trialID, ParamObj.runID);
       savefig(gcf,figtl)
       saveas(gcf, figtl,'jpg')
       

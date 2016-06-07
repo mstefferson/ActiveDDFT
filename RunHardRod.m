@@ -26,7 +26,7 @@ ParamObj = ParamMaster;
 RhoInit  = RhoInitMaster;
 Flags    = FlagMaster;
 AnisoDiffFlag = Flags.AnisoDiff;
-trial = ParamObj.trial;
+trial = ParamObj.trialID;
 
 % Print what you are doing
 if AnisoDiffFlag  == 1;
