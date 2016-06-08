@@ -39,7 +39,7 @@ ParamMaster.Mob_perp   = Mob;
 ParamMaster.Mob_rot   = 6 * Mob / ParamMaster.L_rod^2;
 
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
-TimeMaster.dt     = 1e-3; % time step
+Timemaster.dt     = 1e-3; % time step
 TimeMaster.t_record    = 0.1;  % time elapsed before recording
 TimeMaster.t_write     = 0.2;  % time elapsed before writing to file
 TimeMaster.t_tot       = 1.0;  % total run time
@@ -103,6 +103,15 @@ ParamMaster.Mob_pos = Mob;
 if FlagMaster.SaveMe == 0; FlagMaster.MakeOP = 0; FlagMaster.MakeMovies = 0;end
 if FlagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
 if ParamMaster.vD  == 0; FlagMaster.Drive = 0; else FlagMaster.Drive = 1;end
+
+if TimeMaster.dt > TimeMaster.t_record;
+  fprintf('Recorded interval is shorter then timestep fix before proceeding\n');
+  error('Recorded interval is shorter then timestep fix before proceeding');
+end
+if TimeMaster.t_record > TimeMaster.t_write;
+  fprintf('File write interval is shorter than recordord interval. Fix it \n');
+  error('File write interval is shorter than record interval fix before proceeding');
+end
 
 % Save the Params
 save('Params.mat','ParamMaster','TimeMaster','FlagMaster','RhoInitMaster')

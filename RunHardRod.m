@@ -36,16 +36,21 @@ else
 end
 
 % Fix the time
+fprintf('Making time obj\n');
 [TimeObj]= ...
   TimeStepRecMaker(TimeMaster.dt,TimeMaster.t_tot,...
   TimeMaster.t_record,TimeMaster.t_write);
 TimeObj.ss_epsilon = TimeMaster.ss_epsilon;
+fprintf('Finished time obj\n');
 
 % Display everythin
 disp(Flags); disp(ParamObj); disp(TimeObj); disp(RhoInit);
 
 % Make paramMat
+fprintf('Building parameter mat \n');
 [paramMat, numRuns] = MakeParamMat( ParamObj, RhoInit, Flags );
+fprintf('Executing %d runs \n\n', numRuns);
+
 paramvec = zeros(numRuns,1);
 % For some reason, param_mat gets "sliced". Create vectors to get arround
 paramNx  = paramMat(:,1); paramNy  = paramMat(:,2);
@@ -54,10 +59,9 @@ paramLy  = paramMat(:,5); paramvD  = paramMat(:,6);
 parambc  = paramMat(:,7); paramIC  = paramMat(:,8);
 paramSM  = paramMat(:,9); paramrun = paramMat(:,10);
 
-% Say how many runs there are
-fprintf('Executing %d runs \n\n', numRuns);
 
 % Loops over all run
+fprintf('Starting loop over runs');
 if numRuns > 1
   parfor ii = 1:numRuns
     % Assign parameters

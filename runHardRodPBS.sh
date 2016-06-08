@@ -82,7 +82,7 @@ module load matlab_R2015b
 # Run matlab program
 matlab -nodesktop -nosplash \
   -r  "try, RunHardRod, catch, exit(1), end, exit(0);" \
-  2>&1 | tee runbind.out
+  2>&1 | tee runHR.out
 echo "Finished. Matlab exit code: $?" 
 echo Time is `date`
 
