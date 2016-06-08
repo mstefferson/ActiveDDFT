@@ -61,7 +61,7 @@ paramSM  = paramMat(:,9); paramrun = paramMat(:,10);
 
 
 % Loops over all run
-fprintf('Starting loop over runs');
+fprintf('Starting loop over runs\n');
 if numRuns > 1
   parfor ii = 1:numRuns
     % Assign parameters
