@@ -54,6 +54,9 @@ paramLy  = paramMat(:,5); paramvD  = paramMat(:,6);
 parambc  = paramMat(:,7); paramIC  = paramMat(:,8);
 paramSM  = paramMat(:,9); paramrun = paramMat(:,10);
 
+% Say how many runs there are
+fprintf('Executing %d runs \n\n', numRuns);
+
 % Loops over all run
 if numRuns > 1
   parfor ii = 1:numRuns
