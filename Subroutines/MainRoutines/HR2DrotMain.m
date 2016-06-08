@@ -70,7 +70,7 @@ try
   tMainID  = tic;
   
   % Create a file that holds warning print statements
-  LocString = sprintf('Location_%d.%d.txt',ParamObj.trialID,ParamObj.runID);
+  LocString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(LocString,'a+');    % a+ allows to append data
   fprintf(lfid,'Starting main, current code\n');
   
