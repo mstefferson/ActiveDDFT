@@ -1,4 +1,6 @@
-# Script to run RunHardRod 
+# Script to run OPHardRod
+# squb -v nfiles=blah opHardRodPBS.sh
+# runs nfiles=1 if left blank
 #
 # Copy this script, customize it and then submit it with the ``qsub''
 # command. For example:
@@ -23,7 +25,7 @@
 # Any directives placed after the first shell command will be ignored.
 
 ### Set the job name
-#PBS -N HRrun
+#PBS -N opHardRod
 
 ### Run in the queue named "short"
 #PBS -q short
@@ -79,9 +81,17 @@ echo Using ${NPROCS} processors across ${NNODES} nodes
 ## $HOME/my-program
 module load matlab_R2015b
 
+# if no input, analyze 1 files
+if [ -z ${nfiles+x} ]; then 
+  nfiles=1; 
+fi
+
+echo "Starting analysis. Trying to analyze $nfiles"
+echo "In dir `pwd` "
+
 # Run matlab program
 matlab -nodesktop -nosplash \
-  -r  "try, RunHardRod, catch, exit(1), end, exit(0);" \
+  -r  "try, OPHardRod( $nfiles ), catch, exit(1), end, exit(0);" \
   2>&1 | tee runbind.out
 echo "Finished. Matlab exit code: $?" 
 echo Time is `date`
