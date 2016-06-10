@@ -35,7 +35,9 @@ fprintf('New\n');
 [rho2] = PwPerturbFT(rho,ParamObj,GridObj,RhoInit);
 toc
 
-rho - rho2
+%rho - rho2
 % rho_FT = fftshift(fftn(rho));
-% keyboard
+rhoFT = fftshift(fftn(rho));
+rhoFT2 = fftshift(fftn(rho2));
+keyboard
 end %end function
