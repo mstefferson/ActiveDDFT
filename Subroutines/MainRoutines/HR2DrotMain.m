@@ -90,10 +90,14 @@ try
   %Make diffusion coeff
   tDiffID = tic;
   if Flags.AnisoDiff == 1
+    SptSpc = min( GridObj.x(2) - GridObj.x(1) ,...
+    GridObj.y(2) - GridObj.y(1) );
+    RotSpt = GridObj.phi(2) - GridObj.phi(1);
+
     [DiffMobObj] =  DiffMobCoupCoeffCalc( ParamObj.Tmp,...
       ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
-      TimeObj.dt, min(GridObj.dx,GridObj.dy),...
-      GridObj.dphi,GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
+      TimeObj.dt, SptSpc, RotSpt,...
+      GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
   else
     [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
       ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
@@ -109,6 +113,7 @@ try
   
   %Initialze density
   tIntDenID = tic;
+  % NEED to edit PW perturber!!!!!
   [rho] = MakeConc(GridObj,ParamObj,RhoInit);
   Nc    = 20;
   % Equilib distribution. Don't let bc = 1.5
@@ -177,6 +182,8 @@ try
   % Run movies if you want
   if Flags.MakeOP  == 1
     tOpID           = tic ;
+
+    [~,~,phi3D] = meshgrid(GridObj.x,GridObj.y,GridObj.phi); 
     
     if  DenRecObj.DidIBreak == 0
       totRec = length( DenRecObj.TimeRecVec );
@@ -218,11 +225,15 @@ try
       if i ~= NumChunks
         Ind =  (i-1) * SizeChunk + 1: i * SizeChunk;
       else
+        if NumChunks == 1
+          Ind = 1:totRec;
+        else
         Ind = (i-1) * SizeChunk:totRec;
+        end
       end
       
       [OPObjTemp] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
-        TimeRecVecTemp(Ind) ,GridObj,...
+        TimeRecVecTemp(Ind) ,GridObj, phi3D,...
         RunSave.Den_rec(:,:,:,Ind) );
       
       % Save it
@@ -247,7 +258,7 @@ try
     end % loop over chunks
     
     [~,~,~,~,OpSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, RhoInit.feq, GridObj.phi, 1, 1, GridObj.phi3D);
+      OpCPNCalc(1, 1, RhoInit.feq, GridObj.phi, 1, 1, phi3D);
     if Flags.MakeMovies;
       OPobj.OpTimeRecVec = TimeRecVecTemp;
       OPobj.NOPeq = OpSave.NOPeq;
@@ -358,6 +369,7 @@ catch err %Catch errors
   fprintf('%s', err.getReport('extended')) ;
   RunSave.err = err;
   disp(err);
+  keyboard
   
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles

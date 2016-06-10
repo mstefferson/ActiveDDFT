@@ -6,6 +6,7 @@
 
 function [rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit)
 
+% NEED TO EDIT. This will break with changes to GridObj
 %Perturbation coeff
 Coeff = RhoInit.WeightPos;
 %Change in x

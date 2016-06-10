@@ -49,6 +49,7 @@ CurrentNorm = trapz_periodic(GridObj.x,trapz_periodic(GridObj.y,trapz_periodic(G
 rho_eq = rho .* ParamObj.Norm ./ CurrentNorm;
 % keyboard
 % Perturb it
-[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj,RhoInit);
+%[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj,RhoInit);
+[rho] = PwPerturbFT(rho,ParamObj,GridObj,RhoInit);
 % keyboard
 end %end function

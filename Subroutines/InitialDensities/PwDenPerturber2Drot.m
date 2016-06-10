@@ -5,6 +5,9 @@
 % epsilon_k is an input parameter
 function [rho] = PwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit)
 
+[GridObj.y3D, GridObj.x3D, GridObj.phi3D] = ...
+  meshgrid( GridObj.y, GridObj.x, GridObj.phi);
+%% THIS WILL BREAK WITHOUT x3d. Need to simultaneously switch int rho method
 % keyboard
 MaxPerturb = RhoInit.WeightPos * ...
   (2*RhoInit.NumModesX)* (2*RhoInit.NumModesY)* (2*RhoInit.NumModesM);

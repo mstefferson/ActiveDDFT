@@ -25,8 +25,17 @@ rho = ParamObj.Norm / (2 .* pi .* ParamObj.Lx .* ParamObj.Lx) .* ...
 %Recall that the k=0 mode is located at points N/2 + 1
 
 % Perturb it
+tic
+fprintf('Old\n');
 [rho] = PwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit);
- 
+toc
+
+tic
+fprintf('New\n');
+[rho2] = PwPerturbFT(rho,ParamObj,GridObj,RhoInit);
+toc
+
+rho - rho2
 % rho_FT = fftshift(fftn(rho));
 % keyboard
 end %end function

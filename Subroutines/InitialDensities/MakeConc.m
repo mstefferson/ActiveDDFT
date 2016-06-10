@@ -19,15 +19,20 @@ elseif RhoInit.IntCond == 2
 elseif RhoInit.IntCond == 3
   [rho] = IntDenCalcLoaded2Drot(RhoInit.LoadName);
 elseif RhoInit.IntCond == 4
-  [rho] = IntDenCalcIsoSepPw2Drot(GridObj,ParamObj,RhoInit);
+  %[rho] = IntDenCalcIsoSepPw2Drot(GridObj,ParamObj,RhoInit);
+  fprintf('Error not written');
+  error('Error not written');
+  rho = 0;
 elseif RhoInit.IntCond == 5
   % if bc is too close to 1.5, errors arise. Fix this here.
   if 1.499 < ParamObj.bc && ParamObj.bc < 1.501
     ParamObjTemp = ParamObj;
     ParamObjTemp.bc = 1.502;
-    [rho] = IntDenCalcEqSepPw2Drot(GridObj,ParamObjTemp,RhoInit);
   else
-    [rho] = IntDenCalcEqSepPw2Drot(GridObj,ParamObj,RhoInit);
+  %[rho] = IntDenCalcEqSepPw2Drot(GridObj,ParamObjTemp,RhoInit);
+  fprintf('Error not written');
+  error('Error not written');
+  rho = 0;
   end
 elseif RhoInit.IntCond == 6
   [rho] = IntDenCalcGauss2Drot(GridObj,ParamObj,RhoInit);
