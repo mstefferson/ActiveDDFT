@@ -19,14 +19,20 @@
 
 function [TimeObj] = TimeStepRecMaker(dt,t_tot,t_rec,t_write)
 
-% Stop the user if erroneous parameters are given
-if dt > t_rec;
-  fprintf('Recorded interval is shorter then timestep fix before proceeding\n');
-  error('Recorded interval is shorter then timestep fix before proceeding');
+% Fix parameters if erroneous ones are given 
+if t_write  > t_tot;
+  fprintf('Total time interval is shorter then write interval\n');
+  t_write = t_tot;
 end
+
 if t_rec > t_write;
   fprintf('File write interval is shorter than record interval. Fix it \n');
-  error('File write interval is shorter than record interval fix before proceeding');
+  t_rec = t_write;
+end
+
+if dt > t_rec;
+  fprintf('Recorded interval is shorter then timestep fix before proceeding\n');
+  dt = t_rec;
 end
 
 % Start building object

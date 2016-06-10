@@ -39,7 +39,7 @@ end
 fprintf('Making time obj\n');
 [TimeObj]= ...
   TimeStepRecMaker(TimeMaster.dt,TimeMaster.t_tot,...
-  TimeMaster.t_record,TimeMaster.t_write);
+  TimeMaster.t_rec,TimeMaster.t_write);
 TimeObj.ss_epsilon = TimeMaster.ss_epsilon;
 fprintf('Finished time obj\n');
 
