@@ -50,7 +50,7 @@ end
 % columns w.r.t x, then down the rows w.r.t. y
 % keyboard
 CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho_eq = rho .* ParamObj.Norm ./ CurrentNorm;
+rho = rho .* ParamObj.Norm ./ CurrentNorm;
 % keyboard
 % Perturb it
 %[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj, RhoInit);

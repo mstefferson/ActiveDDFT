@@ -45,10 +45,7 @@ catch err
 end
 % Take real part
 rho = real(rho);
-%     figure
-%     surf( rho(:,:,17) )
-%
-% keyboard
+
 % Fix negative rho if that happened.
 [rho] = FixNegDenFnc(rho);
 

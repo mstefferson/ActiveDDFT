@@ -113,8 +113,7 @@ try
   
   %Initialze density
   tIntDenID = tic;
-  % NEED to edit PW perturber!!!!!
-  [rho] = MakeConc(GridObj,ParamObj,RhoInit);
+  % Find non-driving steady state
   Nc    = 20;
   % Equilib distribution. Don't let bc = 1.5
   if 1.499 < ParamObj.bc && ParamObj.bc < 1.501
@@ -124,6 +123,10 @@ try
   end
   [Coeff_best,~] = CoeffCalcExpCos2D(Nc,GridObj.phi,RhoInit.bc); % Calculate coeff
   RhoInit.feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
+
+  % Build initial density
+  [rho] = MakeConc(GridObj,ParamObj,RhoInit);
+
   IntDenRunTime = toc(tIntDenID);
   if Flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
