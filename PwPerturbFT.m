@@ -41,7 +41,6 @@ km0   = ParamObj.Nm / 2 + 1;
 
 try
 
-  
   % Loop over perturbations
   for ii = 0:RhoInit.NumModesX
     for jj = 0:RhoInit.NumModesY
@@ -52,8 +51,10 @@ try
             Coeff = CoeffTemp .* ... 
               ( (-1 + 2 * rand() )  + (-1 + 2 * rand() ) * sqrt(-1) ); 
           end
-          rhoFT(kx0 + ii, ky0 + jj, km0 + kk) =  Coeff;
-          rhoFT(kx0 - ii, ky0 - jj, km0 - kk) =  conj( Coeff );
+          rhoFT(kx0 + ii, ky0 + jj, km0 + kk) =  ...
+            rhoFT(kx0 + ii, ky0 + jj, km0 + kk) + Coeff;
+          rhoFT(kx0 - ii, ky0 - jj, km0 - kk) =  ...
+            rhoFT(kx0 - ii, ky0 - jj, km0 - kk) + conj( Coeff );
         end
 
       end
