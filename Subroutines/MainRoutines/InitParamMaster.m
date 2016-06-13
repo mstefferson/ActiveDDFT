@@ -51,17 +51,6 @@ RhoInitMaster.NumModesX   = 8; % Perturb # modes x
 RhoInitMaster.NumModesY   = 8; % Perturb # modes y
 RhoInitMaster.NumModesM   = 8; % Perturb # modes m
 RhoInitMaster.LoadName    = ''; % File name to load if IC 3
-% Don't perturb more more than you are allowed to
-if( RhoInitMaster.NumModesX >= ParamMaster.Nx / 2 ); 
-  RhoInitMaster.NumModesX = floor(ParamMaster.Nx / 2) - 2; 
-end;
-if( RhoInitMaster.NumModesY >= ParamMaster.Ny / 2 ); 
-  RhoInitMaster.NumModesY = floor(ParamMaster.Ny / 2) - 2;
-end;
-if( RhoInitMaster.NumModesM >= ParamMaster.Nm / 2 );
-  RhoInitMaster.NumModesM = floor(ParamMaster.Nm / 2) - 2; 
-end;
-
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbation weight is a fraction of the isotropic density
 % If about a nematic, code will correct for negative densities.
@@ -80,6 +69,17 @@ RhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
 % 6: A gaussian initial condition
 
 % Calculated stuff- fix times, etc.
+
+% Don't perturb more more than you are allowed to
+if( RhoInitMaster.NumModesX >= ParamMaster.Nx / 2 ); 
+  RhoInitMaster.NumModesX = floor(ParamMaster.Nx / 2) - 2; 
+end;
+if( RhoInitMaster.NumModesY >= ParamMaster.Ny / 2 ); 
+  RhoInitMaster.NumModesY = floor(ParamMaster.Ny / 2) - 2;
+end;
+if( RhoInitMaster.NumModesM >= ParamMaster.Nm / 2 );
+  RhoInitMaster.NumModesM = floor(ParamMaster.Nm / 2) - 2; 
+end;
 
 if FlagMaster.SquareBox == 1; 
   ParamMaster.L_box = unique( [ParamMaster.Lx ParamMaster.Ly] );

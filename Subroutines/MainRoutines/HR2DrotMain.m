@@ -137,11 +137,12 @@ try
   RunTime.IntDen = IntDenRunTime;
   
   % Save everything before running body of code
+  % except for Grid because it's currently too bulky
+
   if Flags.SaveMe
     RunSave.Flags    = Flags;
     RunSave.ParamObj = ParamObj;
     RunSave.TimeObj  = TimeObj;
-    RunSave.GridObj  = GridObj;
     RunSave.RhoInit  = RhoInit;
     RunSave.ParamObj = ParamObj;
     RunSave.Den_rec = zeros(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm,2);
@@ -164,6 +165,10 @@ try
   
   % Save it
   if Flags.SaveMe
+    % Clean up gridobj
+    fields2del = {'kx2D','ky2D','kx3D','ky3D','km3D'};
+    GridObj = rmfield(GridObj,fields2del);
+    RunSave.GridObj  = GridObj;
     RunSave.DenRecObj = DenRecObj;
   end
   
