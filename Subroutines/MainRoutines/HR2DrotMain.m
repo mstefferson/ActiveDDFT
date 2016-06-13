@@ -7,7 +7,6 @@ function  [ DenRecObj ] = ...
   HR2DrotMain( filename, paramVec, ParamObj, TimeObj, RhoInit, Flags )
 
 global RunSave
-MasterSave = 0;
 DenRecObj = 0;
 
 try
@@ -125,9 +124,11 @@ try
   RhoInit.feq = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
 
   % Build initial density
-  [rho] = MakeConc(GridObj,ParamObj,RhoInit);
+  [rho] = MakeConc(ParamObj,RhoInit,...
+    GridObj.x,GridObj.y,GridObj.phi);
 
   IntDenRunTime = toc(tIntDenID);
+  
   if Flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
       ParamObj.trialID, ParamObj.runID, IntDenRunTime);

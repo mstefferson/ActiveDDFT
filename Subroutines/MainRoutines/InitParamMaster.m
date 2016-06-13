@@ -63,9 +63,9 @@ if( RhoInitMaster.NumModesM >= ParamMaster.Nm / 2 );
 end;
 
 % Weight of the spatial sinusoidal perturbation. %
-% Perturbations added to rho(i,j,k) = 1. Must be small
-RhoInitMaster.WeightPos   = 1e-3;
-RhoInitMaster.WeightAng   = 1e-3;
+% Perturbation weight is a fraction of the isotropic density
+% If about a nematic, code will correct for negative densities.
+RhoInitMaster.WeightPert   = 1e-3;
 RhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
 
 % Key

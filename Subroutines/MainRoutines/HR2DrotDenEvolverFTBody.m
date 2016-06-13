@@ -188,13 +188,11 @@ for t = 1:TimeObj.N_time-1
         BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
     end
     
-   %Make sure things are taking too long. This is a sign density---> inf
+    %Make sure things are taking too long. This is a sign density---> inf
     [TooLong] = ExpTooLongChecker(...
       ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,jrec);
     if TooLong; ShitIsFucked = 1; end
     
-    % Break out if shit is fucked
-    if ShitIsFucked == 1 || SteadyState == 1; break; end;
     
     % Write a chunk to disk
     if ( mod(t, TimeObj.N_dtChunk ) == 0 )
@@ -210,6 +208,10 @@ for t = 1:TimeObj.N_time-1
     end
     jrectemp = jrectemp + 1;
     jrec = jrec + 1;
+    
+    % Break out if shit is fucked
+    if ShitIsFucked == 1 || SteadyState == 1; break; end;
+    
   end %end recording
   
 end %end time loop
@@ -223,24 +225,25 @@ rho_FT     = reshape(rhoVec_FT,Nx,Ny,Nm);
 rho        = real(ifftn(ifftshift(rho_FT)));
 
 %Save everything
-if ( mod(t,TimeObj.N_dtRec)== 0 )
-  % Turn it to a cube if it hasn't been yet
-  if Flags.Interactions == 0 && Flags.Drive == 0
-    rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
-    rho    = real(ifftn(ifftshift(rho_FT)));
-  end
-  if Flags.SaveMe
-    fprintf(lfid,'%f percent done\n',t./TimeObj.N_time*100);
-    [SteadyState,ShitIsFucked,MaxReldRho] = ...
-      BrokenSteadyDenTracker(rho,rho_prev, TotalDensity ,TimeObj);
-    DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
-    Density_rec(:,:,:,jrectemp)     = rho;
-  else
-    [SteadyState,ShitIsFucked,MaxReldRho] = ...
-      BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
-  end
-  
-  if ( mod(t, TimeObj.N_dtChunk ) == 0 )
+if ShitIsFucked == 0 && SteadyState == 0;
+  if ( mod(t,TimeObj.N_dtRec)== 0 )
+    % Turn it to a cube if it hasn't been yet
+    if Flags.Interactions == 0 && Flags.Drive == 0
+      rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
+      rho    = real(ifftn(ifftshift(rho_FT)));
+    end
+    if Flags.SaveMe
+      fprintf(lfid,'%f percent done\n',t./TimeObj.N_time*100);
+      [SteadyState,ShitIsFucked,MaxReldRho] = ...
+        BrokenSteadyDenTracker(rho,rho_prev, TotalDensity ,TimeObj);
+      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+      Density_rec(:,:,:,jrectemp)     = rho;
+    else
+      [SteadyState,ShitIsFucked,MaxReldRho] = ...
+        BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
+    end
+    
+    if ( mod(t, TimeObj.N_dtChunk ) == 0 )
       % Record Density_recs to file
       RecIndTemp = ...
         (jchunk-1) *  TimeObj.N_recChunk + 1 : jchunk * TimeObj.N_recChunk;
@@ -248,36 +251,37 @@ if ( mod(t,TimeObj.N_dtRec)== 0 )
       RecIndTemp = RecIndTemp + 1;
       RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
       RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+    end
+    jrec = jrec + 1; % Still +1. Programs assumes this always happens
+  end %end recording
+end % end nothing is broken
+  
+  % Say you're done
+  fprintf(lfid,'Finished master time loop\n');
+  
+  %If something broke, return zeros. Else, return the goods
+  if ShitIsFucked
+    fprintf('Density is either negative or not conserved.\n');
+    fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
   end
-  jrec = jrec + 1; % Still +1. Programs assumes this always happens
-end %end recording
-
-% Say you're done
-fprintf(lfid,'Finished master time loop\n');
-
-%If something broke, return zeros. Else, return the goods
-if ShitIsFucked
-  fprintf('Density is either negative or not conserved.\n');
-  fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
-end
-
-if SteadyState
-  fprintf('Things are going steady if you know what I mean.\n');
-  fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
-end
-
-% Create vector of recorded times 
-jrec = jrec - 1;
-TimeRecVec    = (0:jrec-1) * TimeObj.t_rec;
-
-trun = toc;
-
-% Save useful info
-DenRecObj.DidIBreak    = ShitIsFucked;
-DenRecObj.SteadyState  = SteadyState;
-DenRecObj.MaxReldRho   = MaxReldRho;
-DenRecObj.TimeRecVec   = TimeRecVec;
-DenRecObj.rhoFinal     = rho;
-DenRecObj.runTime      = trun;
-
+  
+  if SteadyState
+    fprintf('Things are going steady if you know what I mean.\n');
+    fprintf('I have done %i steps out of %i.\n',t, TimeObj.N_time);
+  end
+  
+  % Create vector of recorded times
+  jrec = jrec - 1;
+  TimeRecVec    = (0:jrec-1) * TimeObj.t_rec;
+  
+  trun = toc;
+  
+  % Save useful info
+  DenRecObj.DidIBreak    = ShitIsFucked;
+  DenRecObj.SteadyState  = SteadyState;
+  DenRecObj.MaxReldRho   = MaxReldRho;
+  DenRecObj.TimeRecVec   = TimeRecVec;
+  DenRecObj.rhoFinal     = rho;
+  DenRecObj.runTime      = trun;
+  
 end %function

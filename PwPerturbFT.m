@@ -5,19 +5,34 @@
 % epsilon_k is an input parameter
 % Does everything in Fourier space
 
-function [rho] = PwPerturbFT(rho,ParamObj,GridObj,RhoInit)
+function [rho] = PwPerturbFT(rho,ParamObj,RhoInit)
 
+% N3 can be commonly used. Declare it
 N3 = ParamObj.Nx * ParamObj.Ny * ParamObj.Nm;
-MaxPerturb = RhoInit.WeightPos * ...
-  (2*RhoInit.NumModesX)* (2*RhoInit.NumModesY)* (2*RhoInit.NumModesM);
+
+% Perturb coeff is the weight times equilbrium
+% concentration. Make sure it isn't too large
+% Find isotropic density
+IsoDen = ParamObj.Norm / (2 .* pi .* ParamObj.Lx .* ParamObj.Lx);
+
+MaxPerturb = IsoDen * RhoInit.WeightPert * ...
+  (2*RhoInit.NumModesX) * (2*RhoInit.NumModesY) * (2*RhoInit.NumModesM);
+
 if min(min(min(rho))) < MaxPerturb
-  CoeffMax = RhoInit.WeightPos * min(min(min(rho))) / MaxPerturb;
+  CoeffMax = IsoDen .* ...
+    RhoInit.WeightPert * min(min(min(rho))) / MaxPerturb;
 else
-  CoeffMax = RhoInit.WeightPos;
+  CoeffMax = IsoDen .* RhoInit.WeightPert; 
 end
 
 % If it's not random, set Coeff ourside the loop
-Coeff = CoeffMax * ( 1 + sqrt(-1) );
+% scale by N3 b/c of FT factor
+if RhoInit.RandomAmp == 0
+  Coeff = CoeffMax * N3 * ( 1 + sqrt(-1) );
+else
+  CoeffTemp = CoeffMax * N3;
+end
+
 % Handle perturbations in Fourier space
 rhoFT = fftshift( fftn( rho ) );
 kx0   = ParamObj.Nx / 2 + 1;
@@ -34,7 +49,7 @@ try
 
         if ii ~= 0 || jj ~=0 || kk ~= 0
           if RhoInit.RandomAmp
-            Coeff = ( CoeffMax ) / N3 * ...
+            Coeff = CoeffTemp .* ... 
               ( (-1 + 2 * rand() )  + (-1 + 2 * rand() ) * sqrt(-1) ); 
           end
           rhoFT(kx0 + ii, ky0 + jj, km0 + kk) =  Coeff;

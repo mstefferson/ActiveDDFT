@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcNemPw2rot(GridObj,ParamObj, RhoInit)
+function [rho] = IntDenCalcNemPw2rot(ParamObj,RhoInit,x,y,phi)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -25,9 +25,9 @@ bc = 1.6;    %Just give nem concentration
 % Distribution stuff
 Nc    = 20;            % Number of Coefficients
 
-[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,GridObj.phi,bc); % Calculate coeff
-f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
-% plot(GridObj.phi,f)
+[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,phi,bc); % Calculate coeff
+f = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);        % Build equil distribution
+% plot(phi,f)
 
 % Initialize rho
 rho = ParamObj.Norm / ( ParamObj.Lx .* ParamObj.Lx) .* ...
@@ -42,17 +42,17 @@ end
 % b = ParamObj.L_rod^2 / pi;
 % c =  ParamObj.bc / b;
 % f_reshape =  reshape(rho(17,17,:) / c  , 1, 32 );
-% trapz_periodic(GridObj.phi,f)
-% trapz_periodic(GridObj.phi,f_reshape)
+% trapz_periodic(phi,f)
+% trapz_periodic(phi,f_reshape)
 % keyboard
 % Normalize it
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
 % keyboard
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
+CurrentNorm = trapz_periodic(y,trapz_periodic(x,trapz_periodic(phi,rho,3),2),1);
 rho = rho .* ParamObj.Norm ./ CurrentNorm;
 % keyboard
 % Perturb it
-%[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,GridObj, RhoInit);
-[rho] = PwPerturbFT(rho,ParamObj,GridObj,RhoInit);
+%[rho] = PwDenPerturber2Drot(rho_eq,ParamObj, RhoInit);
+[rho] = PwPerturbFT(rho,ParamObj,RhoInit);
 % keyboard
