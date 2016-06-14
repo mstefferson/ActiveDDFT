@@ -1,15 +1,20 @@
-function [DiffMobObj]...
-             = DiffMobCoupCoeffCalc(T,Mob_par,Mob_perp,Mob_rot,dt,delta_x,delta_phi,kx2D,ky2D,vd)
+function [DiffMobObj] = DiffMobCoupCoeffCalc(...
+  T,Mob_par,Mob_perp,Mob_rot,dt,delta_x,delta_phi,...
+  kx,ky,km,kx2D,ky2D,vd)
          
 % Use Einstein diffusion relations
-D_par  = Mob_par * T;                                            % Parallel diffusion coeff
-D_perp = Mob_perp * T;                                           % Perpendicular coeff
-D_rot  = Mob_rot * T;                                            % Rotational diffusion
+DiffMobObj.Mob_par  = Mob_par;
+DiffMobObj.Mob_perp = Mob_perp;
+DiffMobObj.Mob_rot  = Mob_rot; 
+
+DiffMobObj.D_par  = Mob_par * T; % Parallel diffusion coeff
+DiffMobObj.D_perp = Mob_perp * T; % Perpendicular coeff
+DiffMobObj.D_rot  = Mob_rot * T; % Rotational diffusion
 
 % Check stability condition
-StabCoeffPar  = D_par  .* dt / (delta_x ^2 );
-StabCoeffPerp = D_perp .* dt / (delta_x ^2 );
-StabCoeffRot  = D_rot  .* dt / (delta_phi ^2 );
+StabCoeffPar  = DiffMobObj.D_par  .* dt / (delta_x ^2 );
+StabCoeffPerp = DiffMobObj.D_perp .* dt / (delta_x ^2 );
+StabCoeffRot  = DiffMobObj.D_rot  .* dt / (delta_phi ^2 );
 
 if StabCoeffPar > 1/2
     fprintf('StabCoeffPar = %f (should be less than 1/2) \n', StabCoeffPar);
@@ -22,19 +27,23 @@ if StabCoeffRot > 1/2
 end
 
 %Aniso diffusion coupling
-CrossTermFactor = (D_par - D_perp)/4;                       % Constant in front of cross terms
-CoupFacMplus2   = CrossTermFactor.*(ky2D - 1i.*kx2D).^2;      % Coupling coefficent
-CoupFacMminus2  = CrossTermFactor.*(ky2D + 1i.*kx2D).^2;     % Coupling coefficent
+% Constant in front of cross terms
+CrossTermFactor = (DiffMobObj.D_par - DiffMobObj.D_perp)/4; 
+% Coupling coefficent
+DiffMobObj.CfMplus2 = CrossTermFactor.*(ky2D - 1i.*kx2D).^2; 
+DiffMobObj.CfMminus2  = CrossTermFactor.*(ky2D + 1i.*kx2D).^2; 
 
 % Driven part
-CoupFacMplus1  = -vd/2 * ( 1i .* kx2D - ky2D  ) ;
-CoupFacMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
+DiffMobObj.CfMplus1  = -vd/2 * ( 1i .* kx2D - ky2D  ) ;
+DiffMobObj.CfMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
 
-% keyboard
+% Multiply by derivatives in k space repeatedily,
+% they are large, but shouild be worth allocating
+[ DiffMobObj.iky3, DiffMobObj.ikx3, DiffMobObj.ikm3 ] = ...
+  meshgrid(ky,kx,km);
 
-DiffMobObj = struct('Mob_par', Mob_par, 'Mob_perp', Mob_perp, 'Mob_rot',Mob_rot,...
-    'D_par',D_par, 'D_perp',D_perp, 'D_rot',D_rot, ...
-    'CfMplus2',CoupFacMplus2,'CfMminus2',CoupFacMminus2, ...
-    'CfMplus1',CoupFacMplus1,'CfMminus1',CoupFacMminus1);
+DiffMobObj.ikx3 = sqrt(-1) .* DiffMobObj.ikx3;
+DiffMobObj.iky3 = sqrt(-1) .* DiffMobObj.iky3;
+DiffMobObj.ikm3 = sqrt(-1) .* DiffMobObj.ikm3;
 
-
+end

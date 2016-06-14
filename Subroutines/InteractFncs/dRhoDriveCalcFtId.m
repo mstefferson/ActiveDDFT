@@ -5,12 +5,13 @@
 % be used by some AB stepping method.
 
 
-function [dRhoDrive_FT] = dRhoDriveCalcFtId(rho,v,phi3D,kx3D,ky3D)
+function [dRhoDrive_FT] = dRhoDriveCalcFtId(rho,v,...
+  cosPhi3,sinPhi3,ikx3D,iky3D)
 
-vx = v .* cos(phi3D);
-vy = v .* sin(phi3D);
-dRhoDrive_FT = - sqrt(-1) .* kx3D .* fftshift(fftn( rho .* vx ) ) + ... ;
-    - sqrt(-1) .* ky3D .* fftshift(fftn( rho .* vy ) );
+vx = v .* cosPhi3;
+vy = v .* sinPhi3;
+dRhoDrive_FT = - ikx3D .* fftshift(fftn( rho .* vx ) ) + ... ;
+    - iky3D .* fftshift(fftn( rho .* vy ) );
 
 end
 

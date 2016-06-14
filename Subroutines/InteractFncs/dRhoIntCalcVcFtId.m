@@ -18,8 +18,8 @@
 
 function [NegDivFluxExcess_FT] = ...
        dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
-%%%%%%%%%%%%%%%%%%%Hard rod %%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%Hard rod %%%%%%%%%%%%%%%%
 
 %Excess chemical potential in position space is a convolution. In k-space, it is a
 %product. Given by the function derivative of the excess free energy w.r.t.
@@ -34,9 +34,9 @@ function [NegDivFluxExcess_FT] = ...
 
 % MuEx_FT    = MuEx2_FT+MuEx3_FT;
 %Takes its derivative in k-space
-dMuEx_dx_FT   =     sqrt(-1) .* GridObj.kx3D .*  MuEx_FT;
-dMuEx_dy_FT   =     sqrt(-1) .* GridObj.ky3D .*  MuEx_FT;
-dMuEx_dphi_FT =     sqrt(-1) .* GridObj.km3D .*  MuEx_FT;
+dMuEx_dx_FT   = DiffMobObj.ikx3 .*  MuEx_FT;
+dMuEx_dy_FT   = DiffMobObj.iky3 .*  MuEx_FT;
+dMuEx_dphi_FT = DiffMobObj.ikm3 .*  MuEx_FT;
 
 %Excess chemical potential derivative in real space
 %Mayer function derivative in real-space
@@ -61,6 +61,6 @@ Jy_FT = fftshift(fftn(jy));
 Jm_FT = fftshift(fftn(jm));
 
 % Calculate the - divergence of the interaction flux
-NegDivFluxExcess_FT = - sqrt(-1) .* ( GridObj.kx3D .* Jx_FT + ...
-    GridObj.ky3D .* Jy_FT + GridObj.km3D .* Jm_FT );
+NegDivFluxExcess_FT = - ( DiffMobObj.ikx3 .* Jx_FT + ...
+    DiffMobObj.iky3 .* Jy_FT + DiffMobObj.ikm3 .* Jm_FT );
 

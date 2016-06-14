@@ -96,10 +96,12 @@ try
     [DiffMobObj] =  DiffMobCoupCoeffCalc( ParamObj.Tmp,...
       ParamObj.Mob_par,ParamObj.Mob_perp,ParamObj.Mob_rot,...
       TimeObj.dt, SptSpc, RotSpt,...
+      GridObj.kx, GridObj.ky, GridObj.km, ...
       GridObj.kx2D, GridObj.ky2D,ParamObj.vD);
   else
     [DiffMobObj] = DiffMobCoupCoeffCalcIsoDiff(...
-      ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot);
+      ParamObj.Tmp,ParamObj.Mob_pos,ParamObj.Mob_rot, ...
+      GridObj.kx, GridObj.ky, GridObj.km);
   end
   
   DiffRunTime = toc(tDiffID);
@@ -166,7 +168,7 @@ try
   % Save it
   if Flags.SaveMe
     % Clean up gridobj
-    fields2del = {'kx2D','ky2D','kx3D','ky3D','km3D'};
+    fields2del = {'kx2D','ky2D'};
     GridObj = rmfield(GridObj,fields2del);
     RunSave.GridObj  = GridObj;
     RunSave.DenRecObj = DenRecObj;

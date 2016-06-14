@@ -26,7 +26,5 @@ GridObj.ky               = ( -ky_max: dky: (ky_max - dky) );
 GridObj.km               = ( -km_max: dkm: (km_max - dkm) );
 %2D k-vector grid
 [GridObj.ky2D,GridObj.kx2D] = meshgrid(GridObj.ky,GridObj.kx);
-%kx3D k-vector grid
-[GridObj.ky3D,GridObj.kx3D,GridObj.km3D] = meshgrid(GridObj.ky,GridObj.kx,GridObj.km);         
 
 end

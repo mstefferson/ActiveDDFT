@@ -53,14 +53,12 @@ jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 %Set up Diffusion operator in cube form
-[Lop] = DiffOpBuilderIsoDiffCube(DiffMobObj,GridObj);
+[Lop] = DiffOpBuilderIsoDiffCube(DiffMobObj,GridObj,Nx,Ny,Nm);
 Prop = exp(Lop .* dt);   % Exponentiate the elements
-
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
 Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
     Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ));
-
 
 %Hard rod interactions
 if Flags.Interactions
@@ -72,9 +70,15 @@ end
 
 %Driven Term
 if Flags.Drive
-    GammaDrCube_FT  = ...
-        dRhoDriveCalcFtId(rho,ParamObj.vD,...
-        GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
+  % Build the sin and cos phi once
+  phi = zeros( 1, 1, Nm );
+  phi(1,1,:) = GridObj.phi;
+  cosPhi3 = cos( repmat( phi, [Nx, Ny, 1] ) );
+  sinPhi3 = sin( repmat( phi, [Nx, Ny, 1] ) );
+ 
+  GammaDrCube_FT  = ...
+      dRhoDriveCalcFtId(rho,ParamObj.vD,...
+      cosPhi3, sinPhi3,DiffMobObj.ikx3,DiffMobObj.iky3);
 else
     GammaDrCube_FT = zeros(Nx,Ny,Nm);
 end
@@ -142,8 +146,9 @@ for t = 1:TimeObj.N_time-1
     
     %Driven Term
     if Flags.Drive
-        GammaDrCube_FT  = dRhoDriveCalcFtId(...
-            rho,ParamObj.vD,GridObj.phi3D,GridObj.kx3D,GridObj.ky3D);
+      GammaDrCube_FT  = ...
+        dRhoDriveCalcFtId(rho,ParamObj.vD,...
+        cosPhi3, sinPhi3,DiffMobObj.ikx3,DiffMobObj.iky3);
     end
     
     GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;

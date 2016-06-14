@@ -63,7 +63,7 @@ jrec     = 2; % Actual index for RunSave
 jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space Lopagator, and interaction
-[Lop] = DiffOpBuilderDr(DiffMobObj,GridObj,Nm,N2,N3);
+[Lop] = DiffOpBuilderDr(DiffMobObj,GridObj,Nx,Ny,Nm,N2,N3);
 
 % Mayer function stuff %
 Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...

@@ -24,10 +24,10 @@ function [NegDivFluxEx_FT] = ...
 %     MuEx    = real(ifftn(ifftshift(MuEx_FT)));
    
     %Takes its derivative in k-space
-    dMuEx_dx_FT   =     sqrt(-1) .* GridObj.kx3D .*  MuEx_FT;
-    dMuEx_dy_FT   =     sqrt(-1) .* GridObj.ky3D .*  MuEx_FT;
-    dMuEx_dphi_FT =     sqrt(-1) .* GridObj.km3D .*  MuEx_FT;
-   
+dMuEx_dx_FT   = DiffMobObj.ikx3 .*  MuEx_FT;
+dMuEx_dy_FT   = DiffMobObj.iky3 .*  MuEx_FT;
+dMuEx_dphi_FT = DiffMobObj.ikm3 .*  MuEx_FT;
+
     %Excess chemical potential derivative in real space
     %Mayer function derivative in real-space
     dMuEx_dx   =  real(ifftn(ifftshift(dMuEx_dx_FT)));
@@ -171,7 +171,7 @@ NegDivFluxEx_FT(:,:,2) =  NegDivFluxEx_FT(:,:,2) ...
     
     %Add the C(k) term last
      NegDivFluxEx_FT = NegDivFluxEx_FT ...
-     - sqrt(-1) .* GridObj.km3D .* DiffMobObj.Mob_rot .* Jm_FT;
+     - DiffMobObj.ikm3 .* DiffMobObj.Mob_rot .* Jm_FT;
     
     
 %      keyboard
