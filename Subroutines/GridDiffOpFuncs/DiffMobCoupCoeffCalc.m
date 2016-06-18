@@ -28,14 +28,14 @@ end
 
 %Aniso diffusion coupling
 % Constant in front of cross terms
-CrossTermFactor = (DiffMobObj.D_par - DiffMobObj.D_perp)/4; 
+CrossTermFactor = - (DiffMobObj.D_par - DiffMobObj.D_perp) / 4; 
 % Coupling coefficent
-DiffMobObj.CfMplus2 = CrossTermFactor.*(ky2D - 1i.*kx2D).^2; 
-DiffMobObj.CfMminus2  = CrossTermFactor.*(ky2D + 1i.*kx2D).^2; 
+DiffMobObj.CfMminus2  = CrossTermFactor .* ( kx2D - sqrt(-1) .* ky2D ) .^ 2; 
+DiffMobObj.CfMplus2   = CrossTermFactor .* ( kx2D + sqrt(-1) .* ky2D ) .^ 2; 
 
 % Driven part
-DiffMobObj.CfMplus1  = -vd/2 * ( 1i .* kx2D - ky2D  ) ;
-DiffMobObj.CfMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
+DiffMobObj.CfMminus1 = -vd/2 * ( sqrt(-1) .* kx2D + ky2D  ) ;
+DiffMobObj.CfMplus1  = -vd/2 * ( sqrt(-1) .* kx2D - ky2D  ) ;
 
 % Multiply by derivatives in k space repeatedily,
 % they are large, but shouild be worth allocating
@@ -45,5 +45,39 @@ DiffMobObj.CfMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
 DiffMobObj.ikx3 = sqrt(-1) .* DiffMobObj.ikx3;
 DiffMobObj.iky3 = sqrt(-1) .* DiffMobObj.iky3;
 DiffMobObj.ikm3 = sqrt(-1) .* DiffMobObj.ikm3;
+
+% NL couplings
+% key: jxMm2f = jx m -2 coupling factor
+% jx
+Nm = length(km);
+DiffMobObj.jxf    = - ( DiffMobObj.D_par + DiffMobObj.D_perp) / 2 * ...
+  ( sqrt(-1) * kx2D );
+DiffMobObj.jxMm2f = - ( DiffMobObj.D_par - DiffMobObj.D_perp) / 4 * ...
+  ( sqrt(-1) * kx2D + ky2D );
+DiffMobObj.jxMp2f = - ( DiffMobObj.D_par - DiffMobObj.D_perp) / 4 * ...
+  ( sqrt(-1) * kx2D - ky2D );
+
+% jy
+DiffMobObj.jyf    = - ( DiffMobObj.D_par + DiffMobObj.D_perp) / 2 * ...
+  ( sqrt(-1) * ky2D );
+DiffMobObj.jyMm2f = - ( DiffMobObj.D_perp - DiffMobObj.D_par) / 4 * ...
+  ( sqrt(-1) * ky2D - kx2D );
+DiffMobObj.jyMp2f = - ( DiffMobObj.D_perp - DiffMobObj.D_par) / 4 * ...
+  ( sqrt(-1) * ky2D + kx2D );
+
+% reps. Not sure if I'm gonna keep this
+DiffMobObj.jxf_reps = repmat( DiffMobObj.jxf, [1,1,Nm];
+DiffMobObj.jyf_reps = repmat( DiffMobObj.jyf, [1,1,Nm];
+if Nm > 4
+  DiffMobObj.jxMm2f_reps = repmat( DiffMobObj.jxMm2f, [1,1,Nm-4];
+  DiffMobObj.jxMp2f_reps = repmat( DiffMobObj.jxMp2f, [1,1,Nm-4];
+  DiffMobObj.jyMm2f_reps = repmat( DiffMobObj.jyMm2f, [1,1,Nm-4];
+  DiffMobObj.jyMp2f_reps = repmat( DiffMobObj.jyMp2f, [1,1,Nm-4];
+else
+  DiffMobObj.jxMm2f_reps =  DiffMobObj.jxMm2f;
+  DiffMobObj.jxMp2f_reps =  DiffMobObj.jxMp2f;
+  DiffMobObj.jyMm2f_reps =  DiffMobObj.jyMm2f;
+  DiffMobObj.jyMp2f_reps =  DiffMobObj.jyMp2f;
+end
 
 end
