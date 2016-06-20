@@ -1,5 +1,6 @@
 function [OrderParamObj] = ...
-    CPNrecMaker(Nx,Ny,TimeRecVec,GridObj,phi3D,Density_rec)
+    CPNrecMaker(Nx,Ny,TimeRecVec,Density_rec,...
+    phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d )
 
 % Number of frames and time vec
 nFrames = length(TimeRecVec);
@@ -22,7 +23,7 @@ OrderParamObj.NOPy_rec   = zeros(Nx,Ny,nFrames);
 for ii = 1:nFrames
     [C,POP,POPx,POPy,NOP,NOPx,NOPy] = ...
         OpCPNCalc(Nx,Ny,Density_rec(:,:,:,ii),...
-        GridObj.phi,GridObj.x,GridObj.y,phi3D);
+        phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     OrderParamObj.C_rec(:,:,ii) = real(C);
     

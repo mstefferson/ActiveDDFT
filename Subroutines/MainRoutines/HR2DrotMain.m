@@ -195,7 +195,12 @@ try
     tOpID           = tic ;
 
     [~,~,phi3D] = meshgrid(GridObj.x,GridObj.y,GridObj.phi); 
-    
+    cosPhi3d = cos(phi3D);
+    sinPhi3d = sin(phi3D);
+    cos2Phi3d = cosPhi3d .^ 2;
+    sin2Phi3d = sinPhi3d .^ 2;
+    cossinPhi3d = cosPhi3d .* sinPhi3d;
+
     if  DenRecObj.DidIBreak == 0
       totRec = length( DenRecObj.TimeRecVec );
       TimeRecVecTemp = DenRecObj.TimeRecVec ;
@@ -244,9 +249,9 @@ try
       end
       
       [OPObjTemp] = CPNrecMaker(ParamObj.Nx,ParamObj.Ny,...
-        TimeRecVecTemp(Ind) ,GridObj, phi3D,...
-        RunSave.Den_rec(:,:,:,Ind) );
-      
+        TimeRecVecTemp(Ind), RunSave.Den_rec(:,:,:,Ind) ,...
+        GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
+ 
       % Save it
       OpSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
       OpSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
@@ -268,8 +273,18 @@ try
       
     end % loop over chunks
     
+    % Now do it for steady state sol
+    [~,~,phi3D] = meshgrid(1,1,GridObj.phi); 
+    cosPhi3d = cos(phi3D);
+    sinPhi3d = sin(phi3D);
+    cos2Phi3d = cosPhi3d .^ 2;
+    sin2Phi3d = sinPhi3d .^ 2;
+    cossinPhi3d = cosPhi3d .* sinPhi3d;
+   
     [~,~,~,~,OpSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, RhoInit.feq, GridObj.phi, 1, 1, phi3D);
+      OpCPNCalc(1, 1, reshape( RhoInit.feq, [1,1,ParamObj.Nm] ), ...
+      GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
+      
     if Flags.MakeMovies;
       OPobj.OpTimeRecVec = TimeRecVecTemp;
       OPobj.NOPeq = OpSave.NOPeq;
@@ -306,7 +321,7 @@ try
       movefile( MovStr, DirName  )
       
       MovRunTime   = toc(tMovID);
-      if Flags.Verbose
+     if Flags.Verbose
         fprintf('Made movies t%d_%d: %.3g \n', ...
           ParamObj.trialID, ParamObj.runID, MovRunTime);
       end
