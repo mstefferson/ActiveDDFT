@@ -72,7 +72,7 @@ Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
 %Hard rod interactions
 if Flags.Interactions
   GammaExVec_FT  = reshape( ...
-    dRhoIntCalcVcFt( rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj), ...
+    dRhoIntCalcVcFt( rho,rho_FT,Fm_FT,ParamObj,DiffMobObj), ...
     N3,1);
 else
   GammaExVec_FT = zeros(N3,1);
@@ -140,7 +140,7 @@ for t = 1:TimeObj.N_time-1
   if Flags.Interactions == true
     GammaExVec_FT  = reshape( ...
       dRhoIntCalcVcFt( ...
-      rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj),...
+      rho,rho_FT,Fm_FT,ParamObj,DiffMobObj),...
       N3,1);
   end
   
@@ -170,7 +170,7 @@ for t = 1:TimeObj.N_time-1
   
   %Save everything
   if ( mod(t,TimeObj.N_dtRec) == 0 )
-    
+
     % Turn it to a cube if it hasn't been yet
     if Flags.Interactions == 0 && Flags.Drive == 0
       rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);

@@ -10,7 +10,7 @@
 % Calls: MuExCalcVc2Ft
 
 function [NegDivFluxEx_FT] = ...
-  dRhoIntCalcVcFt(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
+  dRhoIntCalcVcFt(rho,rho_FT,Fm_FT,ParamObj,DiffMobObj)
 Nm = ParamObj.Nm;
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%
 
