@@ -63,7 +63,7 @@ paramSM  = paramMat(:,9); paramrun = paramMat(:,10);
 % Loops over all run
 fprintf('Starting loop over runs\n');
 if numRuns > 1
-  for ii = 1:numRuns
+  parfor ii = 1:numRuns
     % Assign parameters
     paramvec = [ paramNx(ii) paramNy(ii) paramNm(ii) paramLx(ii) ...
       paramLy(ii) paramvD(ii) parambc(ii) paramIC(ii)...
