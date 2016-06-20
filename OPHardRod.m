@@ -57,6 +57,15 @@ if NumFiles2Analyze;
     RhoInit  = RunSave.RhoInit;
     GridObj  = RunSave.GridObj;
     
+    % Build phi3D once
+    [~,~,phi3D] = meshgrid(GridObj.x,GridObj.y,GridObj.phi);
+    cosPhi3d = cos(phi3D);
+    sinPhi3d = sin(phi3D);
+    cos2Phi3d = cosPhi3d .^ 2;
+    sin2Phi3d = sinPhi3d .^ 2;
+    cossinPhi3d = cosPhi3d .* sinPhi3d;
+    
+    
     DirName = SaveNameRun(5:end-4);
     SaveNameOP   = ['OP_' DirName '.mat' ];
     OpSave = matfile(SaveNameOP,'Writable',true);
@@ -130,8 +139,8 @@ if NumFiles2Analyze;
       parfor kk = 1:length(Ind);
         
         [OPObjTemp] = CPNrecMaker(Nx,Ny,...
-          TimeRecVecTemp(kk) ,GridObj,...
-          DenRecTemp(:,:,:,kk) );
+          TimeRecVecTemp(kk), DenRecTemp(:,:,:,kk),...
+          GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
         
         C_rec(:,:,kk) = OPObjTemp.C_rec;
         POP_rec(:,:,kk) = OPObjTemp.POP_rec;
@@ -140,7 +149,7 @@ if NumFiles2Analyze;
         NOP_rec(:,:,kk) = OPObjTemp.NOP_rec;
         NOPx_rec(:,:,kk) = OPObjTemp.NOPx_rec;
         NOPy_rec(:,:,kk) = OPObjTemp.NOPy_rec;
-      end % loop over chunks
+      end % parloop
       
       OpSave.C_rec(:,:,Ind)    = C_rec;
       OpSave.POP_rec(:,:,Ind)  = POP_rec;
@@ -150,10 +159,18 @@ if NumFiles2Analyze;
       OpSave.NOPx_rec(:,:,Ind) = NOPx_rec;
       OpSave.NOPy_rec(:,:,Ind) = NOPy_rec;
       
-    end
-    [~,~,~,~,OpSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, RhoInit.feq, ...
-      GridObj.phi, 1, 1, GridObj.phi3D);
+    end %loop over chunks
+    
+        % Now do it for steady state sol
+    [~,~,phi3D] = meshgrid(1,1,GridObj.phi); 
+    cosPhi3d = cos(phi3D);
+    sinPhi3d = sin(phi3D);
+    cos2Phi3d = cosPhi3d .^ 2;
+    sin2Phi3d = sinPhi3d .^ 2;
+    cossinPhi3d = cosPhi3d .* sinPhi3d;
+      [~,~,~,~,OpSave.NOPeq,~,~] = ...
+      OpCPNCalc(1, 1, reshape( RhoInit.feq, [1,1,ParamObj.Nm] ), ...
+      GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     movefile( ['./runfiles/analyzing/' SaveNameRun], DirName );
     movefile( SaveNameOP,DirName );

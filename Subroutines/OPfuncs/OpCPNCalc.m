@@ -2,7 +2,8 @@
 % Function returns the spatial concentration and Order Parameters of a 2-D system of particles
 % with an orientation
 
-function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = OpCPNCalc(Nx,Ny,rho,phi,x,y,phi3d)
+function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = ...
+  OpCPNCalc(Nx,Ny,rho,phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d)
 
 % Director is chosen to be in the +y direction for all gridpoints
 
@@ -14,7 +15,7 @@ function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = OpCPNCalc(Nx,Ny,rho,phi,x,y,phi3d
 % ny_POP:polar order parameter in the y direction. 1st moment of the
 % distribution w.r.t. orientation.
 % QeigMax_MB: Eigenvalue of the matrix nn - I/2
-% NOP: The nematic order parameter. Defined as 3/2*  max(eigenvalue( nematic
+% NOP: The nematic order parameter. Defined as 3d/2*  max(eigenvalue( nematic
 % order parameter S_NOP)
 % NOPx: Nematic alignment director in x direction. Nematic alignment
 % director is the eigenvector corresponding to max(eig(S_NOP))
@@ -23,50 +24,29 @@ function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = OpCPNCalc(Nx,Ny,rho,phi,x,y,phi3d
 
 %Concentration is the first moment of the distribution. Integrate over all
 %angles
-if Nx == 1 && Ny == 1
-    C = trapz_periodic(phi,rho);
-else
-    C = trapz_periodic(phi,rho,3);
-end
-% C = trapz(phi,rho,3);
+C = trapz_periodic(phi,rho,3);
+
 % keyboard
 % Calculate the first moment of the distribution orientation. This gives
 % the orientation field
 %
-if Nx == 1 && Ny == 1
-    nx_POP = trapz_periodic(phi, cos(phi).*rho) ./ C; %Polar order parameter in x-direction
-    ny_POP = trapz_periodic(phi, sin(phi).*rho) ./ C; %Polar order parameter in y-direction
-else
-    nx_POP = trapz_periodic(phi, cos(phi3d).*rho,3) ./ C; %Polar order parameter in x-direction
-    ny_POP = trapz_periodic(phi, sin(phi3d).*rho,3) ./ C; %Polar order parameter in y-direction
-end
-% nx_POP = trapz(phi, cos(phi3d).*rho,3) ./ C; %Polar order parameter in x-direction
-% ny_POP = trapz(phi, sin(phi3d).*rho,3) ./ C; %Polar order parameter in y-direction
-
+nx_POP = trapz_periodic(phi, cosPhi3d.*rho,3) ./ C; %Polar order parameter in x-direction
+ny_POP = trapz_periodic(phi, sinPhi3d.*rho,3) ./ C; %Polar order parameter in y-direction
 
 POP = sqrt(nx_POP.^2 + ny_POP.^2);
 
 %%%%%%%%%%%%%%Q matrix%%%%%%%%%%%%%%%%%
 % Nematic Order parameter Q.
-
-% keyboard
-
 eigMaxQ_NOP = zeros(Nx,Ny);    % Eigenvalue of nemativ order parameter matrix
 NOPx = zeros(Nx,Ny);           % Nematic alignment x-direction
 NOPy = zeros(Nx,Ny);           % Nematic alignment y-direction
-if Nx == 1 && Ny == 1
-    Q_NOPxx_temp = trapz_periodic(phi,rho .* (cos(phi).*cos(phi) - 1/2)) ./ C;
-    Q_NOPxy_temp = trapz_periodic(phi,rho .* (cos(phi).*sin(phi))) ./ C;
-    Q_NOPyy_temp = trapz_periodic(phi,rho .* (sin(phi).*sin(phi) - 1/2)) ./ C;
-else
-    Q_NOPxx_temp = trapz_periodic(phi,rho .* (cos(phi3d).*cos(phi3d) - 1/2),3) ./ C;
-    Q_NOPxy_temp = trapz_periodic(phi,rho .* (cos(phi3d).*sin(phi3d)),3) ./ C;
-    Q_NOPyy_temp = trapz_periodic(phi,rho .* (sin(phi3d).*sin(phi3d) - 1/2),3) ./ C;
-end
+Q_NOPxx_temp = trapz_periodic(phi,rho .* (cos2Phi3d - 1/2),3) ./ C;
+Q_NOPxy_temp = trapz_periodic(phi,rho .* (cossinPhi3d),3) ./ C;
+Q_NOPyy_temp = trapz_periodic(phi,rho .* (sin2Phi3d - 1/2),3) ./ C;
 
 
-for i = 1:1:length(x)
-    for j = 1:length(y)
+for i = 1:Nx
+    for j = 1:Ny
         Q_temp = [Q_NOPxx_temp(i,j) Q_NOPxy_temp(i,j); Q_NOPxy_temp(i,j) Q_NOPyy_temp(i,j)];
         [EigVec,EigS] = eigs(Q_temp);
         eigMaxQ_NOP(i,j) = max(max(EigS));
