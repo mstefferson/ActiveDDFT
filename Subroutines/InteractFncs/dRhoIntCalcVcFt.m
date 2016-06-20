@@ -1,6 +1,6 @@
-% Function: dRhoIntCalcVcFt.m
+% Function: dRhoIntCalcVcFt.
 
-% Description: Uses the 2nd virial coefficient to calcuate the change in
+% Description: Uses the 2nd virial coefficient to calcuate the change i
 % density due to hard rod interactions in k-space.
 %
 % ANISOTROPIC Diffusion
@@ -70,5 +70,4 @@ NegDivFluxEx_FT(:,:,Ind) = ...
 %Add the C(k) term last
 NegDivFluxEx_FT = NegDivFluxEx_FT ...
   - DiffMobObj.ikm3 .* DiffMobObj.Mob_rot .* Jm_FT;
-
 
