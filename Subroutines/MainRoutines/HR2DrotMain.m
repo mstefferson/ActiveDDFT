@@ -235,7 +235,11 @@ try
     % Break it into chunks
     NumChunks = TimeObj.N_chunks;
     SizeChunk = floor( totRec/ NumChunks );
-    NumChunks = ceil( totRec/ SizeChunk);
+    if SizeChunk > 0
+      NumChunks = ceil( totRec/ SizeChunk);
+    else
+      NumChunks = 1;
+    end
     
     for i = 1:NumChunks;
       if i ~= NumChunks
@@ -303,7 +307,6 @@ try
       
       % Make matlab movies
       tMovID       = tic;
-      %         keyboard
       HoldX = ParamObj.Nx /2 + 1; % spatial pos placeholders
       HoldY = ParamObj.Ny /2 + 1; % spatial pos placeholders
       DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
@@ -395,7 +398,6 @@ catch err %Catch errors
   fprintf('%s', err.getReport('extended')) ;
   RunSave.err = err;
   disp(err);
-  keyboard
   
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles

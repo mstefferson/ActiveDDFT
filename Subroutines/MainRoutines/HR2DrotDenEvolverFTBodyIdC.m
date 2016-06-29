@@ -15,7 +15,6 @@
 % Isotropic diffusion. The propagaotr is a cube.
 %
 
-
 function [DenRecObj]  = ...
     HR2DrotDenEvolverFTBodyIdC(rho,ParamObj,...
     TimeObj,GridObj,DiffMobObj,Flags, lfid)
@@ -122,7 +121,6 @@ ShitIsFucked = 0;
 SteadyState  = 0;
 MaxReldRho   = 0; % Initialize this so things don't get messed up
 
-% keyboard
 fprintf(lfid,'Starting master time loop\n');
 for t = 1:TimeObj.N_time-1
     %Save the previous and take one step forward.
@@ -185,11 +183,8 @@ for t = 1:TimeObj.N_time-1
       [SteadyState,ShitIsFucked,MaxReldRho] = ...
         BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
     end
-    
-    % Break out if shit is fucked
-    if ShitIsFucked == 1 || SteadyState == 1; break; end;
-    
-    % Write a chunk to disk
+
+      % Write a chunk to disk
     if ( mod(t, TimeObj.N_dtChunk ) == 0 )
       % Record Density_recs to file
       RecIndTemp = ...
@@ -203,11 +198,22 @@ for t = 1:TimeObj.N_time-1
     end
     jrectemp = jrectemp + 1;
     jrec = jrec + 1;
+
+    % Break out if shit is fucked or done. Write first though
+    if ShitIsFucked == 1 || SteadyState == 1;
+      jrectemp = jrectemp - 1;
+      StartInd = (jchunk-1) *  TimeObj.N_recChunk + 1;
+      RecIndTemp = StartInd:StartInd + (jrectemp) - 1;
+      % Shift by one because we include zero
+      RecIndTemp = RecIndTemp + 1;
+      RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
+      RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+      break 
+    end
   end %end recording
   
 end %end time loop
 fprintf(lfid,'Finished master time loop\n');
-%  keyboard
 
 % Update last rho
 t =  t + 1;
