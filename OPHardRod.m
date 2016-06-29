@@ -80,10 +80,12 @@ if NumFiles2Analyze;
       totRec = length( DenRecObj.TimeRecVec );
       OpTimeRecVec = DenRecObj.TimeRecVec ;
       OpSave.OpTimeRecVec = OpTimeRecVec;
-    else %Don't incldue the blowed up denesity for movies. They don't like it.
+      fprintf('Nothing Broke totRec = %d\n',totRec);
+    else %Don't incldue the blowed up density for movies. They don't like it.
       totRec = length( DenRecObj.TimeRecVec ) - 1;
       OpTimeRecVec = DenRecObj.TimeRecVec(1:end-1) ;
       OpSave.OpTimeRecVec = OpTimeRecVec;
+      fprintf('Density Broke totRec = %d\n',totRec);
     end
     
     % Set up saving
@@ -172,10 +174,13 @@ if NumFiles2Analyze;
       OpCPNCalc(1, 1, reshape( RhoInit.feq, [1,1,ParamObj.Nm] ), ...
       GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
+    [~, ~, o] = size(OpSave.C_rec);
     movefile( ['./runfiles/analyzing/' SaveNameRun], DirName );
     movefile( SaveNameOP,DirName );
-    
+    fprintf('Finished %s\n', SaveNameRun);
+    fprintf('Rec points for C_rec = %d vs totRec = %d\n',o,totRec);
   end %loop over files
+  fprintf('Looped over files\n');
 end %if analyzing
 
 end_time = toc(tstart);
