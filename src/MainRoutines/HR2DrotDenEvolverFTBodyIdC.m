@@ -56,8 +56,8 @@ jchunk   = 1; % Write chunk index
 Prop = exp(Lop .* dt);   % Exponentiate the elements
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
-Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
-    Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ));
+Fm_FT = fftshift(fftn( mayerFncHr(...
+    Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ) );
 
 %Hard rod interactions
 if Flags.Interactions

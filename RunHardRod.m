@@ -5,7 +5,7 @@ fprintf('Starting RunHardRod: %s\n', DateTime);
 
 % Add Subroutine path
 CurrentDir = pwd;
-addpath( genpath( [CurrentDir '/Subroutines'] ) );
+addpath( genpath( [CurrentDir '/src'] ) );
 
 % Make Output Directories
 if ~exist('runfiles', 'dir'); mkdir('./runfiles'); end;

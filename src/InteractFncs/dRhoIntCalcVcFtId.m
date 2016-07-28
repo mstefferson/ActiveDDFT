@@ -27,7 +27,7 @@ function [NegDivFluxExcess_FT] = ...
 % keyboard
 %Now includes the correct scale
 
-[MuEx_FT] = MuExCalcVc2Ft(rho_FT,Fm_FT,ParamObj);
+[MuEx_FT] = muExCalcVc2Ft(rho_FT,Fm_FT,ParamObj);
 % [MuEx3_FT] = FtMuExCalcAprxVc3(rho,ParamObj);
 % [MuEx3_FT] = 0;
 % keyboard

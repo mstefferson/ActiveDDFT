@@ -65,7 +65,7 @@ jchunk   = 1; % Write chunk index
 [Lop] = DiffOpBuilderDr(DiffMobObj,GridObj,Nx,Ny,Nm,N2,N3);
 
 % Mayer function stuff %
-Fm_FT = fftshift(fftn( MayerFncDiffBtwPntsCalc(...
+Fm_FT = fftshift(fftn( mayerFncHr(...
   Nx, Ny, Nm, ParamObj.Lx, ParamObj.Ly, ParamObj.L_rod) ));
 
 %Hard rod interactions
