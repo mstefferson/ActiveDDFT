@@ -24,4 +24,4 @@ eo/*
 
 # Certain files
 Runner.m
-InitParams.m
+initParams.m

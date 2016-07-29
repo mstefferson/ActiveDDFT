@@ -14,10 +14,10 @@ if ~exist('analyzedfiles', 'dir'); mkdir('./analyzedfiles'); end;
 
 % Grab initial parameters
 if exist('Params.mat','file') == 0;
-  if exist('InitParams.m','file') == 0;
+  if exist('initParams.m','file') == 0;
     cpParams();
   end;
-  InitParams();
+  initParams();
 end
 load Params.mat;
 
