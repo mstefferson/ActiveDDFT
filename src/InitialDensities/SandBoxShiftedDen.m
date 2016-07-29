@@ -27,7 +27,7 @@ Norm  = 100;
 
 [Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,phi,bc); % Calculate coeff
 f = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);        % Build equil distribution
-% plot(GridObj.phi,f)
+% plot(gridObj.phi,f)
 f_circ = circshift(f',8)';
 
 % a = (1:4)'
@@ -66,18 +66,18 @@ plot( phi,reshape(rho2(2,1,:),1,32),phi, reshape(rho2(2,2,:),1,32) )
 plot( phi,reshape(rho(2,1,:),1,32),phi, reshape(rho(2,2,:),1,32) )
 plot( phi,reshape(DenRecObj.Density_rec(2,1,:,1),1,32),...
     phi, reshape(DenRecObj.Density_rec(2,2,:,1),1,32) )
-% ParamObj.Norm / (ParamObj.Lx .* ParamObj.Lx);
-% b = ParamObj.L_rod^2 / pi;
-% c =  ParamObj.bc / b;
+% systemObj.numPart / (systemObj.Lx .* systemObj.Lx);
+% b = particleObj.lMaj^2 / pi;
+% c =  systemObj.bc / b;
 % f_reshape =  reshape(rho(17,17,:) / c  , 1, 32 );
-% trapz_periodic(GridObj.phi,f)
-% trapz_periodic(GridObj.phi,f_reshape)
+% trapz_periodic(gridObj.phi,f)
+% trapz_periodic(gridObj.phi,f_reshape)
 % keyboard
 % Normalize it
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho_eq = rho .* ParamObj.Norm ./ CurrentNorm;
+CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+rho_eq = rho .* systemObj.numPart ./ CurrentNorm;
 % Perturb it
 
 % keyboard

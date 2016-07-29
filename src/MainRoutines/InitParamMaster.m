@@ -2,60 +2,64 @@
 %
 % Parameter inializer for RunHardRod
 
-% Main FlagMaster
-FlagMaster.SaveMe       = 1; % Saving
-FlagMaster.Verbose      = 0; % Prints run times
-FlagMaster.AnisoDiff    = 1; % Aniso = 1. Iso = 0
-FlagMaster.Interactions = 1; % Int = 1. No Int = 0
-FlagMaster.MakeMovies   = 0; % No movies if save is zero
-FlagMaster.MakeOP       = 1; % No OPs if save is zero
-FlagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
-FlagMaster.SquareBox    = 0; % Forces box to be square
-FlagMaster.StepMeth     = [0]; % Stepping (integrating) method (vec)
+% Main flagMaster
+flagMaster.SaveMe       = 1; % Saving
+flagMaster.Verbose      = 0; % Prints run times
+flagMaster.AnisoDiff    = 1; % Aniso = 1. Iso = 0
+flagMaster.Interactions = 1; % Int = 1. No Int = 0
+flagMaster.MakeMovies   = 0; % No movies if save is zero
+flagMaster.MakeOP       = 1; % No OPs if save is zero
+flagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
+flagMaster.SquareBox    = 0; % Forces box to be square
+flagMaster.StepMeth     = [0]; % Stepping (integrating) method (vec)
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
 % Can be vector if (vec) is in comment
-ParamMaster.num_trial =  1; % number of trials
-ParamMaster.trialID = 1; % Trial Indicator
-ParamMaster.runID   = 1; % Starting Run indicator *_trial.runID
-ParamMaster.Nx      = [64]; % Gridpoints in x dir (vec)
-ParamMaster.Ny      = [64]; % Gridpoints in y dir (vec) 
-ParamMaster.Nm      = [64]; % Gridpoints in angle (vec)
-ParamMaster.bc      = 1.45; % Scaled concentration (vec)
-ParamMaster.L_rod   = 1;  % Length of the rods
-ParamMaster.Lx      = [10]*ParamMaster.L_rod;  % Box length (vec)
-ParamMaster.Ly      = [10]*ParamMaster.L_rod;  % Box length (vec)
-ParamMaster.vD      = [0]; % Driving velocity (vec)
-ParamMaster.Tmp      = 1;            % Temperature
-% mobility
-Mob = 1;
-if FlagMaster.AnisoDiff; 
-  ParamMaster.Mob_par  = 2*Mob; 
+runMaster.num_trial =  1; % number of trials
+runMaster.trialID = 1; % Trial Indicator
+runMaster.runID   = 1; % Starting Run indicator *_trial.runID
+
+particleMaster.lMaj    = 1;  % Length along the major axis
+particleMaster.lMin    = 0;  % Length along the minor axis
+particleMaster.vD      = [0]; % Driving velocity (vec)
+particleMaster.mob = 1; % mobility
+
+systemMaster.Nx      = [64]; % Gridpoints in x dir (vec)
+systemMaster.Ny      = [64]; % Gridpoints in y dir (vec) 
+systemMaster.Nm      = [64]; % Gridpoints in angle (vec)
+systemMaster.bc      = [1.45]; % Scaled concentration (vec)
+systemMaster.Lx      = [10];  % Box length (vec)
+systemMaster.Ly      = [10];  % Box length (vec)
+systemMaster.Lphi    = 2 * pi;
+systemMaster.Tmp      = 1;   % Temperature
+
+if flagMaster.AnisoDiff; 
+  particleMaster.mobPar  = 2*particleMaster.mob; 
 else
-  ParamMaster.Mob_par = Mob; 
+  particleMaster.mobPar = particleMaster.mob; 
 end
-ParamMaster.Mob_perp   = Mob;
-ParamMaster.Mob_rot   = 6 * Mob / ParamMaster.L_rod^2;
+particleMaster.mobPerp   = particleMaster.mob;
+particleMaster.mobRot   = 6 * particleMaster.mob / particleMaster.lMaj^2;
 
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
-TimeMaster.dt     = 1e-3; % time step
-TimeMaster.t_rec    = 0.1;  % time elapsed before recording
-TimeMaster.t_write     = 0.2;  % time elapsed before writing to file
-TimeMaster.t_tot       = 1.0;  % total run time
-TimeMaster.ss_epsilon  = 1e-8; % steady state condition
+timeMaster.dt     = 1e-3; % time step
+timeMaster.t_rec    = 0.1;  % time elapsed before recording
+timeMaster.t_write     = 0.2;  % time elapsed before writing to file
+timeMaster.t_tot       = 1.0;  % total run time
+timeMaster.ss_epsilon  = 1e-8; % steady state condition
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
-RhoInitMaster.IntCond     = [1]; % IC indicator (vec)
-RhoInitMaster.NumModesX   = 8; % Perturb # modes x
-RhoInitMaster.NumModesY   = 8; % Perturb # modes y
-RhoInitMaster.NumModesM   = 8; % Perturb # modes m
-RhoInitMaster.LoadName    = ''; % File name to load if IC 3
+rhoInitMaster.IntCond     = [1]; % IC indicator (vec)
+rhoInitMaster.NumModesX   = 8; % Perturb # modes x
+rhoInitMaster.NumModesY   = 8; % Perturb # modes y
+rhoInitMaster.NumModesM   = 8; % Perturb # modes m
+rhoInitMaster.LoadName    = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbation weight is a fraction of the isotropic density
 % If about a nematic, code will correct for negative densities.
-RhoInitMaster.WeightPert   = 1e-3;
-RhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
+rhoInitMaster.WeightPert   = 1e-3;
+rhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
 
 % Key
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -71,51 +75,52 @@ RhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
 % Calculated stuff- fix times, etc.
 
 % Don't perturb more more than you are allowed to
-if( RhoInitMaster.NumModesX >= ParamMaster.Nx / 2 ); 
-  RhoInitMaster.NumModesX = floor(ParamMaster.Nx / 2) - 2; 
+if( rhoInitMaster.NumModesX >= systemMaster.Nx / 2 ); 
+  rhoInitMaster.NumModesX = floor(systemMaster.Nx / 2) - 2; 
 end;
-if( RhoInitMaster.NumModesY >= ParamMaster.Ny / 2 ); 
-  RhoInitMaster.NumModesY = floor(ParamMaster.Ny / 2) - 2;
+if( rhoInitMaster.NumModesY >= systemMaster.Ny / 2 ); 
+  rhoInitMaster.NumModesY = floor(systemMaster.Ny / 2) - 2;
 end;
-if( RhoInitMaster.NumModesM >= ParamMaster.Nm / 2 );
-  RhoInitMaster.NumModesM = floor(ParamMaster.Nm / 2) - 2; 
+if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 );
+  rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 2; 
 end;
 
-if FlagMaster.SquareBox == 1; 
-  ParamMaster.L_box = unique( [ParamMaster.Lx ParamMaster.Ly] );
-  ParamMaster.Lx = ParamMaster.L_box; 
-  ParamMaster.Ly = ParamMaster.L_box; 
+if flagMaster.SquareBox == 1; 
+  systemMaster.L_box = unique( [systemMaster.Lx systemMaster.Ly] );
+  systemMaster.Lx = systemMaster.L_box; 
+  systemMaster.Ly = systemMaster.L_box; 
 end
 
-if FlagMaster.AllNsSame == 1; 
-  Nvec = unique( [ParamMaster.Nx ParamMaster.Ny ParamMaster.Nm] );
-  ParamMaster.Nx = Nvec;
-  ParamMaster.Ny = Nvec; 
-  ParamMaster.Nm = Nvec;
+if flagMaster.AllNsSame == 1; 
+  Nvec = unique( [systemMaster.Nx systemMaster.Ny systemMaster.Nm] );
+  systemMaster.Nx = Nvec;
+  systemMaster.Ny = Nvec; 
+  systemMaster.Nm = Nvec;
 end
 
 
 % Concentration and rod stuff
-ParamMaster.b  = ParamMaster.L_rod^2/pi;               % Average excluded volume per particle
-ParamMaster.Mob_pos = Mob;
+particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded volume per particle
+particleMaster.mobPos = particleMaster.mob;
 
 % Turn movies off is Save is off
-if FlagMaster.SaveMe == 0; FlagMaster.MakeOP = 0; FlagMaster.MakeMovies = 0;end
-if FlagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
-if ParamMaster.vD  == 0; FlagMaster.Drive = 0; else FlagMaster.Drive = 1;end
+if flagMaster.SaveMe == 0; flagMaster.MakeOP = 0; flagMaster.MakeMovies = 0;end
+if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
+if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
 
-if TimeMaster.dt > TimeMaster.t_rec;
+if timeMaster.dt > timeMaster.t_rec;
   fprintf('Recorded interval is shorter then timestep fix before proceeding\n');
   error('Recorded interval is shorter then timestep fix before proceeding');
 end
-if TimeMaster.t_rec > TimeMaster.t_write;
+if timeMaster.t_rec > timeMaster.t_write;
   fprintf('File write interval is shorter than recordord interval. Fix it \n');
   error('File write interval is shorter than record interval fix before proceeding');
 end
-if TimeMaster.t_write > TimeMaster.t_tot;
+if timeMaster.t_write > timeMaster.t_tot;
   fprintf('Total time interval is shorter then record interval\n');
   error('Total time interval is shorter then record interval');
 end
 
 % Save the Params
-save('Params.mat','ParamMaster','TimeMaster','FlagMaster','RhoInitMaster')
+save('Params.mat','particleMaster','systemMaster',...
+  'runMaster','timeMaster','flagMaster','rhoInitMaster')

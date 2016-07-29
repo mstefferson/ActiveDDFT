@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = DenEq2DrotOffSetSpat(GridObj,ParamObj)
+function [rho] = DenEq2DrotOffSetSpat(gridObj,ParamObj)
 
 % Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -24,17 +24,17 @@ addpath('C:\Users\MWS\Documents\MATLAB\Research\BG\INtransEq')
 % Distribution stuff
 Nc    = 20;            % Number of Coefficients
 
-[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
-f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
+[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,gridObj.phi,systemObj.bc); % Calculate coeff
+f = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
 % Get a new dist with peaks shifted by pi/2
-f_circ = circshift(f',ParamObj.Nm/4)';
+f_circ = circshift(f',systemObj.Nm/4)';
 
 % Initialize rho
-rho =    ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
+rho =    ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
 
 % Map distribution to a homogeneous system
-for i = 1:ParamObj.Nx
-    for j = 1:ParamObj.Ny
+for i = 1:systemObj.Nx
+    for j = 1:systemObj.Ny
         if mod( (i+j), 2 ) == 0
             rho(i,j,:) = f;
         else
@@ -46,8 +46,8 @@ end
 % Normalize it
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho = rho .* ParamObj.Norm ./ CurrentNorm;
+CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+rho = rho .* systemObj.numPart ./ CurrentNorm;
 % Perturb it
 
 % keyboard

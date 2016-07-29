@@ -1,33 +1,33 @@
 function [SteadyState,ShitIsFucked,MaxReldRho] = ..
-VarRecorderTrackerNoSaveCube(fid,TimeObj,t,rho_FT,rho_FT_prev,TotalDensity)
+VarRecorderTrackerNoSaveCube(fid,timeObj,t,rho_FT,rho_FT_prev,TotalDensity)
 % Track how mucht the wieghted density has changed.
 %Check to see if steady state has been reached. If so, break the
 %loop'
 %         keyboard
 
 % keyboard
-fprintf(fid,'%f percent done\n',t./TimeObj.N_time*100);
+fprintf(fid,'%f percent done\n',t./timeObj.N_time*100);
 % fclose(tfid);
 rho         = real(ifftn(ifftshift( rho_FT )));
 rho_prev    = real(ifftn(ifftshift( rho_FT_prev )));
 
 % See if things are broken
 [SteadyState,ShitIsFucked,MaxReldRho] = ...
-    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj);
+    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj);
 
 % keyboard
 %         keyboard
 end
 
 function [SteadyState,ShitIsFucked,MaxReldRho] = ...
-    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj)
+    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj)
 SteadyState = 0;
 ShitIsFucked = 0;
 
 AbsDensityChange = abs( rho - rho_prev );
 WeightDensityChange = AbsDensityChange ./ rho;
 MaxReldRho = max(max(max(WeightDensityChange)));
-if MaxReldRho < TimeObj.ss_epsilon
+if MaxReldRho < timeObj.ss_epsilon
     SteadyState = 1;
 end
 %See if something broke

@@ -1,4 +1,4 @@
-function [lambda] = NemDispRelMakerContin(GridObj,ParamObj,ampl_record,kx,ky,km,kmOrig,NmOrig,D_pos,D_rot,bc)
+function [lambda] = NemDispRelMakerContin(gridObj,ParamObj,ampl_record,kx,ky,km,kmOrig,NmOrig,D_pos,D_rot,bc)
 
 FT_orig = reshape(ampl_record(:,1),1,NmOrig);
 
@@ -12,7 +12,7 @@ feql_FT = fftshift(fft(feql));
 feql_FT = real(feql_FT);
 
 % Initialize rho
-[rho_eq] = DenEq2Drot(GridObj,ParamObj);
+[rho_eq] = DenEq2Drot(gridObj,ParamObj);
 kx_holder = 17;
 ky_holder = 17;
 

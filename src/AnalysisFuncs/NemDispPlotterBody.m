@@ -1,11 +1,11 @@
-function NemDispPlotterBody(GridObj,ParamObj,k2plotInd,ampl_record,Nmodes,TimeRecVec, kxholder,kyholder,...
+function NemDispPlotterBody(gridObj,ParamObj,k2plotInd,ampl_record,Nmodes,TimeRecVec, kxholder,kyholder,...
     kx,ky,km,D_rot, D_pos,Nx,Ny,Nm,bc)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %     keyboard
 [lambda_c] = ...
-    NemDispRelMakerContin(GridObj,ParamObj,ampl_record,kx(kxholder),ky(kyholder),km(k2plotInd),...
+    NemDispRelMakerContin(gridObj,ParamObj,ampl_record,kx(kxholder),ky(kyholder),km(k2plotInd),...
     km,Nm,D_pos,D_rot,bc);
 [lambda_diff] = IsoDispRelMakerDiffus(kx(kxholder),ky(kyholder),km(k2plotInd),D_pos,D_rot);
 
@@ -28,7 +28,7 @@ options = optimset('Display','off'); %Don't display anything in fnc lsqcurvefit
 figure(7)
 
 % Need to track deviation from equilbrium, just, equilibrium
-[rho_eq] = DenEq2Drot(GridObj,ParamObj);
+[rho_eq] = DenEq2Drot(gridObj,ParamObj);
 kx_holder = 17;
 ky_holder = 17;
 

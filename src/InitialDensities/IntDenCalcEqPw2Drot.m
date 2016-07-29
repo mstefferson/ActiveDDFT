@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcEqPw2Drot(ParamObj, RhoInit, x, y, phi)
+function [rho] = IntDenCalcEqPw2Drot(systemObj, rhoInit, x, y, phi)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -21,29 +21,17 @@ function [rho] = IntDenCalcEqPw2Drot(ParamObj, RhoInit, x, y, phi)
 
 % Build rho from equilibrium
 % Initialize rho
-rho = ParamObj.c .* ...
-    ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
+rho = systemObj.c .* ...
+    ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
 
 % Map distribution to a homogeneous system
-for i = 1:ParamObj.Nm
-    rho(:,:,i) = rho(:,:,i) .* RhoInit.feq(i);
+for i = 1:systemObj.Nm
+    rho(:,:,i) = rho(:,:,i) .* rhoInit.feq(i);
 end
 
-% ParamObj.Norm / (ParamObj.Lx .* ParamObj.Lx);
-% b = ParamObj.L_rod^2 / pi;
-% c =  ParamObj.bc / b;
-% f_reshape =  reshape(rho(17,17,:) / c  , 1, 32 );
-% trapz_periodic(phi,f)
-% trapz_periodic(phi,f_reshape)
-% keyboard
-% Normalize it
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
 CurrentNorm = trapz_periodic(x,trapz_periodic(y,trapz_periodic(phi,rho,3),2),1);
-rho = rho .* ParamObj.Norm ./ CurrentNorm;
-
-% Perturb it
-%[rho] = PwDenPerturber2Drot(rho_eq,ParamObj,RhoInit);
-[rho] = PwPerturbFT(rho,ParamObj,RhoInit);
+rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end %end function

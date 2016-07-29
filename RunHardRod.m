@@ -1,11 +1,11 @@
 
 % Date
-DateTime =  datestr(now);
-fprintf('Starting RunHardRod: %s\n', DateTime);
+dateTime =  datestr(now);
+fprintf('Starting RunHardRod: %s\n', dateTime);
 
 % Add Subroutine path
-CurrentDir = pwd;
-addpath( genpath( [CurrentDir '/src'] ) );
+currentDir = pwd;
+addpath( genpath( [currentDir '/src'] ) );
 
 % Make Output Directories
 if ~exist('runfiles', 'dir'); mkdir('./runfiles'); end;
@@ -15,21 +15,24 @@ if ~exist('analyzedfiles', 'dir'); mkdir('./analyzedfiles'); end;
 % Grab initial parameters
 if exist('Params.mat','file') == 0;
   if exist('InitParams.m','file') == 0;
-    cpParams
+    cpParams();
   end;
-  InitParams
+  InitParams();
 end
 load Params.mat;
 
 % Copy the master parameter list to ParamObj
-ParamObj = ParamMaster;
-RhoInit  = RhoInitMaster;
-Flags    = FlagMaster;
-AnisoDiffFlag = Flags.AnisoDiff;
-trial = ParamObj.trialID;
+%ParamObj = ParamMaster;
+systemObj = systemMaster;
+particleObj = particleMaster;
+rhoInit  = rhoInitMaster;
+flags    = flagMaster;
+runObj  = runMaster;
+anisoDiffFlag = flags.AnisoDiff;
+trial = runObj.trialID;
 
 % Print what you are doing
-if AnisoDiffFlag  == 1;
+if anisoDiffFlag  == 1;
   fprintf('Anisotropic Hard Rod \n')
 else
   fprintf('Isotropic Hard Rod \n')
@@ -37,18 +40,18 @@ end
 
 % Fix the time
 fprintf('Making time obj\n');
-[TimeObj]= ...
-  TimeStepRecMaker(TimeMaster.dt,TimeMaster.t_tot,...
-  TimeMaster.t_rec,TimeMaster.t_write);
-TimeObj.ss_epsilon = TimeMaster.ss_epsilon;
+[timeObj]= ...
+  TimeStepRecMaker(timeMaster.dt,timeMaster.t_tot,...
+    timeMaster.t_rec,timeMaster.t_write);
+timeObj.ss_epsilon = timeMaster.ss_epsilon;
 fprintf('Finished time obj\n');
 
 % Display everythin
-disp(Flags); disp(ParamObj); disp(TimeObj); disp(RhoInit);
+disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
 
 % Make paramMat
 fprintf('Building parameter mat \n');
-[paramMat, numRuns] = MakeParamMat( ParamObj, RhoInit, Flags );
+[paramMat, numRuns] = MakeParamMat( systemObj, particleObj, runObj, rhoInit, flags );
 fprintf('Executing %d runs \n\n', numRuns);
 
 paramvec = zeros(numRuns,1);
@@ -70,7 +73,7 @@ if numRuns > 1
       paramSM(ii) paramrun(ii)];
     
     % Name the file
-    filename = [ 'Hr_Ani' num2str( AnisoDiffFlag ) ...
+    filename = [ 'Hr_Ani' num2str( anisoDiffFlag ) ...
       '_N' num2str( paramNx(ii) ) num2str( paramNy(ii) ) num2str( paramNm(ii) )  ...
       '_Lx' num2str( paramLx(ii) ) 'Ly' num2str( paramLy(ii) )...
       '_vD' num2str( paramvD(ii) ) '_bc' num2str( parambc(ii) ) ...
@@ -80,7 +83,7 @@ if numRuns > 1
     disp(filename);
     
     [DenRecObj] = ...
-      HR2DrotMain( filename, paramvec, ParamObj, TimeObj, RhoInit, Flags );
+      HR2DrotMain( filename, paramvec, ParamObj, timeObj, rhoInit, flags );
   end
 else
   paramvec = [ paramNx(1) paramNy(1) paramNm(1) paramLx(1) ...
@@ -88,7 +91,7 @@ else
     paramSM(1) paramrun(1)];
   
   % Name the file
-  filename = [ 'Hr_Ani' num2str( AnisoDiffFlag ) ...
+  filename = [ 'Hr_Ani' num2str( anisoDiffFlag ) ...
     '_N' num2str( paramNx(1) ) num2str( paramNy(1) ) num2str( paramNm(1) )  ...
     '_Lx' num2str( paramLx(1) ) 'Ly' num2str( paramLy(1) )...
     '_vD' num2str( paramvD(1) ) '_bc' num2str( parambc(1) ) ...
@@ -98,11 +101,11 @@ else
   disp(filename);
   
   [DenRecObj] = ...
-    HR2DrotMain( filename, paramvec, ParamObj, TimeObj, RhoInit, Flags );
+    HR2DrotMain( filename, paramvec, systemObj, particleObj, runObj, timeObj, rhoInit, flags );
 end
 
 
-DateTime =  datestr(now);
-fprintf('Finished RunHardRod: %s\n', DateTime);
+dateTime =  datestr(now);
+fprintf('Finished RunHardRod: %s\n', dateTime);
 delete Params.mat
 

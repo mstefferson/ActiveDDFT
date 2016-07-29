@@ -1,7 +1,7 @@
 % Calculates the mobility and diffusion tensor based on dimensions of rod
 % and fluid
 
-function [DiffMobObj]...
+function [diffObj]...
              = DiffMobCoupCoeffCalcOld(wfid,Eta_visc,L_rod,Diam,T,dt,delta_x,delta_phi,kx2D,ky2D)
 %Coefficients of the friction matrix
 Fric_par  = pi * Eta_visc * L_rod / (log(L_rod/Diam));          % for motion parallel to rods
@@ -39,6 +39,6 @@ CrossTermFactor = (D_par - D_perp)/4;                       % Constant in front 
 CoupFacMplus2   = CrossTermFactor.*(ky2D - 1i.*kx2D).^2;      % Coupling coefficent
 CoupFacMminus2  = CrossTermFactor.*(ky2D + 1i.*kx2D).^2;     % Coupling coefficent
 
-DiffMobObj = struct('Mob_par', Mob_par, 'Mob_perp', Mob_perp, 'Mob_rot',Mob_rot,...
+diffObj = struct('Mob_par', Mob_par, 'Mob_perp', Mob_perp, 'Mob_rot',Mob_rot,...
     'D_par',D_par, 'D_perp',D_perp, 'D_rot',D_rot, ...
     'CfMplus2',CoupFacMplus2,'CfMminus2',CoupFacMminus2);

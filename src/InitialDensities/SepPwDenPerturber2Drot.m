@@ -4,32 +4,32 @@
 % \sum epsilon_k exp( i k_x x ) + \sum epsilon_k exp( i k_y y ) ...
 %       + \sum epsilon_k exp( i k_m phi )
 
-function [rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit)
+function [rho] = SepPwDenPerturber2Drot(rho,ParamObj,gridObj,rhoInit)
 
-% NEED TO EDIT. This will break with changes to GridObj
+% NEED TO EDIT. This will break with changes to gridObj
 %Perturbation coeff
-Coeff = RhoInit.WeightPos;
+Coeff = rhoInit.WeightPos;
 %Change in x
-for i = -RhoInit.NumModesX:RhoInit.NumModesX
+for i = -rhoInit.NumModesX:rhoInit.NumModesX
   
   
   rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-    .* exp( sqrt(-1) .* GridObj.kx(ParamObj.Nx/2+1+i) .* GridObj.x3D ) ; ...
+    .* exp( sqrt(-1) .* gridObj.kx(systemObj.Nx/2+1+i) .* gridObj.x3D ) ; ...
 end
 
 %Change in y
-for i = -RhoInit.NumModesY:RhoInit.NumModesY
+for i = -rhoInit.NumModesY:rhoInit.NumModesY
   
   rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-    .* exp( sqrt(-1) .* GridObj.ky(ParamObj.Ny/2+1+i) .* GridObj.y3D ) ; ...
+    .* exp( sqrt(-1) .* gridObj.ky(systemObj.Ny/2+1+i) .* gridObj.y3D ) ; ...
 end
 
-Coeff = RhoInit.WeightAng;
+Coeff = rhoInit.WeightAng;
 %Change in phi
-for i = -RhoInit.NumModesM:RhoInit.NumModesM
+for i = -rhoInit.NumModesM:rhoInit.NumModesM
   
   rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-    .* exp( sqrt(-1) .* GridObj.km(ParamObj.Nm/2+1+i) .* GridObj.phi3D ) ; ...
+    .* exp( sqrt(-1) .* gridObj.km(systemObj.Nm/2+1+i) .* gridObj.phi3D ) ; ...
 end
 
 % Take real part
@@ -40,7 +40,7 @@ rho = real(rho);
 
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho = real(rho .* ParamObj.Norm ./ CurrentNorm);
+CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+rho = real(rho .* systemObj.numPart ./ CurrentNorm);
 
 end

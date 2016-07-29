@@ -77,7 +77,7 @@ try
         for j = 1:Nbc
             % Calculate the distribution, rho, and sigma at a specific concentration
             [FileInpt] = InptMkrHRICDfunc(bcVec(j),v0,L_box, Nvec,t_tot,trial);
-            [DenFinal_new, DenFTFinal_new,GridObj, ParamObj, TimeObj, ...
+            [DenFinal_new, DenFTFinal_new,gridObj, ParamObj, timeObj, ...
                 DidIBreak,SteadyState,MaxReldRho] = ....
                 HR2DrotMainDrIDCube(FileInpt);
             fprintf('Ngr = %.2f bc = %.2f\n',NgrVec(i),bcVec(j))
@@ -92,16 +92,16 @@ try
             DenFinal = DenFinal_new;
             
             %Build OP Matrix From PDE solution
-            [~,~,~,~,NOP,~,~] = OpCPNCalc(Nx,Ny,DenFinal_new,GridObj.phi,GridObj.x,GridObj.y,GridObj.phi3D);
+            [~,~,~,~,NOP,~,~] = OpCPNCalc(Nx,Ny,DenFinal_new,gridObj.phi,gridObj.x,gridObj.y,gridObj.phi3D);
             AveNem = mean(mean(NOP));
             StdNem = std2(NOP);
             
             AveNemMatPde(i,j) = AveNem;
             StdNemMatPde(i,j) = StdNem;
             
-            [Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,GridObj.phi,bcVec(j));
-            f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);
-            [~,~,~,~,NOP,~,~] = OpCPNCalc(1,1,f,GridObj.phi,0,0,GridObj.phi);
+            [Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,gridObj.phi,bcVec(j));
+            f = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);
+            [~,~,~,~,NOP,~,~] = OpCPNCalc(1,1,f,gridObj.phi,0,0,gridObj.phi);
             AveNemMatFit (i,j) = NOP;
             
             if SaveMe
@@ -110,7 +110,7 @@ try
                     DiaryStr = sprintf('DiarySingRunt%d.txt',trial);
                     diary(DiaryStr);
                     disp('NgrVec');disp(NgrVec);disp('bcVec');disp(bcVec);
-                    disp('Params');disp(ParamObj);disp('Time');disp(TimeObj);
+                    disp('Params');disp(ParamObj);disp('Time');disp(timeObj);
                     diary off
                     SaveStr = sprintf('OPvsGridBCmatsBcNum%dNnum%dtr%d',...
                     Nbc,Ngr,trial);
@@ -120,11 +120,11 @@ try
                     'bcVec','NgrVec','L_box','v0', 'SaveMe','trial')
             end %end SaveME
             
-            NloopRunTime = toc(ticTemp);
+            NlooprunTime = toc(ticTemp);
             
         end % end bc loop
         
-        fprintf('N = %d took %f sec\n',Nx,NloopRunTime)
+        fprintf('N = %d took %f sec\n',Nx,NlooprunTime)
         % subtrial   = subtrial + 1;  % Just for input file
     end %end Ngr loop
     

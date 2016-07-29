@@ -52,13 +52,13 @@ if NumFiles2Analyze;
     %     RunSave = matfile( ['./runfiles/' SaveNameRun] );
     DenRecObj = RunSave.DenRecObj;
     ParamObj  = RunSave.ParamObj;
-    TimeObj  = RunSave.TimeObj;
-    Flags  = RunSave.Flags;
-    RhoInit  = RunSave.RhoInit;
-    GridObj  = RunSave.GridObj;
+    timeObj  = RunSave.timeObj;
+    flags  = RunSave.flags;
+    rhoInit  = RunSave.rhoInit;
+    gridObj  = RunSave.gridObj;
     
     % Build phi3D once
-    [~,~,phi3D] = meshgrid(GridObj.x,GridObj.y,GridObj.phi);
+    [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
@@ -89,33 +89,33 @@ if NumFiles2Analyze;
     end
     
     % Set up saving
-    OpSave.Flags    = Flags;
+    OpSave.flags    = flags;
     OpSave.ParamObj = ParamObj;
-    OpSave.TimeObj  = TimeObj;
-    OpSave.C_rec    = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    OpSave.POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    OpSave.POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    OpSave.POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    OpSave.NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    OpSave.NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    OpSave.NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
+    OpSave.timeObj  = timeObj;
+    OpSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.POPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
     
     % Analyze chucks in parallel
-    Nx = ParamObj.Nx; Ny = ParamObj.Ny;
+    Nx = systemObj.Nx; Ny = systemObj.Ny;
     
     % Break it into chunks
-    NumChunks = TimeObj.N_chunks;
+    NumChunks = timeObj.N_chunks;
     SizeChunk = floor( totRec/ NumChunks );
     NumChunks = ceil( totRec/ SizeChunk);
     
-    %OpSave.NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny, 2);
-    C_rec    = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
-    POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
-    POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
-    POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
-    NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
-    NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
-    NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny,  SizeChunk);
+    %OpSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    C_rec    = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    POP_rec  = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    POPx_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    POPy_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    NOP_rec  = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    NOPx_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    NOPy_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
     
     for jj = 1:NumChunks;
       if jj ~= NumChunks
@@ -128,13 +128,13 @@ if NumFiles2Analyze;
       TimeRecVecTemp = OpTimeRecVec(Ind);
       
       if length(Ind) ~= SizeChunk;
-        C_rec    = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind) );
-        POP_rec  = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind) );
-        POPx_rec = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind) );
-        POPy_rec = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind) );
-        NOP_rec  = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind) );
-        NOPx_rec = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind) );
-        NOPy_rec = zeros(ParamObj.Nx, ParamObj.Ny,  length(Ind));
+        C_rec    = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
+        POP_rec  = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
+        POPx_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
+        POPy_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
+        NOP_rec  = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
+        NOPx_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
+        NOPy_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind));
       end
       
       
@@ -142,7 +142,7 @@ if NumFiles2Analyze;
         
         [OPObjTemp] = CPNrecMaker(Nx,Ny,...
           TimeRecVecTemp(kk), DenRecTemp(:,:,:,kk),...
-          GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
+          gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
         
         C_rec(:,:,kk) = OPObjTemp.C_rec;
         POP_rec(:,:,kk) = OPObjTemp.POP_rec;
@@ -164,15 +164,15 @@ if NumFiles2Analyze;
     end %loop over chunks
     
         % Now do it for steady state sol
-    [~,~,phi3D] = meshgrid(1,1,GridObj.phi); 
+    [~,~,phi3D] = meshgrid(1,1,gridObj.phi); 
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
       [~,~,~,~,OpSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, reshape( RhoInit.feq, [1,1,ParamObj.Nm] ), ...
-      GridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
+      OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.Nm] ), ...
+      gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     [~, ~, o] = size(OpSave.C_rec);
     movefile( ['./runfiles/analyzing/' SaveNameRun], DirName );

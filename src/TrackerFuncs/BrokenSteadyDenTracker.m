@@ -1,17 +1,17 @@
 % [SteadyState,ShitIsFucked,MaxReldRho] = ...
-%    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj)
+%    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj)
 %
 % Description: Tracks broken densities and steady state
 
 function [SteadyState,ShitIsFucked,MaxReldRho] = ...
-    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,TimeObj)
+    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj)
 SteadyState = 0;
 ShitIsFucked = 0;
 
 AbsDensityChange = abs( rho - rho_prev );
 WeightDensityChange = AbsDensityChange ./ rho;
 MaxReldRho = max(max(max(WeightDensityChange)));
-if MaxReldRho < TimeObj.ss_epsilon
+if MaxReldRho < timeObj.ss_epsilon
     SteadyState = 1;
 end
 

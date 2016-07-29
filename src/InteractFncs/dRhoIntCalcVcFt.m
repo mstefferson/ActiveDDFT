@@ -10,8 +10,8 @@
 % Calls: MuExCalcVc2Ft
 
 function [NegDivFluxEx_FT] = ...
-  dRhoIntCalcVcFt(rho,rho_FT,Fm_FT,ParamObj,DiffMobObj)
-Nm = ParamObj.Nm;
+  dRhoIntCalcVcFt(rho,rho_FT,Fm_FT,systemObj,diffObj)
+Nm = systemObj.Nm;
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Excess chemical potential in position space is a convolution. In k-space, it is a
@@ -19,14 +19,14 @@ Nm = ParamObj.Nm;
 %the density profile
 
 %Now includes the correct scale
-MuEx_FT = muExCalcVc2Ft(rho_FT, Fm_FT,ParamObj);
+MuEx_FT = muExCalcVc2Ft(rho_FT, Fm_FT,systemObj);
 
 %     MuEx    = real(ifftn(ifftshift(MuEx_FT)));
 
 %Takes its derivative in k-space
-dMuEx_dx_FT   = DiffMobObj.ikx3 .*  MuEx_FT;
-dMuEx_dy_FT   = DiffMobObj.iky3 .*  MuEx_FT;
-dMuEx_dphi_FT = DiffMobObj.ikm3 .*  MuEx_FT;
+dMuEx_dx_FT   = diffObj.ikx3 .*  MuEx_FT;
+dMuEx_dy_FT   = diffObj.iky3 .*  MuEx_FT;
+dMuEx_dphi_FT = diffObj.ikm3 .*  MuEx_FT;
 
 %Excess chemical potential derivative in real space
 %Mayer function derivative in real-space
@@ -60,14 +60,14 @@ Ind_m2 = [ Nm-1, Nm,  1:(Nm-2) ]; %m-2 coupling
 Ind_p2 = [ 3:Nm, 1, 2 ]; %m+2 coupling
 
 NegDivFluxEx_FT(:,:,Ind) = ...
-  DiffMobObj.jxf_reps .* Jx_FT(:,:,Ind) + ...
-  DiffMobObj.jxMm2f_reps .* Jx_FT(:,:,Ind_m2) + ...
-  DiffMobObj.jxMp2f_reps .* Jx_FT(:,:,Ind_p2) + ...
-  DiffMobObj.jyf_reps .* Jy_FT(:,:,Ind) + ...
-  DiffMobObj.jyMm2f_reps .* Jy_FT(:,:,Ind_m2) + ...
-  DiffMobObj.jyMp2f_reps .* Jy_FT(:,:,Ind_p2);
+  diffObj.jxf_reps .* Jx_FT(:,:,Ind) + ...
+  diffObj.jxMm2f_reps .* Jx_FT(:,:,Ind_m2) + ...
+  diffObj.jxMp2f_reps .* Jx_FT(:,:,Ind_p2) + ...
+  diffObj.jyf_reps .* Jy_FT(:,:,Ind) + ...
+  diffObj.jyMm2f_reps .* Jy_FT(:,:,Ind_m2) + ...
+  diffObj.jyMp2f_reps .* Jy_FT(:,:,Ind_p2);
 
 %Add the C(k) term last
 NegDivFluxEx_FT = NegDivFluxEx_FT ...
-  - DiffMobObj.ikm3 .* DiffMobObj.Mob_rot .* Jm_FT;
+  - diffObj.ikm3 .* diffObj.Mob_rot .* Jm_FT;
 

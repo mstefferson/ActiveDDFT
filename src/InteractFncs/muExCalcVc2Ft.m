@@ -5,7 +5,7 @@
 %
 % Called by: dRhoInterCalcVcID
 
-function [MuEx_FT] = MuExCalcVc2Ft(rho_FT,Fm_FT,ParamObj)
+function [MuEx_FT] = MuExCalcVc2Ft(rho_FT,Fm_FT,systemObj)
 
 
 %Excess chemical potential in position space is a convolution. In k-space, it is a
@@ -13,7 +13,7 @@ function [MuEx_FT] = MuExCalcVc2Ft(rho_FT,Fm_FT,ParamObj)
 %the density profile
 % keyboard
 %Now includes the correct scale
-MuEx_FT = -(2 * pi * ParamObj.Lx * ParamObj.Ly) / (ParamObj.Nx * ParamObj.Ny * ParamObj.Nm) ...
-    .* ParamObj.Tmp .* Fm_FT .* rho_FT;
+MuEx_FT = -(systemObj.Lphi * systemObj.Lx * systemObj.Ly) / (systemObj.Nx * systemObj.Ny * systemObj.Nm) ...
+    .* systemObj.Tmp .* Fm_FT .* rho_FT;
 
 end

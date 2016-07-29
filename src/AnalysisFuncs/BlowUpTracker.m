@@ -1,7 +1,7 @@
-Nm = PTMGDObj.ParamObj.Nm;
+Nm = PTMGDObj.systemObj.Nm;
 AngMode = Nm/2;
 nFrames = length(DenRecObj.TimeRecVec);
-dt_rec  = PTMGDObj.TimeObj.t_record;
+dt_rec  = PTMGDObj.timeObj.t_record;
 dPhi    = 2 / Nm * 180;
 
 movie      = 1;
@@ -66,7 +66,7 @@ if DenPosFixed
     for ii = Frames2RunStrt  : Frames2RunEnd
         pause(.1);
         TtlStr = sprintf('t = %f', dt_rec*(ii-1));
-        plot( PTMGDObj.GridObj.phi, reshape( DenRecObj.Density_rec(xPos,yPos,:,ii), 1, Nm ) );
+        plot( PTMGDObj.gridObj.phi, reshape( DenRecObj.Density_rec(xPos,yPos,:,ii), 1, Nm ) );
         title(TtlStr);
         if movie
 %             keyboard
@@ -143,7 +143,7 @@ if InterFixed
     for ii = Frames2RunStrt  : Frames2RunEnd
         pause(.1);
         TtlStr = sprintf('t = %f', dt_rec*(ii-1));
-        plot( ParaTimMemObj.GridObj.phi, reshape( DenRecObj.dRhoInter_rec(xPos,yPos,:,ii), 1, Nm ) );
+        plot( ParaTimMemObj.gridObj.phi, reshape( DenRecObj.dRhoInter_rec(xPos,yPos,:,ii), 1, Nm ) );
         title(TtlStr);
         getframe(gcf);
     end
@@ -175,12 +175,12 @@ if InterDenFixed
         %         pause(.1);
         TtlStr = sprintf('Density t = %f', dt_rec*(ii-1));
         subplot(2,1,1)
-        %         plot( ParaTimMemObj.GridObj.phi, reshape( DenRecObj.Density_rec(xPos,yPos,:,ii), 1, N ) );
+        %         plot( ParaTimMemObj.gridObj.phi, reshape( DenRecObj.Density_rec(xPos,yPos,:,ii), 1, N ) );
         plot( reshape( DenRecObj.Density_rec(xPos,yPos,:,ii), 1, Nm ) );
         title(TtlStr);
         subplot(2,1,2)
         TtlStr = sprintf('dRho t = %f', dt_rec*(ii-1));
-        %         plot( ParaTimMemObj.GridObj.phi, reshape( DenRecObj.dRhoInter_rec(xPos,yPos,:,ii), 1, N ) );
+        %         plot( ParaTimMemObj.gridObj.phi, reshape( DenRecObj.dRhoInter_rec(xPos,yPos,:,ii), 1, N ) );
         plot( reshape( DenRecObj.dRhoInter_rec(xPos,yPos,:,ii), 1, Nm ) );
         title(TtlStr);
         getframe(gcf);
@@ -240,7 +240,7 @@ if 0
     for ii = Frames2RunStrt  : Frames2RunEnd
         %     pause(.1);
         TtlStr = sprintf('t = %f', dt_rec*(ii-1));
-        plot( ParaTimMemObj.GridObj.phi, reshape( DenRecObj.dRhoProp_rec(xPos,yPos,:,ii), 1, N ) );
+        plot( ParaTimMemObj.gridObj.phi, reshape( DenRecObj.dRhoProp_rec(xPos,yPos,:,ii), 1, N ) );
         title(TtlStr);
         getframe(gcf);
     end

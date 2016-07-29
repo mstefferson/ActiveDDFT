@@ -1,4 +1,4 @@
-function [rho] = IntDenCalcGauss2Drot(GridObj,ParamObj,RhoInit)
+function [rho] = IntDenCalcGauss2Drot(gridObj,systemObj,rhoInit)
 
 %Add in some slight deviation from a uniform density at specific modes.
 % Here, our perturbation is a gaussian.
@@ -12,27 +12,26 @@ function [rho] = IntDenCalcGauss2Drot(GridObj,ParamObj,RhoInit)
 
 var = .1;
 
-rho = ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm); % k = 0
+rho = ones(systemObj.Nx,systemObj.Ny,systemObj.Nm); % k = 0
 
 % Pick a random angle to center Gaussian on
 AngMax = 2*pi * rand();
 
 %find closest angle
-ClosestMaxAngInd = find( GridObj.phi  - AngMax ==  min(abs( GridObj.phi - AngMax) ) ) ;
-GaussVecTemp = [ exp( - ( GridObj.phi(1:ParamObj.Nm/2) ) .^2 / var^2 ) ...
-  exp( - ( GridObj.phi(ParamObj.Nm/2+1:end) - 2*pi ) .^2 / var^2 )];
+ClosestMaxAngInd = find( gridObj.phi  - AngMax ==  min(abs( gridObj.phi - AngMax) ) ) ;
+GaussVecTemp = [ exp( - ( gridObj.phi(1:systemObj.Nm/2) ) .^2 / var^2 ) ...
+  exp( - ( gridObj.phi(systemObj.Nm/2+1:end) - 2*pi ) .^2 / var^2 )];
 distTemp = circshift(GaussVecTemp',ClosestMaxAngInd)';
 
-for i = 1:ParamObj.Nm
+for i = 1:systemObj.Nm
   rho(:,:,i) = distTemp(i);
 end
 
 % keyboard
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho = rho .* ParamObj.Norm ./ CurrentNorm;
+CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+rho = rho .* systemObj.numPart ./ CurrentNorm;
 
-[rho] = PwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit);
 
 end %end function

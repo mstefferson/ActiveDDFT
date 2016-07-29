@@ -42,33 +42,33 @@ if numDirs
     
     DenRecObj = RunSave.DenRecObj;
     ParamObj  = RunSave.ParamObj;
-    TimeObj  = RunSave.TimeObj;
-    Flags  = RunSave.Flags;
-    GridObj  = RunSave.GridObj;
+    timeObj  = RunSave.timeObj;
+    flags  = RunSave.flags;
+    gridObj  = RunSave.gridObj;
     
     % Make matlab movies
-    HoldX = ParamObj.Nx /2 + 1; % spatial pos placeholders
-    HoldY = ParamObj.Ny /2 + 1; % spatial pos placeholders
+    HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
+    HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
     
     DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
-      [ParamObj.Nm length(DenRecObj.TimeRecVec)] );
+      [systemObj.Nm length(DenRecObj.TimeRecVec)] );
     
     % Save Name
-    MovStr = sprintf('OPmov%d.%d.avi',ParamObj.trialID,ParamObj.runID);
+    MovStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
     
     % Call movie routine
     try
       OPMovieMakerTgtherDirAvi(MovStr,...
-        GridObj.x,GridObj.y,GridObj.phi,OPobj,...
+        gridObj.x,gridObj.y,gridObj.phi,OPobj,...
         DistRec,OPobj.OpTimeRecVec);
       
       MovieSuccess = 1;
       
       
       % Make amplitude plot
-      kx0 = ParamObj.Nx / 2 + 1;
-      ky0 = ParamObj.Ny / 2 + 1;
-      km0 = ParamObj.Nm / 2 + 1;
+      kx0 = systemObj.Nx / 2 + 1;
+      ky0 = systemObj.Ny / 2 + 1;
+      km0 = systemObj.Nm / 2 + 1;
       Nrec = length( DenRecObj.TimeRecVec);
       
       FTind2plot = zeros( 8, 3 );
@@ -89,11 +89,11 @@ if numDirs
           [ 1, Nrec ]  );
       end
       % Plot Amplitudes
-      ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, ParamObj.Nx, ParamObj.Ny,...
-        ParamObj.Nm, ParamObj.bc,ParamObj.vD, ParamObj.trialID)
+      ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, systemObj.Nx, systemObj.Ny,...
+        systemObj.Nm, systemObj.bc,particleObj.vD, runObj.trialID)
       
       % Save it
-      figtl = sprintf('AmpFT_%d_%d',ParamObj.trialID, ParamObj.runID);
+      figtl = sprintf('AmpFT_%d_%d',runObj.trialID, runObj.runID);
       savefig(gcf,figtl)
       saveas(gcf, figtl,'jpg')
       

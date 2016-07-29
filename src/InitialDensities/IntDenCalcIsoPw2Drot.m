@@ -5,7 +5,7 @@
 % rho = \sum A_k exp( i (k_x x + k_y y + k_phi phi)
 % A_k is an input parameter
 
-function [rho] = IntDenCalcIsoPw2Drot(ParamObj,RhoInit)
+function [rho] = IntDenCalcIsoPw2Drot(systemObj,rhoInit)
 
 %Add in some slight deviation from a uniform density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -20,11 +20,9 @@ function [rho] = IntDenCalcIsoPw2Drot(ParamObj,RhoInit)
 % 1                        = int( f(phi) dphi)
 
 % Initial rho
-rho = ParamObj.Norm / (2 .* pi .* ParamObj.Lx .* ParamObj.Lx) .* ...
-          ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm); % k = 0
+rho = systemObj.numPart / (systemObj.Lphi .* systemObj.Lx .* systemObj.Lx) .* ...
+          ones(systemObj.Nx,systemObj.Ny,systemObj.Nm); % k = 0
 %Recall that the k=0 mode is located at points N/2 + 1
 
-% Perturb it
-[rho] = PwPerturbFT(rho,ParamObj,RhoInit);
 
 end %end function

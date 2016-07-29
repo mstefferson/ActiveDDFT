@@ -2,11 +2,11 @@
 % Plots the min/max density at each spatial gridpoint
 %
 % Input:
-% MinMaxDenTracker(DenRecObj.Density_rec,DenRecObj.TimeRecVec,PTMGDObj.ParamObj,PTMGDObj.GridObj)
+% MinMaxDenTracker(DenRecObj.Density_rec,DenRecObj.TimeRecVec,PTMGDObj.ParamObj,PTMGDObj.gridObj)
 % Output:
 % A movie!!!
 
-function [M_MinMax,M_MinMaxSS,M_dist] = MinMaxDenTracker(Density_rec,TimeRecVec,ParamObj,GridObj)
+function [M_MinMax,M_MinMaxSS,M_dist] = MinMaxDenTracker(Density_rec,TimeRecVec,ParamObj,gridObj)
 
 MinMaxPlot         = 1;
 MinMaxSSPlot       = 1;
@@ -17,12 +17,12 @@ nFrames    = length(TimeRecVec) - 1;
 M_dist(nFrames) = ...
     struct('cdata',[], 'colormap',[]);
 M_MinMax(nFrames) = ...
-    struct('cdata',zeros(ParamObj.Nx,ParamObj.Ny,3,'int8'), 'colormap',[]); %initialize movie stucture
-M_MinMaxSS(nFrames) = struct('cdata',zeros(ParamObj.Nx,ParamObj.Ny,3,'int8'), ...
+    struct('cdata',zeros(systemObj.Nx,systemObj.Ny,3,'int8'), 'colormap',[]); %initialize movie stucture
+M_MinMaxSS(nFrames) = struct('cdata',zeros(systemObj.Nx,systemObj.Ny,3,'int8'), ...
     'colormap',[]); %initialize movie stucture
 
 if MinMaxPlot
-    phiMaxSpat = zeros(ParamObj.Nx,ParamObj.Ny);
+    phiMaxSpat = zeros(systemObj.Nx,systemObj.Ny);
     phiMinSpat = phiMaxSpat;
     AbsMinRho = min( min( min( min( Density_rec ) ) ) );
     AbsMaxRho = max( max( max( max( Density_rec ) ) ) );
@@ -45,8 +45,8 @@ if MinMaxPlot
         rhoMax    = max( Density_rec(:,:,:,t),[],3);
         rhoMin    = min( Density_rec(:,:,:,t),[],3);
         NumPart = trapz_periodic( trapz_periodic( trapz_periodic( Density_rec(:,:,:,t) ) ) );
-        for i = 1 : ParamObj.Nx
-            for j = 1 : ParamObj.Ny
+        for i = 1 : systemObj.Nx
+            for j = 1 : systemObj.Ny
                 %             keyboard
                 % Find max phi
                 
@@ -62,46 +62,46 @@ if MinMaxPlot
                 
                 % Easy if we just keep angles between [0, pi/2]
                 % We can be more careful about this later
-                if  IndMaxPhiTempFixedSpat > ParamObj.Nm / 2
+                if  IndMaxPhiTempFixedSpat > systemObj.Nm / 2
                     %                 keyboard
-                    IndMaxPhiTempFixedSpat = IndMaxPhiTempFixedSpat - ParamObj.Nm / 2;
+                    IndMaxPhiTempFixedSpat = IndMaxPhiTempFixedSpat - systemObj.Nm / 2;
                 end
                 
                 
-                if  IndMinPhiTempFixedSpat > ParamObj.Nm / 2
-                    IndMinPhiTempFixedSpat = IndMinPhiTempFixedSpat - ParamObj.Nm / 2;
+                if  IndMinPhiTempFixedSpat > systemObj.Nm / 2
+                    IndMinPhiTempFixedSpat = IndMinPhiTempFixedSpat - systemObj.Nm / 2;
                 end
                 
-                phiMaxSpat(i,j)     = GridObj.phi( IndMaxPhiTempFixedSpat );
-                phiMinSpat(i,j)     = GridObj.phi( IndMinPhiTempFixedSpat );
+                phiMaxSpat(i,j)     = gridObj.phi( IndMaxPhiTempFixedSpat );
+                phiMinSpat(i,j)     = gridObj.phi( IndMinPhiTempFixedSpat );
             end
         end
         
         %      keyboard
         subplot(3,1,1)
-        pcolor(GridObj.x,GridObj.y,rhoMax')
+        pcolor(gridObj.x,gridObj.y,rhoMax')
         set(gca,'CLim', [AbsMinRho AbsMaxRho],'YDir','rev');
         shading interp;
         colorbar;
         hold on
-        quiver(GridObj.x,GridObj.y,cos(phiMaxSpat), sin(phiMaxSpat),...
+        quiver(gridObj.x,gridObj.y,cos(phiMaxSpat), sin(phiMaxSpat),...
             'color',[0 0 0],'AutoScaleFactor',0.5 );
         hold off
         TitlStr = sprintf('Min Max Plot t = %f N~%f', TimeRecVec(t), NumPart );
         title(TitlStr)
         
         subplot(3,1,2)
-        pcolor(GridObj.x,GridObj.y,rhoMin');
+        pcolor(gridObj.x,gridObj.y,rhoMin');
         set(gca,'CLim', [AbsMinRho AbsMaxRho],'YDir','rev');
         shading interp;
         colorbar;
         hold on
-        quiver(GridObj.x,GridObj.y,cos(phiMinSpat)', sin(phiMinSpat)',...
+        quiver(gridObj.x,gridObj.y,cos(phiMinSpat)', sin(phiMinSpat)',...
             'color',[0 0 0],'AutoScaleFactor',0.5 );
         hold off
         
         subplot(3,1,3)
-        pcolor(GridObj.x,GridObj.y, mean( Density_rec(:,:,:,t),3 )' );
+        pcolor(gridObj.x,gridObj.y, mean( Density_rec(:,:,:,t),3 )' );
         set(gca,'CLim', [AbsMinRho AbsMaxRho],'YDir','rev');
         shading interp;
         colorbar;
@@ -160,20 +160,20 @@ if MinMaxSSPlot
                 
                 % Easy if we just keep angles between [0, pi/2]
                 % We can be more careful about this later
-                if  IndMaxPhiTempFixedSpat > ParamObj.Nm / 2
-                    IndMaxPhiTempFixedSpat = IndMaxPhiTempFixedSpat - ParamObj.Nm / 2;
+                if  IndMaxPhiTempFixedSpat > systemObj.Nm / 2
+                    IndMaxPhiTempFixedSpat = IndMaxPhiTempFixedSpat - systemObj.Nm / 2;
                 end
                 
                 
-                if  IndMinPhiTempFixedSpat > ParamObj.Nm / 2
-                    IndMinPhiTempFixedSpat = IndMinPhiTempFixedSpat - ParamObj.Nm / 2;
+                if  IndMinPhiTempFixedSpat > systemObj.Nm / 2
+                    IndMinPhiTempFixedSpat = IndMinPhiTempFixedSpat - systemObj.Nm / 2;
                 end
                 
-                phiMaxSpat(i,j)     = GridObj.phi( IndMaxPhiTempFixedSpat );
-                phiMinSpat(i,j)     = GridObj.phi( IndMinPhiTempFixedSpat );
+                phiMaxSpat(i,j)     = gridObj.phi( IndMaxPhiTempFixedSpat );
+                phiMinSpat(i,j)     = gridObj.phi( IndMinPhiTempFixedSpat );
                 
-                GridObj.phi( IndMaxPhiTempFixedSpat );
-                GridObj.phi( IndMinPhiTempFixedSpat );
+                gridObj.phi( IndMaxPhiTempFixedSpat );
+                gridObj.phi( IndMinPhiTempFixedSpat );
                 %             keyboard
                 
             end
@@ -182,29 +182,29 @@ if MinMaxSSPlot
         %      keyboard
         
         subplot(3,1,1)
-        pcolor(GridObj.x(NxSs),GridObj.y(NySs),rhoMax')
+        pcolor(gridObj.x(NxSs),gridObj.y(NySs),rhoMax')
         set(gca,'CLim', [AbsMinRho AbsMaxRho],'YDir','rev');
         shading interp;
         colorbar;
         hold on
-        quiver(GridObj.x(NxSs),GridObj.y(NySs),cos(phiMaxSpat'), sin(phiMaxSpat'),...
+        quiver(gridObj.x(NxSs),gridObj.y(NySs),cos(phiMaxSpat'), sin(phiMaxSpat'),...
             'color',[0 0 0],'AutoScaleFactor',0.5 );
         hold off
         TitlStr = sprintf('Min Max Plot t = %f N~%f', TimeRecVec(t), NumPart );
         title(TitlStr)
         
         subplot(3,1,2)
-        pcolor(GridObj.x(NxSs),GridObj.y(NySs),rhoMin');
+        pcolor(gridObj.x(NxSs),gridObj.y(NySs),rhoMin');
         set(gca,'CLim', [AbsMinRho AbsMaxRho],'YDir','rev');
         shading interp;
         colorbar;
         hold on
-        quiver(GridObj.x(NxSs),GridObj.y(NySs),cos(phiMinSpat'), sin(phiMinSpat'),...
+        quiver(gridObj.x(NxSs),gridObj.y(NySs),cos(phiMinSpat'), sin(phiMinSpat'),...
             'color',[0 0 0],'AutoScaleFactor',0.5 );
         hold off
         
         subplot(3,1,3)
-        pcolor(GridObj.x(NxSs),GridObj.y(NySs), mean( Density_rec(NxSs,NySs,:,t),3 )' );
+        pcolor(gridObj.x(NxSs),gridObj.y(NySs), mean( Density_rec(NxSs,NySs,:,t),3 )' );
         set(gca,'CLim', [AbsMinRho AbsMaxRho],'YDir','rev');
         shading interp;
         colorbar;
@@ -237,8 +237,8 @@ if AdjacentPointsPlot
     
     for t = 1:nFrames
         
-        plot( GridObj.phi, reshape( Density_rec(xPos1,yPos1,:,t), 1, ParamObj.Nm ), ...
-            GridObj.phi, reshape( Density_rec(xPos2,yPos2,:,t), 1, ParamObj.Nm ) );
+        plot( gridObj.phi, reshape( Density_rec(xPos1,yPos1,:,t), 1, systemObj.Nm ), ...
+            gridObj.phi, reshape( Density_rec(xPos2,yPos2,:,t), 1, systemObj.Nm ) );
         
         TtlStr = sprintf('t = %f', TimeRecVec(t) );
         title(TtlStr);

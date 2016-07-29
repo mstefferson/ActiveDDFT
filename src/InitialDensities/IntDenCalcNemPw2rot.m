@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcNemPw2rot(ParamObj,RhoInit,x,y,phi)
+function [rho] = IntDenCalcNemPw2rot(systemObj,rhoInit,x,y,phi)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -30,17 +30,17 @@ f = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);        % Build equil distributio
 % plot(phi,f)
 
 % Initialize rho
-rho = ParamObj.Norm / ( ParamObj.Lx .* ParamObj.Lx) .* ...
-    ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
+rho = systemObj.c .* ...
+    ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
 
 % Map distribution to a homogeneous system
-for i = 1:ParamObj.Nm
+for i = 1:systemObj.Nm
     rho(:,:,i) = rho(:,:,i) .* f(i);
 end
 
-% ParamObj.Norm / (ParamObj.Lx .* ParamObj.Lx);
-% b = ParamObj.L_rod^2 / pi;
-% c =  ParamObj.bc / b;
+% systemObj.numPart / (systemObj.Lx .* systemObj.Lx);
+% b = particleObj.lMaj^2 / pi;
+% c =  systemObj.bc / b;
 % f_reshape =  reshape(rho(17,17,:) / c  , 1, 32 );
 % trapz_periodic(phi,f)
 % trapz_periodic(phi,f_reshape)
@@ -50,9 +50,4 @@ end
 % columns w.r.t x, then down the rows w.r.t. y
 % keyboard
 CurrentNorm = trapz_periodic(y,trapz_periodic(x,trapz_periodic(phi,rho,3),2),1);
-rho = rho .* ParamObj.Norm ./ CurrentNorm;
-% keyboard
-% Perturb it
-%[rho] = PwDenPerturber2Drot(rho_eq,ParamObj, RhoInit);
-[rho] = PwPerturbFT(rho,ParamObj,RhoInit);
-% keyboard
+rho = rho .* systemObj.numPart ./ CurrentNorm;

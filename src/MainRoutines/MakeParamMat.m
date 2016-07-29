@@ -1,36 +1,36 @@
-% [paramMat] = MakeParamMat( ParamObj, RhoInit, Flags )
+% [paramMat] = MakeParamMat( ParamObj, rhoInit, flags )
 %
 % Description: Creates a parameter matrix that is used by RunHardRod
 
-function [paramMat, numRuns] = MakeParamMat( ParamObj, RhoInit, Flags )
+function [paramMat, numRuns] = MakeParamMat( systemObj, particleObj, runObj, rhoInit, flags )
 %Find number parameters
-numbc = length(ParamObj.bc);
-numvD = length(ParamObj.vD);
-numIC = length(RhoInit.IntCond);
-numSM = length(Flags.StepMeth);
-numTr = ParamObj.num_trial;
+numbc = length(systemObj.bc);
+numvD = length(particleObj.vD);
+numIC = length(rhoInit.IntCond);
+numSM = length(flags.StepMeth);
+numTr = runObj.num_trial;
 
 % Handls all grid points equal and square box different
-if Flags.AllNsSame == 1
-  Nvec = unique( [ParamObj.Nx ParamObj.Ny ParamObj.Nm] );
+if flags.AllNsSame == 1
+  Nvec = unique( [systemObj.Nx systemObj.Ny systemObj.Nm] );
   numN = length(Nvec);
   numNx = numN;
   numNy = 1;
   numNm = 1;
 else
-  numNx = length(ParamObj.Nx);
-  numNy = length(ParamObj.Ny);
-  numNm = length(ParamObj.Nm);
+  numNx = length(systemObj.Nx);
+  numNy = length(systemObj.Ny);
+  numNm = length(systemObj.Nm);
 end
 
-if Flags.SquareBox == 1
+if flags.SquareBox == 1
   Lvec = unique( [ParamMaster.Lx ParamMaster.Ly] );
   numL = length(Lvec);
   numLx = numL;
   numLy = 1;
 else
-  numLx = length(ParamObj.Lx);
-  numLy = length(ParamObj.Ly);
+  numLx = length(systemObj.Lx);
+  numLy = length(systemObj.Ly);
 end
 
 % number of parameters
@@ -65,26 +65,26 @@ for i = 1:numNx
                       (r-1) * numParamsICSM;
                     
                     % Special cases
-                    if Flags.AllNsSame
+                    if flags.AllNsSame
                       paramMat(rowInd,1:3) = Nvec(i);
                     else
-                      paramMat(rowInd,1) = ParamObj.Nx(i);
-                      paramMat(rowInd,2) = ParamObj.Ny(j);
-                      paramMat(rowInd,3) = ParamObj.Nm(k);
+                      paramMat(rowInd,1) = systemObj.Nx(i);
+                      paramMat(rowInd,2) = systemObj.Ny(j);
+                      paramMat(rowInd,3) = systemObj.Nm(k);
                     end
                     
-                    if Flags.SquareBox
+                    if flags.SquareBox
                       paramMat(rowInd,4:5) = Lvec(l);
                     else
-                      paramMat(rowInd,4) = ParamObj.Lx(l);
-                      paramMat(rowInd,5) = ParamObj.Ly(m);
+                      paramMat(rowInd,4) = systemObj.Lx(l);
+                      paramMat(rowInd,5) = systemObj.Ly(m);
                     end
                     % Everything else
-                    paramMat(rowInd,6) = ParamObj.vD(n);
-                    paramMat(rowInd,7) = ParamObj.bc(o);
-                    paramMat(rowInd,8) = RhoInit.IntCond(p);
-                    paramMat(rowInd,9) = Flags.StepMeth(q);
-                    paramMat(rowInd,10) = ParamObj.runID + (r - 1);
+                    paramMat(rowInd,6) = particleObj.vD(n);
+                    paramMat(rowInd,7) = systemObj.bc(o);
+                    paramMat(rowInd,8) = rhoInit.IntCond(p);
+                    paramMat(rowInd,9) = flags.StepMeth(q);
+                    paramMat(rowInd,10) = runObj.runID + (r - 1);
                   end
                 end
               end

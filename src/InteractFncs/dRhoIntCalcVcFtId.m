@@ -13,11 +13,11 @@
 % diffusion
 
 % Calls: 
-% MuExCalcVc2Id(rho_FT, Fm_FT, ParamObj)- Calculates excess Chem pot. Using
+% MuExCalcVc2Id(rho_FT, Fm_FT, systemObj)- Calculates excess Chem pot. Using
 % 2nd virial approx.
 
 function [NegDivFluxExcess_FT] = ...
-       dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,ParamObj,GridObj,DiffMobObj)
+       dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,systemObj,gridObj,diffObj)
 
 %%%%%%%%%%%%%%%%%%%Hard rod %%%%%%%%%%%%%%%%
 
@@ -27,16 +27,13 @@ function [NegDivFluxExcess_FT] = ...
 % keyboard
 %Now includes the correct scale
 
-[MuEx_FT] = muExCalcVc2Ft(rho_FT,Fm_FT,ParamObj);
-% [MuEx3_FT] = FtMuExCalcAprxVc3(rho,ParamObj);
-% [MuEx3_FT] = 0;
-% keyboard
+[MuEx_FT] = muExCalcVc2Ft(rho_FT,Fm_FT,systemObj);
 
 % MuEx_FT    = MuEx2_FT+MuEx3_FT;
 %Takes its derivative in k-space
-dMuEx_dx_FT   = DiffMobObj.ikx3 .*  MuEx_FT;
-dMuEx_dy_FT   = DiffMobObj.iky3 .*  MuEx_FT;
-dMuEx_dphi_FT = DiffMobObj.ikm3 .*  MuEx_FT;
+dMuEx_dx_FT   = diffObj.ikx3 .*  MuEx_FT;
+dMuEx_dy_FT   = diffObj.iky3 .*  MuEx_FT;
+dMuEx_dphi_FT = diffObj.ikm3 .*  MuEx_FT;
 
 %Excess chemical potential derivative in real space
 %Mayer function derivative in real-space
@@ -51,9 +48,9 @@ dMuEx_dphi =  real(ifftn(ifftshift(dMuEx_dphi_FT)));
 % Take the divergence of the product of functions. Call these products
 % random variables
 
-jx = - DiffMobObj.Mob_pos .* rho .* dMuEx_dx;    %Flux in the x direction with isostropic diffusion
-jy = - DiffMobObj.Mob_pos .* rho .* dMuEx_dy;    %Flux in the y direction with isostropic diffusion
-jm = - DiffMobObj.Mob_rot .* rho .* dMuEx_dphi;  %Flux in the angular direction with isostropic diffusion
+jx = - diffObj.Mob_pos .* rho .* dMuEx_dx;    %Flux in the x direction with isostropic diffusion
+jy = - diffObj.Mob_pos .* rho .* dMuEx_dy;    %Flux in the y direction with isostropic diffusion
+jm = - diffObj.Mob_rot .* rho .* dMuEx_dphi;  %Flux in the angular direction with isostropic diffusion
 
 %Fourier transform these
 Jx_FT = fftshift(fftn(jx));
@@ -61,6 +58,6 @@ Jy_FT = fftshift(fftn(jy));
 Jm_FT = fftshift(fftn(jm));
 
 % Calculate the - divergence of the interaction flux
-NegDivFluxExcess_FT = - ( DiffMobObj.ikx3 .* Jx_FT + ...
-    DiffMobObj.iky3 .* Jy_FT + DiffMobObj.ikm3 .* Jm_FT );
+NegDivFluxExcess_FT = - ( diffObj.ikx3 .* Jx_FT + ...
+    diffObj.iky3 .* Jy_FT + diffObj.ikm3 .* Jm_FT );
 

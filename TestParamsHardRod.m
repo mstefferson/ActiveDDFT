@@ -23,10 +23,10 @@ load Params.mat;
 
 % Copy the master parameter list to ParamObj
 ParamObj = ParamMaster;
-RhoInit  = RhoInitMaster;
-Flags    = FlagMaster;
-AnisoDiffFlag = Flags.AnisoDiff;
-trial = ParamObj.trialID;
+rhoInit  = rhoInitMaster;
+flags    = FlagMaster;
+AnisoDiffFlag = flags.AnisoDiff;
+trial = runObj.trialID;
 
 % Print what you are doing
 if AnisoDiffFlag  == 1;
@@ -37,18 +37,18 @@ end
 
 % Fix the time
 fprintf('Making time obj\n');
-[TimeObj]= ...
+[timeObj]= ...
   TimeStepRecMaker(TimeMaster.dt,TimeMaster.t_tot,...
   TimeMaster.t_rec,TimeMaster.t_write);
-TimeObj.ss_epsilon = TimeMaster.ss_epsilon;
+timeObj.ss_epsilon = TimeMaster.ss_epsilon;
 fprintf('Finished time obj\n');
 
 % Display everythin
-disp(Flags); disp(ParamObj); disp(TimeObj); disp(RhoInit);
+disp(flags); disp(ParamObj); disp(timeObj); disp(rhoInit);
 
 % Make paramMat
 fprintf('Building parameter mat \n');
-[paramMat, numRuns] = MakeParamMat( ParamObj, RhoInit, Flags );
+[paramMat, numRuns] = MakeParamMat( ParamObj, rhoInit, flags );
 fprintf('Executing %d runs \n\n', numRuns);
 
 paramvec = zeros(numRuns,1);

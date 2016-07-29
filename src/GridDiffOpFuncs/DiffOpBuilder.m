@@ -1,25 +1,25 @@
 % Build the diffusion operator
 % Currently uncalled after the addition of driving
 
-function [Lop] = DiffOpBuilder(DiffMobObj,GridObj,Nx,Ny,Nm,N2,N3)
+function [Lop] = DiffOpBuilder(diffObj,gridObj,Nx,Ny,Nm,N2,N3)
 
 % Build a strange km for repmat
 km = zeros( 1, 1, Nm );
-km(1,1,:) = GridObj.km;
+km(1,1,:) = gridObj.km;
 
 %%%%%%%%%%%%%%%%%%Diagonal operator%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Lop_kcube = -( ( (DiffMobObj.D_par + DiffMobObj.D_perp)./ 2 ) .* ...
-  ( repmat( GridObj.kx', [1, Ny, Nm] ) .^ 2 + ...
-  repmat( GridObj.ky, [Nx, 1, Nm ]) .^ 2 ) + ...
-  DiffMobObj.D_rot .* repmat( km, [Nx, Ny, 1] ) .^ 2  );
+Lop_kcube = -( ( (diffObj.D_par + diffObj.D_perp)./ 2 ) .* ...
+  ( repmat( gridObj.kx', [1, Ny, Nm] ) .^ 2 + ...
+  repmat( gridObj.ky, [Nx, 1, Nm ]) .^ 2 ) + ...
+  diffObj.D_rot .* repmat( km, [Nx, Ny, 1] ) .^ 2  );
 
 %Diagonal matrix part of the operator (no interactions)
 Lop_DiagMtx = spdiags( reshape( Lop_kcube, N3, 1 ), 0, N3, N3 );
 
 %%%%%%%%%%%%%%%%%Off diagonal mode coupling%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Handle the cross terms of the PDE
-CpMplus2Vec  = reshape( repmat( DiffMobObj.CfMplus2,  [1 1 Nm]), 1, N3 );
-CpMminus2Vec = reshape( repmat( DiffMobObj.CfMminus2, [1 1 Nm]), 1, N3 );
+CpMplus2Vec  = reshape( repmat( diffObj.CfMplus2,  [1 1 Nm]), 1, N3 );
+CpMminus2Vec = reshape( repmat( diffObj.CfMminus2, [1 1 Nm]), 1, N3 );
 
 % Put them in the matrix
 Mplus2Mtx  = spdiags( [ zeros(1,2*N2) CpMplus2Vec( 1:(N2*(Nm-2)) ) ]', 2*N2, N3, N3 );

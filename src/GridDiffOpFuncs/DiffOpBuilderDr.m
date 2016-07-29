@@ -1,28 +1,28 @@
 % Build the diffusion operator
 % Called by HR2DrotDenEvolverFTBody
 
-function [Lop] = DiffOpBuilderDr(DiffMobObj,GridObj,Nx,Ny,Nm,N2,N3)
+function [Lop] = DiffOpBuilderDr(diffObj,gridObj,Nx,Ny,Nm,N2,N3)
 
 % Build a strange km for repmat
 km = zeros( 1, 1, Nm );
-km(1,1,:) = GridObj.km;
+km(1,1,:) = gridObj.km;
 %%%%%%%%%%%%%%%%%%Diagonal operator%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Lop_kcube = -( ( (DiffMobObj.D_par + DiffMobObj.D_perp)./ 2 ) .* ...
-  ( repmat( GridObj.kx', [1, Ny, Nm] ) .^ 2 + ...
-  repmat( GridObj.ky, [Nx, 1, Nm ]) .^ 2 ) + ...
-  DiffMobObj.D_rot .* repmat( km, [Nx, Ny, 1] ) .^ 2  );
+Lop_kcube = -( ( (diffObj.D_par + diffObj.D_perp)./ 2 ) .* ...
+  ( repmat( gridObj.kx', [1, Ny, Nm] ) .^ 2 + ...
+  repmat( gridObj.ky, [Nx, 1, Nm ]) .^ 2 ) + ...
+  diffObj.D_rot .* repmat( km, [Nx, Ny, 1] ) .^ 2  );
 
 %Diagonal matrix part of the operator (no interactions)
 Lop_DiagMtx = spdiags( reshape( Lop_kcube, N3, 1 ), 0, N3, N3 );
 
 %Handle the cross terms of the PDE for +/- 1 coupling
-CpMplus1Vec  = reshape( repmat( DiffMobObj.CfMplus1,  [1 1 Nm]), 1, N3 );
-CpMminus1Vec = reshape( repmat( DiffMobObj.CfMminus1, [1 1 Nm]), 1, N3 );
+CpMplus1Vec  = reshape( repmat( diffObj.CfMplus1,  [1 1 Nm]), 1, N3 );
+CpMminus1Vec = reshape( repmat( diffObj.CfMminus1, [1 1 Nm]), 1, N3 );
 
 
 %Handle the cross terms of the PDE for +/- 2 coupling
-CpMplus2Vec  = reshape( repmat( DiffMobObj.CfMplus2,  [1 1 Nm]), 1, N3 );
-CpMminus2Vec = reshape( repmat( DiffMobObj.CfMminus2, [1 1 Nm]), 1, N3 );
+CpMplus2Vec  = reshape( repmat( diffObj.CfMplus2,  [1 1 Nm]), 1, N3 );
+CpMminus2Vec = reshape( repmat( diffObj.CfMminus2, [1 1 Nm]), 1, N3 );
 
 % m +/- 1 terms
 % Put them in the matrix

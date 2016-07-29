@@ -6,7 +6,7 @@
 %       + \sum A_k exp( i k_m phi )
 % A_k is an input parameter
 
-function [rho] = IntDenCalcEqSepPw2Drot(GridObj,ParamObj,RhoInit)
+function [rho] = IntDenCalcEqSepPw2Drot(gridObj,ParamObj,rhoInit)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -23,25 +23,25 @@ function [rho] = IntDenCalcEqSepPw2Drot(GridObj,ParamObj,RhoInit)
 % Distribution stuff
 Nc    = 10;            % Number of Coefficients
 
-[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,GridObj.phi,ParamObj.bc); % Calculate coeff
-f = DistBuilderExpCos2Dsing(Nc,GridObj.phi,Coeff_best);        % Build equil distribution
-% plot(GridObj.phi,f)
+[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,gridObj.phi,systemObj.bc); % Calculate coeff
+f = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
+% plot(gridObj.phi,f)
 
 % Initialize rho
-rho = ParamObj.Norm / (2 .* pi .* ParamObj.Lx .* ParamObj.Lx) .* ...
-  ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
+rho = systemObj.numPart / (2 .* pi .* systemObj.Lx .* systemObj.Lx) .* ...
+  ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
 
 % Map distribution to a homogeneous system
-for i = 1:ParamObj.Nm
+for i = 1:systemObj.Nm
   rho(:,:,i) = rho(:,:,i) .* f(i);
 end
 
 
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(GridObj.y,trapz_periodic(GridObj.x,trapz_periodic(GridObj.phi,rho,3),2),1);
-rho = rho .* ParamObj.Norm ./ CurrentNorm;
+CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+rho = rho .* systemObj.numPart ./ CurrentNorm;
 % Perturb it
-[rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit);
+[rho] = SepPwDenPerturber2Drot(rho,ParamObj,gridObj,rhoInit);
 
 end %end function

@@ -7,7 +7,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcIsoSepPw2Drot(GridObj,ParamObj,RhoInit)
+function [rho] = IntDenCalcIsoSepPw2Drot(gridObj,ParamObj,rhoInit)
 
 %Add in some slight deviation from a uniform density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -22,11 +22,11 @@ function [rho] = IntDenCalcIsoSepPw2Drot(GridObj,ParamObj,RhoInit)
 % 1                        = int( f(phi) dphi)
 
 %Initialize rho
-rho = ParamObj.Norm / (2 .* pi .* ParamObj.Lx .* ParamObj.Lx) .* ...
-  ones(ParamObj.Nx,ParamObj.Ny,ParamObj.Nm);
+rho = systemObj.numPart / (2 .* pi .* systemObj.Lx .* systemObj.Lx) .* ...
+  ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
 
 % Perturb it
-[rho] = SepPwDenPerturber2Drot(rho,ParamObj,GridObj,RhoInit);
+[rho] = SepPwDenPerturber2Drot(rho,ParamObj,gridObj,rhoInit);
 
 % keyboard
 end %end function
