@@ -17,7 +17,7 @@
 % 2nd virial approx.
 
 function [NegDivFluxExcess_FT] = ...
-       dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,systemObj,gridObj,diffObj)
+       dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,systemObj,diffObj)
 
 %%%%%%%%%%%%%%%%%%%Hard rod %%%%%%%%%%%%%%%%
 

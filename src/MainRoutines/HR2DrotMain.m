@@ -397,7 +397,7 @@ catch err %Catch errors
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
-  keyboard
+
   if flags.SaveMe
     if flags.MakeMovies == 1
       if MovieSuccess == 0
