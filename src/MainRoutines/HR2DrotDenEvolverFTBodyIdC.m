@@ -210,8 +210,11 @@ for t = 1:timeObj.N_time-1
         RecIndTemp = StartInd:StartInd + (jrectemp) - 1;
         % Shift by one because we include zero
         RecIndTemp = RecIndTemp + 1;
-        RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
-        RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+        % Save what remains
+        if ~isempty(RecIndTemp)
+          RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
+          RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+        end
       end
       break
     end
@@ -222,18 +225,18 @@ fprintf(lfid,'Finished master time loop\n');
 % Update last rho
 t =  t + 1;
 rho_FT    = rho_FTnext;
+rho        = real(ifftn(ifftshift(rho_FT)));
 
 %Save everything
+if flags.SaveMe
 if ( mod(t,timeObj.N_dtRec)== 0 )
   fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-  if flags.SaveMe
     % Turn it to a cube if it hasn't been yet
     if flags.Interactions == 0 && flags.Drive == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
     Density_rec(:,:,:,jrectemp)     = rho;
-    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj);
     
     if ( mod(t, timeObj.N_dtChunk ) == 0 )
       % Record Density_recs to file

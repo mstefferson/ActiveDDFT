@@ -172,7 +172,7 @@ for t = 1:timeObj.N_time-1
       rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    rhoNext = real(ifftn(ifftshift(reshape(rhoVec_FT,Nx,Ny,Nm))));
+    rhoNext = real(ifftn(ifftshift(reshape(rhoVec_FTnext,Nx,Ny,Nm))));
     
     if flags.SaveMe
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
@@ -215,8 +215,11 @@ for t = 1:timeObj.N_time-1
         RecIndTemp = StartInd:StartInd + (jrectemp) - 1;
         % Shift by one because we include zero
         RecIndTemp = RecIndTemp + 1;
-        RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(1:jrectemp);
-        RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(1:jrectemp);
+        % Save what remains
+        if ~isempty(RecIndTemp)
+          RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(1:jrectemp);
+          RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(1:jrectemp);
+        end
       end
       break
     end
@@ -226,28 +229,22 @@ end %end time loop
 
 % Update last rho
 t =  t + 1;
-rho_prev   = rho;
 rhoVec_FT  = rhoVec_FTnext;
 rho_FT     = reshape(rhoVec_FT,Nx,Ny,Nm);
 rho        = real(ifftn(ifftshift(rho_FT)));
 
 %Save everything
+if flags.SaveMe
 if ShitIsFucked == 0 && SteadyState == 0;
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-    if flags.SaveMe
       % Turn it to a cube if it hasn't been yet
       if flags.Interactions == 0 && flags.Drive == 0
         rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
-      [SteadyState,ShitIsFucked,MaxReldRho] = ...
-        BrokenSteadyDenTracker(rho,rho_prev, TotalDensity ,timeObj);
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
       Density_rec(:,:,:,jrectemp)     = rho;
-    else
-      [SteadyState,ShitIsFucked,MaxReldRho] = ...
-        BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj);
     end
     
     if ( mod(t, timeObj.N_dtChunk ) == 0 )

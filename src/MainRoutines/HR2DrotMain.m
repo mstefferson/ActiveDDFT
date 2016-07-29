@@ -8,6 +8,7 @@ function  [ DenRecObj ] = ...
 
 global RunSave
 DenRecObj = 0;
+MovieSuccess = 0;
 
 try
   % Move parameter vector to obj
@@ -150,7 +151,6 @@ try
   
   % Run the main code
   tBodyID      = tic;
-  
   if flags.AnisoDiff == 1
     [DenRecObj]  = HR2DrotDenEvolverFTBody(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
@@ -158,7 +158,7 @@ try
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
   end
-  
+
   % Save it
   if flags.SaveMe
     % Clean up gridobj
@@ -168,7 +168,6 @@ try
     RunSave.DenRecObj = DenRecObj;
   end
   
-  EvolvedDen = 1;
   BodyrunTime  = toc(tBodyID);
   if flags.Verbose
     fprintf('Ran Main Body t%d_%d: %.3g \n', ...
@@ -177,12 +176,6 @@ try
   fprintf(lfid,'Body Run Time = %f\n\n', BodyrunTime);
   runTime.Body = BodyrunTime;
   
-  
-  % Store final density and transform
-  DenFinal   = DenRecObj.rhoFinal;
-  DidIBreak  = DenRecObj.DidIBreak;
-  SteadyState = DenRecObj.SteadyState;
-  MaxReldRho  = DenRecObj.MaxReldRho;
   
   % Run movies if you want
   if flags.MakeOP  == 1
