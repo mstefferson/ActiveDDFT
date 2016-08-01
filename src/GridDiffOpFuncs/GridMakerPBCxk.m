@@ -1,9 +1,9 @@
 function [gridObj] = GridMakerPBCxk(Nx,Ny,Nm,Lx,Ly,Lphi)
 
 % Make pos grid spacings
-dx   = Lx/Nx;              
-dy   = Ly/Ny;              
-dphi = Lphi/Nm; 
+dx   = Lx/Nx;
+dy   = Ly/Ny;
+dphi = Lphi/Nm;
 
 % Make vectors and grids
 gridObj.x = ( 0: dx : Lx - dx );
@@ -21,20 +21,20 @@ ky_max = pi/dy; %Maximum spatial k-vector allowed by grid
 km_max = pi / dphi; %Maximum angular k-vector
 
 % For generalization purposes, handle N = 0 cases differently.
-if Nx == 0
-  grid.kx = 0;
+if Nx == 1
+  gridObj.kx = 0;
 else
   gridObj.kx = ( -kx_max: dkx: (kx_max - dkx) );
 end
-if Ny == 0
+if Ny == 1
   gridObj.ky = 0;
 else
   gridObj.ky =  ( -ky_max: dky: (ky_max - dky) );
 end
-if Nm == 0 
+if Nm == 1
   gridObj.km = 0;
 else
-gridObj.km = ( -km_max: dkm: (km_max - dkm) );
+  gridObj.km = ( -km_max: dkm: (km_max - dkm) );
 end
 
 %2D k-vector grid

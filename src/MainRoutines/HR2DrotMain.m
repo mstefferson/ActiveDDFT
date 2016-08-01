@@ -83,14 +83,9 @@ try
   
   %Make diffusion coeff
   tDiffID = tic;
-  if flags.AnisoDiff == 1
-    SptSpc = min( gridObj.x(2) - gridObj.x(1) ,...
-    gridObj.y(2) - gridObj.y(1) );
-    RotSpt = gridObj.phi(2) - gridObj.phi(1);
-
+  if flags.AnisoDiff == 1   
     [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
       particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
-      timeObj.dt, SptSpc, RotSpt,...
       gridObj.kx, gridObj.ky, gridObj.km, ...
       gridObj.kx2D, gridObj.ky2D,particleObj.vD);
   else
@@ -117,15 +112,19 @@ try
   else
     rhoInit.bc = systemObj.bc;
   end
-  [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.phi,rhoInit.bc); % Calculate coeff
-  rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
-
+  
+  if systemObj.Nm == 1
+    rhoInit.feq = [];
+  else
+    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.phi,rhoInit.bc); % Calculate coeff
+    rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
+  end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,...
     gridObj.x,gridObj.y,gridObj.phi);
 
   IntDenrunTime = toc(tIntDenID);
-  
+
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
       runObj.trialID, runObj.runID, IntDenrunTime);

@@ -20,19 +20,19 @@ runMaster.num_trial =  1; % number of trials
 runMaster.trialID = 1; % Trial Indicator
 runMaster.runID   = 1; % Starting Run indicator *_trial.runID
 
-particleMaster.lMaj    = 1;  % Length along the major axis
-particleMaster.lMin    = 0;  % Length along the minor axis
-particleMaster.vD      = [0]; % Driving velocity (vec)
-particleMaster.mob = 1; % mobility
+particleMaster.lMaj = 1;  % Length along the major axis
+particleMaster.lMin = 0;  % Length along the minor axis
+particleMaster.vD   = [0]; % Driving velocity (vec)
+particleMaster.mob  = 1; % mobility
 
-systemMaster.Nx      = [64]; % Gridpoints in x dir (vec)
-systemMaster.Ny      = [64]; % Gridpoints in y dir (vec) 
-systemMaster.Nm      = [64]; % Gridpoints in angle (vec)
-systemMaster.bc      = [1.45]; % Scaled concentration (vec)
-systemMaster.Lx      = [10];  % Box length (vec)
-systemMaster.Ly      = [10];  % Box length (vec)
-systemMaster.Lphi    = 2 * pi;
-systemMaster.Tmp      = 1;   % Temperature
+systemMaster.Nx = [64]; % Gridpoints in x dir (vec)
+systemMaster.Ny = [64]; % Gridpoints in y dir (vec) 
+systemMaster.Nm = [64]; % Gridpoints in angle (vec)
+systemMaster.bc = [1.45]; % Scaled concentration (vec)
+systemMaster.Lx = [10];  % Box length (vec)
+systemMaster.Ly = [10];  % Box length (vec)
+systemMaster.Lphi = 2 * pi;
+systemMaster.Tmp = 1;   % Temperature
 
 if flagMaster.AnisoDiff; 
   particleMaster.mobPar  = 2*particleMaster.mob; 
@@ -43,23 +43,23 @@ particleMaster.mobPerp   = particleMaster.mob;
 particleMaster.mobRot   = 6 * particleMaster.mob / particleMaster.lMaj^2;
 
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
-timeMaster.dt     = 1e-3; % time step
-timeMaster.t_rec    = 0.1;  % time elapsed before recording
-timeMaster.t_write     = 0.2;  % time elapsed before writing to file
-timeMaster.t_tot       = 1.0;  % total run time
-timeMaster.ss_epsilon  = 1e-8; % steady state condition
+timeMaster.dt         = 1e-3; % time step
+timeMaster.t_rec      = 0.1;  % time elapsed before recording
+timeMaster.t_write    = 0.2;  % time elapsed before writing to file
+timeMaster.t_tot      = 1.0;  % total run time
+timeMaster.ss_epsilon = 1e-8; % steady state condition
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
-rhoInitMaster.IntCond     = [1]; % IC indicator (vec)
-rhoInitMaster.NumModesX   = 8; % Perturb # modes x
-rhoInitMaster.NumModesY   = 8; % Perturb # modes y
-rhoInitMaster.NumModesM   = 8; % Perturb # modes m
-rhoInitMaster.LoadName    = ''; % File name to load if IC 3
+rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
+rhoInitMaster.NumModesX = 8; % Perturb # modes x
+rhoInitMaster.NumModesY = 8; % Perturb # modes y
+rhoInitMaster.NumModesM = 8; % Perturb # modes m
+rhoInitMaster.LoadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbation weight is a fraction of the isotropic density
 % If about a nematic, code will correct for negative densities.
-rhoInitMaster.WeightPert   = 1e-3;
-rhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
+rhoInitMaster.WeightPert = 1e-3;
+rhoInitMaster.RandomAmp = 1;       % Random perturbation coeffs
 
 % Key
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -79,19 +79,29 @@ if systemMaster.Nx == 1
   systemMaster.Lx = 1;
   rhoInitMaster.NumModesX = 0;
 else
-  systemMaster.Nx = systemMasterNx + mod( systemMasterNx, 2 );
+  systemMaster.Nx = systemMaster.Nx + mod( systemMaster.Nx, 2 );
 end
 if systemMaster.Ny == 1 
   systemMaster.Ly = 1;
   rhoInitMaster.NumModesY = 0;
 else
-  systemMaster.Ny = systemMasterNy + mod( systemMasterNy, 2 );
+  systemMaster.Ny = systemMaster.Ny + mod( systemMaster.Ny, 2 );
 end
 if systemMaster.Nm == 1 
   systemMaster.Lphi = 1;
   rhoInitMaster.NumModesM = 0;
 else
-  systemMaster.Nm = systemMasterNm + mod( systemMasterNm, 2 );
+  systemMaster.Nm = systemMaster.Nm + mod( systemMaster.Nm, 2 );
+end
+
+% For now, fix flags and turn off traditional analysis if Nm = 1
+if systemMaster.Nm == 1
+  flagMaster.MakeOP = 0;
+  flagMaster.MakeMovies = 0;
+  particleMaster.mobRot = 0;
+  particleMaster.mobPar = particleMaster.mob;
+  particleMaster.mobPerp = particleMaster.mob;
+  rhoInitMaster.IntCond = 0;
 end
 
 % Don't perturb more more than you are allowed to

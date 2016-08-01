@@ -5,6 +5,8 @@ function [rho] = MakeConc(systemObj,rhoInit,x,y,phi)
 
 if rhoInit.IntCond == 0
   [rho] = IntDenCalcIsoPw2Drot(systemObj,rhoInit);
+  % Perturb it
+  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 1
   % if bc is too close to 1.5, errors arise. Fix this here.
   if 1.499 < systemObj.bc && systemObj.bc < 1.501

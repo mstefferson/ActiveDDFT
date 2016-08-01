@@ -21,8 +21,6 @@ Nm = systemObj.Nm;
 %Now includes the correct scale
 MuEx_FT = muExCalcVc2Ft(rho_FT, Fm_FT,systemObj);
 
-%     MuEx    = real(ifftn(ifftshift(MuEx_FT)));
-
 %Takes its derivative in k-space
 dMuEx_dx_FT   = diffObj.ikx3 .*  MuEx_FT;
 dMuEx_dy_FT   = diffObj.iky3 .*  MuEx_FT;
@@ -50,15 +48,18 @@ Jx_FT = fftshift(fftn(jx));
 Jy_FT = fftshift(fftn(jy));
 Jm_FT = fftshift(fftn(jm));
 
-
 %Calculate the -diverance of the flux in Fourier space. ;
-% Add Jm contribution at the end
-
 % Do it all with indexing
-Ind    = [ 1:Nm ];
-Ind_m2 = [ Nm-1, Nm,  1:(Nm-2) ]; %m-2 coupling
-Ind_p2 = [ 3:Nm, 1, 2 ]; %m+2 coupling
-
+if Nm > 1
+  Ind    = [ 1:Nm ];
+  Ind_m2 = [ Nm-1, Nm,  1:(Nm-2) ]; %m-2 coupling
+  Ind_p2 = [ 3:Nm, 1, 2 ]; %m+2 coupling
+else
+  Ind = 1;
+  Ind_m2 = 1;
+  Ind_p2 = 1;
+end
+  
 NegDivFluxEx_FT(:,:,Ind) = ...
   diffObj.jxf_reps .* Jx_FT(:,:,Ind) + ...
   diffObj.jxMm2f_reps .* Jx_FT(:,:,Ind_m2) + ...
@@ -66,6 +67,7 @@ NegDivFluxEx_FT(:,:,Ind) = ...
   diffObj.jyf_reps .* Jy_FT(:,:,Ind) + ...
   diffObj.jyMm2f_reps .* Jy_FT(:,:,Ind_m2) + ...
   diffObj.jyMp2f_reps .* Jy_FT(:,:,Ind_p2);
+
 
 %Add the C(k) term last
 NegDivFluxEx_FT = NegDivFluxEx_FT ...

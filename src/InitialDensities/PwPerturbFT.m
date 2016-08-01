@@ -29,9 +29,23 @@ else
 end
 % Handle perturbations in Fourier space
 rhoFT = fftshift( fftn( rho ) );
-kx0   = systemObj.Nx / 2 + 1;
-ky0   = systemObj.Ny / 2 + 1;
-km0   = systemObj.Nm / 2 + 1;
+
+% Give index of k = 0
+if systemObj.Nx ~= 1
+  kx0   = systemObj.Nx / 2 + 1;
+else
+  kx0 = 1;
+end
+if systemObj.Ny ~= 1
+  ky0   = systemObj.Ny / 2 + 1;
+else
+  ky0 = 1;
+end
+if systemObj.Nm ~= 1
+  km0   = systemObj.Nm / 2 + 1;
+else
+  km0 = 1;
+end
 try
   % Loop over perturbations
   for ii = 0:rhoInit.NumModesX
@@ -51,8 +65,7 @@ try
     end
   end % End loop over modes
 catch err
-  fprintf('%s', err.getReport('extended', 'hyperlinks','off')) ;
-  fprintf('%s', err.getReport('ex:tended')) ;
+  fprintf('%s', err.getReport('extended') );
   keyboard
 end
 % Inverse transform and Take real part
