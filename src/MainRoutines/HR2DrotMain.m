@@ -71,8 +71,8 @@ try
   % Make remaining objects
   % Make all the grid stuff %
   tGridID = tic;
-  [gridObj] = GridMakerPBCxk(...
-    systemObj.Nx,systemObj.Ny,systemObj.Nm,systemObj.Lx,systemObj.Ly);
+  [gridObj] = GridMakerPBCxk(systemObj.Nx,systemObj.Ny,systemObj.Nm,...
+    systemObj.Lx,systemObj.Ly,systemObj.Lphi);
   GridrunTime = toc(tGridID);
   if flags.Verbose
     fprintf('Made grid t%d_%d: %.3g \n', ...
