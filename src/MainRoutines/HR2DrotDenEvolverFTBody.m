@@ -91,6 +91,8 @@ elseif( flags.StepMeth == 1 ) % AB 2
   NlPrevPf = dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf( ...
     Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
+  % Save prev Gamma if need be
+  GammaExVec_FTprev = GammaExVec_FT;
 elseif( flags.StepMeth == 2 )  % HAB 1
   NlPf = dt;
   [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
@@ -100,6 +102,8 @@ elseif( flags.StepMeth == 3 ) % HAB 2
   NlPrevPf = dt / 2 ;
   [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
     Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
+  % Save prev Gamma if need be
+  GammaExVec_FTprev = GammaExVec_FT;
 elseif( flags.StepMeth == 4 ) % BHAB 1
   NlPf = dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
@@ -110,6 +114,8 @@ elseif( flags.StepMeth == 5 ) % BHAB 2
   NlExpPf =  dt / 2;
   [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
     Lop, rhoVec_FT, GammaExVec_FT, dt / 2, dt );
+  % Save prev Gamma if need be
+  GammaExVec_FTprev = GammaExVec_FT;
 elseif( flags.StepMeth == 6 ) % phiV
   [rhoVec_FTnext, ticExpInt] = DenStepperPhiV( ...
     Lop, rhoVec_FT, GammaExVec_FT, dt );
@@ -124,10 +130,6 @@ MaxReldRho   = 0; % Initialize this so things don't get messed up
 
 fprintf(lfid,'Starting master time loop\n');
 for t = 1:timeObj.N_time-1
-  %Save the previous and take one step forward.
-  % Save the old drho
-  GammaExVec_FTprev = GammaExVec_FT;
-  
   %Need to update rho!!!
   rhoVec_FT      = rhoVec_FTnext;
   
@@ -152,18 +154,21 @@ for t = 1:timeObj.N_time-1
   elseif( flags.StepMeth == 1 )
     [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
+    GammaExVec_FTprev = GammaExVec_FT;
   elseif( flags.StepMeth == 2 )
     [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
   elseif( flags.StepMeth == 3 )
     [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FT, NlPf, NlPrevPf, dt  );
+      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
+    GammaExVec_FTprev = GammaExVec_FT;
   elseif( flags.StepMeth == 4 )
     [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
   elseif( flags.StepMeth == 5 )
     [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
       Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
+    GammaExVec_FTprev = GammaExVec_FT;
   elseif( flags.StepMeth == 6 )
     [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
       Lop, rhoVec_FT, GammaExVec_FT, dt );

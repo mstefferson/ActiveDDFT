@@ -96,6 +96,8 @@ elseif( flags.StepMeth == 1 ) % AB 2
   NlPf = 3 * dt / 2;
   NlPrevPf = dt / 2;
   [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,dt);
+  % Save prev Gamma if need be
+  GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 2 ) % HAB1
   NlPf = dt .* Prop;
   [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
@@ -103,6 +105,8 @@ elseif( flags.StepMeth == 3 ) % HAB2
   NlPf = 3 * dt / 2 .* Prop;
   NlPrevPf = dt / 2 .* Prop .* Prop;
   [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, dt .* Prop );
+  % Save prev Gamma if need be
+  GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 4 ) % BHAB1
   NlPf = dt / 2 .* ( 1 + Prop);
   [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
@@ -111,6 +115,8 @@ elseif( flags.StepMeth == 5 ) % BHAB2
   NlPrevPf = dt / 2;
   [rho_FTnext] = DenStepperBHAB1cPf( ...
     Prop, rho_FT, GammaCube_FT, dt / 2 .* ( 1 + Prop) );
+  % Save prev Gamma if need be
+  GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 6 ) % Exponential Euler
   GamProp = ( Prop - 1 ) ./ Lop;
   [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
@@ -125,12 +131,8 @@ MaxReldRho   = 0; % Initialize this so things don't get messed up
 
 fprintf(lfid,'Starting master time loop\n');
 for t = 1:timeObj.N_time-1
-  %Save the previous and take one step forward.
-  % Save the old drho
-  GammaCube_FTprev = GammaCube_FT;
-  
-  %Need to update rho!!!
-  rho_FT      = rho_FTnext;
+ %Need to update rho!!!
+  rho_FT = rho_FTnext;
   
   % Calculate rho if there is driving or interactions
   if flags.Interactions || flags.Drive
@@ -156,16 +158,19 @@ for t = 1:timeObj.N_time-1
   elseif( flags.StepMeth == 1 )
     [rho_FTnext] = DenStepperAB2cPf( ...
       Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,NlPf, NlPrevPf );
+    GammaCube_FTprev = GammaCube_FT;
   elseif( flags.StepMeth == 2 )
     [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
   elseif( flags.StepMeth == 3 )
     [rho_FTnext] = DenStepperHAB2cPf( ...
       Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
+    GammaCube_FTprev = GammaCube_FT;
   elseif( flags.StepMeth == 4 )
     [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
   elseif( flags.StepMeth == 5 )
     [rho_FTnext] = DenStepperBHAB2cPf( ...
       Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
+    GammaCube_FTprev = GammaCube_FT;
   elseif( flags.StepMeth == 6 )
     [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
   end
