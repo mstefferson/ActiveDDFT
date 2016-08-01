@@ -73,31 +73,52 @@ rhoInitMaster.RandomAmp   = 1;       % Random perturbation coeffs
 % 6: A gaussian initial condition
 
 % Calculated stuff- fix times, etc.
+% Change odd gridspacings to even unless it's one. 
+% L=1 for N=1 is for integrations
+if systemMaster.Nx == 1 
+  systemMaster.Lx = 1;
+  rhoInitMaster.NumModesX = 0;
+else
+  systemMaster.Nx = systemMasterNx + mod( systemMasterNx, 2 );
+end
+if systemMaster.Ny == 1 
+  systemMaster.Ly = 1;
+  rhoInitMaster.NumModesY = 0;
+else
+  systemMaster.Ny = systemMasterNy + mod( systemMasterNy, 2 );
+end
+if systemMaster.Nm == 1 
+  systemMaster.Lphi = 1;
+  rhoInitMaster.NumModesM = 0;
+else
+  systemMaster.Nm = systemMasterNm + mod( systemMasterNm, 2 );
+end
 
 % Don't perturb more more than you are allowed to
 if( rhoInitMaster.NumModesX >= systemMaster.Nx / 2 ); 
-  rhoInitMaster.NumModesX = floor(systemMaster.Nx / 2) - 2; 
+  rhoInitMaster.NumModesX = floor(systemMaster.Nx / 2) - 1; 
 end;
 if( rhoInitMaster.NumModesY >= systemMaster.Ny / 2 ); 
-  rhoInitMaster.NumModesY = floor(systemMaster.Ny / 2) - 2;
+  rhoInitMaster.NumModesY = floor(systemMaster.Ny / 2) - 1;
 end;
 if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 );
-  rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 2; 
+  rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 1; 
 end;
 
+% Fix Ls if we want the box to be square
 if flagMaster.SquareBox == 1; 
   systemMaster.L_box = unique( [systemMaster.Lx systemMaster.Ly] );
   systemMaster.Lx = systemMaster.L_box; 
   systemMaster.Ly = systemMaster.L_box; 
 end
 
+% Fix Lx is we want all Ns to be the same
 if flagMaster.AllNsSame == 1; 
   Nvec = unique( [systemMaster.Nx systemMaster.Ny systemMaster.Nm] );
   systemMaster.Nx = Nvec;
   systemMaster.Ny = Nvec; 
   systemMaster.Nm = Nvec;
 end
-
 
 % Concentration and rod stuff
 particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded volume per particle
@@ -108,17 +129,15 @@ if flagMaster.SaveMe == 0; flagMaster.MakeOP = 0; flagMaster.MakeMovies = 0;end
 if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
 if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
 
+% Give time warnings
 if timeMaster.dt > timeMaster.t_rec;
   fprintf('Recorded interval is shorter then timestep fix before proceeding\n');
-  error('Recorded interval is shorter then timestep fix before proceeding');
 end
 if timeMaster.t_rec > timeMaster.t_write;
   fprintf('File write interval is shorter than recordord interval. Fix it \n');
-  error('File write interval is shorter than record interval fix before proceeding');
 end
 if timeMaster.t_write > timeMaster.t_tot;
   fprintf('Total time interval is shorter then record interval\n');
-  error('Total time interval is shorter then record interval');
 end
 
 % Save the Params
