@@ -118,7 +118,6 @@ else
   error('No stepping method selected');
 end
 
-
 tic
 ShitIsFucked = 0;
 SteadyState  = 0;
@@ -183,7 +182,6 @@ for t = 1:timeObj.N_time-1
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
       Density_rec(:,:,:,jrectemp)     = rho;
     end
-    
     % Write a chunk to disk
     if flags.SaveMe
       if ( mod(t, timeObj.N_dtChunk ) == 0 )

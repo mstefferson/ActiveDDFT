@@ -47,7 +47,8 @@ timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording
 timeMaster.t_write    = 0.2;  % time elapsed before writing to file
 timeMaster.t_tot      = 1.0;  % total run time
-timeMaster.ss_epsilon = 1e-8; % steady state condition
+timeMaster.ss_epsilon = 1e-3; % steady state condition
+timeMaster.amp_cutoff = 1e-3; % Amplitude cut-off for checking steady state
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)

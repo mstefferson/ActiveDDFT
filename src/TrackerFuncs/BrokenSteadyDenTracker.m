@@ -9,8 +9,12 @@ function [SteadyState,ShitIsFucked,MaxReldRho] = ...
 SteadyState = 0;
 ShitIsFucked = 0;
 
-WeightDensityChange = abs( ( rho_FT - rho_FTnext ) ./ rho_FT );
-MaxReldRho = max(max(max(WeightDensityChange)));
+temp = rho_FT(rho_FT > timeObj.amp_cutoff);
+tempNext = rho_FTnext(rho_FT > timeObj.amp_cutoff);
+
+WeightDensityChange = abs( ( temp - tempNext ) ...
+   ./ temp  );
+MaxReldRho = max(WeightDensityChange);
 if MaxReldRho < timeObj.ss_epsilon
   SteadyState = 1;
 end
