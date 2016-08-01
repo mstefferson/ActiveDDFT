@@ -4,43 +4,45 @@
 % Description: Tracks broken densities and steady state
 
 function [SteadyState,ShitIsFucked,MaxReldRho] = ...
-    BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj)
+  BrokenSteadyDenTracker(rho,rho_FT,rho_FTnext,constConc,timeObj,systemObj)
+
 SteadyState = 0;
 ShitIsFucked = 0;
 
-AbsDensityChange = abs( rho - rho_prev );
-WeightDensityChange = AbsDensityChange ./ rho;
+WeightDensityChange = abs( ( rho_FT - rho_FTnext ) ./ rho_FT );
 MaxReldRho = max(max(max(WeightDensityChange)));
 if MaxReldRho < timeObj.ss_epsilon
-    SteadyState = 1;
+  SteadyState = 1;
 end
 
 %See if something broke
 
 %Negative Density check
 if min(min(min(rho))) < 0
-    fprintf('Forgive me, your grace. Density has become negative\n');
-    ShitIsFucked  = 1;
+  fprintf('Forgive me, your grace. Density has become negative\n');
+  ShitIsFucked  = 1;
 end
 
 %Not conserving density check.
-if abs( sum(sum(sum(rho)))- TotalDensity ) > TotalDensity / 1000;
+if systemObj.Nm ~= 1
+  constConcNow = rho_FT(systemObj.Nx/2+1, systemObj.Ny/2+1,systemObj.Nm/2+1 );
+  if ( abs( constConcNow - constConc ) / constConc ) >  1e-10
     fprintf('Forgive me, your grace. Density is not being conserved\n');
     ShitIsFucked  = 1;
+  end
 end
-
 
 % Nan or infinity
-if find(isinf(rho)) ~= 0
-    fprintf('Forgive me, your grace. Density has gone infinite. ');
-    fprintf('Does that make sense? No. No it does not\n');
-    ShitIsFucked  = 1;
+if isinf(rho)
+  fprintf('Forgive me, your grace. Density has gone infinite. ');
+  fprintf('Does that make sense? No. No it does not\n');
+  ShitIsFucked  = 1;
 end
 
-if find(isnan(rho)) ~= 0
-    fprintf('Forgive me, your grace. Density elements are no longer numbers. ');
-    fprintf('Does that make sense? No. No it does not\n');
-    ShitIsFucked  = 1;
+if isnan(rho)
+  fprintf('Forgive me, your grace. Density elements are no longer numbers. ');
+  fprintf('Does that make sense? No. No it does not\n');
+  ShitIsFucked  = 1;
 end
 
 

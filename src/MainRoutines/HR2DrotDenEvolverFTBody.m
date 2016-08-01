@@ -43,9 +43,13 @@ N2 = Nx*Ny;
 dt = timeObj.dt;
 
 % FT initial density and max density
-TotalDensity = sum(sum(sum(rho)));
 rho_FT = fftshift(fftn(rho));
 rhoVec_FT = reshape(rho_FT,N3,1);
+if Nm == 1
+  constConc = rho_FT( Nx/2 + 1, Nx/2 + 1);
+else
+  constConc = rho_FT( Nx/2 + 1, Nx/2 + 1, Nm/2 + 1);
+end
 
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
@@ -172,17 +176,13 @@ for t = 1:timeObj.N_time-1
       rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    rhoNext = real(ifftn(ifftshift(reshape(rhoVec_FTnext,Nx,Ny,Nm))));
-    
+    rho_FTnext = reshape(rhoVec_FTnext,Nx,Ny,Nm);
+    [SteadyState,ShitIsFucked,MaxReldRho] = ...
+      BrokenSteadyDenTracker(rho, rho_FT, rho_FTnext, constConc, timeObj, systemObj);
     if flags.SaveMe
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-      [SteadyState,ShitIsFucked,MaxReldRho] = ...
-        BrokenSteadyDenTracker(rhoNext,rho, TotalDensity ,timeObj);
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
       Density_rec(:,:,:,jrectemp)     = rho;
-    else
-      [SteadyState,ShitIsFucked,MaxReldRho] = ...
-        BrokenSteadyDenTracker(rhoNext,rho,TotalDensity ,timeObj);
     end
     
     %Make sure things are taking too long. This is a sign density---> inf
@@ -235,9 +235,9 @@ rho        = real(ifftn(ifftshift(rho_FT)));
 
 %Save everything
 if flags.SaveMe
-if ShitIsFucked == 0 && SteadyState == 0;
-  if ( mod(t,timeObj.N_dtRec)== 0 )
-    fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
+  if ShitIsFucked == 0 && SteadyState == 0;
+    if ( mod(t,timeObj.N_dtRec)== 0 )
+      fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       % Turn it to a cube if it hasn't been yet
       if flags.Interactions == 0 && flags.Drive == 0
         rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);

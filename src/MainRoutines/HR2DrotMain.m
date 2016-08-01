@@ -8,7 +8,9 @@ function  [ DenRecObj ] = ...
 
 global RunSave
 DenRecObj = 0;
-MovieSuccess = 0;
+movieSuccess = 0;
+evolvedSucess = 0;
+MovStr = '';
 
 try
   % Move parameter vector to obj
@@ -23,7 +25,7 @@ try
   flags.StepMeth = paramVec(9);
   runObj.runID = paramVec(10);
   systemObj.c = systemObj.bc ./ particleObj.b;
-  systemObj.numPart  = systemObj.c * systemObj.Lx * systemObj.Ly; % number of particles 
+  systemObj.numPart  = systemObj.c * systemObj.Lx * systemObj.Ly; % number of particles
   systemObj.lBox = [systemObj.Lx systemObj.Ly];
   
   % Set-up save paths, file names, and matfile
@@ -83,7 +85,7 @@ try
   
   %Make diffusion coeff
   tDiffID = tic;
-  if flags.AnisoDiff == 1   
+  if flags.AnisoDiff == 1
     [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
       particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
       gridObj.kx, gridObj.ky, gridObj.km, ...
@@ -122,9 +124,9 @@ try
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,...
     gridObj.x,gridObj.y,gridObj.phi);
-
+  
   IntDenrunTime = toc(tIntDenID);
-
+  
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
       runObj.trialID, runObj.runID, IntDenrunTime);
@@ -134,7 +136,7 @@ try
   
   % Save everything before running body of code
   % except for Grid because it's currently too bulky
-
+  
   if flags.SaveMe
     RunSave.flags    = flags;
     RunSave.systemObj = systemObj;
@@ -157,7 +159,8 @@ try
     [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
   end
-
+  evolvedSucess = 1;
+  
   % Save it
   if flags.SaveMe
     % Clean up gridobj
@@ -179,14 +182,14 @@ try
   % Run movies if you want
   if flags.MakeOP  == 1
     tOpID           = tic ;
-
-    [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi); 
+    
+    [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
-
+    
     if  DenRecObj.DidIBreak == 0
       totRec = length( DenRecObj.TimeRecVec );
       TimeRecVecTemp = DenRecObj.TimeRecVec ;
@@ -235,14 +238,14 @@ try
         if NumChunks == 1
           Ind = 1:totRec;
         else
-        Ind = (i-1) * SizeChunk:totRec;
+          Ind = (i-1) * SizeChunk:totRec;
         end
       end
       
       [OPObjTemp] = CPNrecMaker(systemObj.Nx,systemObj.Ny,...
         TimeRecVecTemp(Ind), RunSave.Den_rec(:,:,:,Ind) ,...
         gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
- 
+      
       % Save it
       OpSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
       OpSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
@@ -265,17 +268,17 @@ try
     end % loop over chunks
     
     % Now do it for steady state sol
-    [~,~,phi3D] = meshgrid(1,1,gridObj.phi); 
+    [~,~,phi3D] = meshgrid(1,1,gridObj.phi);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
-   
+    
     [~,~,~,~,OpSave.NOPeq,~,~] = ...
       OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.Nm] ), ...
       gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
-      
+    
     if flags.MakeMovies;
       OPobj.OpTimeRecVec = TimeRecVecTemp;
       OPobj.NOPeq = OpSave.NOPeq;
@@ -290,7 +293,7 @@ try
     runTime.OP = OprunTime;
     
     if flags.MakeMovies == 1
-      MovieSuccess = 0;
+      movieSuccess = 0;
       
       % Make matlab movies
       tMovID       = tic;
@@ -298,20 +301,20 @@ try
       HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
       DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
         [systemObj.Nm length(DenRecObj.TimeRecVec)] );
-      
       % Save Name
       MovStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
-      
+      % Run function
       OPMovieMakerTgtherDirAvi(MovStr,...
         gridObj.x,gridObj.y,gridObj.phi,OPobj,...
         DistRec,OPobj.OpTimeRecVec);
       
-      MovieSuccess = 1;
+      movieSuccess = 1;
+      
       % Move it
       movefile( MovStr, DirName  )
       
       MovrunTime   = toc(tMovID);
-     if flags.Verbose
+      if flags.Verbose
         fprintf('Made movies t%d_%d: %.3g \n', ...
           runObj.trialID, runObj.runID, MovrunTime);
       end
@@ -389,26 +392,28 @@ catch err %Catch errors
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
-
-  if flags.SaveMe
-    if flags.MakeMovies == 1
-      if MovieSuccess == 0
-        fprintf('Movies failed\n');
-        if exist(MovStr,'file'); delete(MovStr); end
-        rmdir(DirName);
-        DirName    =  './runOPfiles';
+  if evolvedSucess == 1
+    
+    if flags.SaveMe
+      if flags.MakeMovies == 1
+        if movieSuccess == 0
+          fprintf('Movies failed\n');
+          if exist(MovStr,'file'); delete(MovStr); end
+          rmdir(DirName);
+          DirName    =  './runOPfiles';
+        end
       end
-    end
-    if flags.MakeOP == 1
-      DirName  = filename(1:end-4) ;
-      DirPath  = ['./runOPfiles/' DirName ];
-      if exist(DirPath,'dir') == 0;
-        mkdir('./runOPfiles', DirName);
+      if flags.MakeOP == 1
+        DirName  = filename(1:end-4) ;
+        DirPath  = ['./runOPfiles/' DirName ];
+        if exist(DirPath,'dir') == 0;
+          mkdir('./runOPfiles', DirName);
+        end
+        DirName = DirPath;
+        movefile( SaveNameOP,DirName);
       end
-      DirName = DirPath;
-      movefile( SaveNameOP,DirName);
+      movefile(SaveNameRun,DirName);
     end
-    movefile(SaveNameRun,DirName);
   end
   
 end %End try and catch
