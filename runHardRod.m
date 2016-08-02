@@ -84,8 +84,8 @@ if numRuns > 1
     
     disp(filename);
     
-    [DenRecObj] = ...
-      HR2DrotMain( filename, paramvec, ParamObj, timeObj, rhoInit, flags );
+  [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
+     runObj, timeObj, rhoInit, flags );
   end
 else
   paramvec = [ paramNx(1) paramNy(1) paramNm(1) paramLx(1) ...
@@ -102,8 +102,8 @@ else
   
   disp(filename);
   
-  [DenRecObj] = ...
-    HR2DrotMain( filename, paramvec, systemObj, particleObj, runObj, timeObj, rhoInit, flags );
+  [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
+    runObj, timeObj, rhoInit, flags );
 end
 
 
