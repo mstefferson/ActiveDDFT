@@ -1,7 +1,7 @@
 % OPHardRod
 %
 % Calculates the Order parameters for all the ./runfiles'
-function OPHardRod( NumFiles2Analyze )
+function opHardRod( NumFiles2Analyze )
 tstart = tic;
 % Add Subroutine path
 CurrentDir = pwd;
@@ -40,7 +40,6 @@ if NumFiles2Analyze;
   
   fprintf('Starting analysis\n');
   
-  
   for ii=1:NumFiles2Analyze
     
     % Grab a file
@@ -49,13 +48,14 @@ if NumFiles2Analyze;
     
     % Put all variables in a struct
     RunSave = matfile( ['./runfiles/analyzing/' SaveNameRun] );
-    %     RunSave = matfile( ['./runfiles/' SaveNameRun] );
-    DenRecObj = RunSave.DenRecObj;
-    ParamObj  = RunSave.ParamObj;
+    denRecObj = RunSave.DenRecObj;
+    systemObj  = RunSave.systemObj;
+    particleObj  = RunSave.particleObj;
     timeObj  = RunSave.timeObj;
     flags  = RunSave.flags;
     rhoInit  = RunSave.rhoInit;
     gridObj  = RunSave.gridObj;
+    Nx = systemObj.Nx; Ny = systemObj.Ny; Nm = systemObj.Nm;
     
     % Build phi3D once
     [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
@@ -64,7 +64,7 @@ if NumFiles2Analyze;
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
-    
+    phi = gridObj.phi;
     
     DirName = SaveNameRun(5:end-4);
     SaveNameOP   = ['OP_' DirName '.mat' ];
@@ -76,46 +76,44 @@ if NumFiles2Analyze;
       mkdir(DirName);
     end
     
-    if  DenRecObj.DidIBreak == 0
-      totRec = length( DenRecObj.TimeRecVec );
-      OpTimeRecVec = DenRecObj.TimeRecVec ;
+    if  denRecObj.DidIBreak == 0
+      totRec = length( denRecObj.TimeRecVec );
+      OpTimeRecVec = denRecObj.TimeRecVec ;
       OpSave.OpTimeRecVec = OpTimeRecVec;
       fprintf('Nothing Broke totRec = %d\n',totRec);
     else %Don't incldue the blowed up density for movies. They don't like it.
-      totRec = length( DenRecObj.TimeRecVec ) - 1;
-      OpTimeRecVec = DenRecObj.TimeRecVec(1:end-1) ;
+      totRec = length( denRecObj.TimeRecVec ) - 1;
+      OpTimeRecVec = denRecObj.TimeRecVec(1:end-1) ;
       OpSave.OpTimeRecVec = OpTimeRecVec;
       fprintf('Density Broke totRec = %d\n',totRec);
     end
     
     % Set up saving
     OpSave.flags    = flags;
-    OpSave.ParamObj = ParamObj;
+    OpSave.particleObj = particleObj;
     OpSave.timeObj  = timeObj;
-    OpSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.POPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    OpSave.C_rec    = zeros(Nx, Ny, 2);
+    OpSave.POP_rec  = zeros(Nx, Ny, 2);
+    OpSave.POPx_rec = zeros(Nx, Ny, 2);
+    OpSave.POPy_rec = zeros(Nx, Ny, 2);
+    OpSave.NOP_rec  = zeros(Nx, Ny, 2);
+    OpSave.NOPx_rec = zeros(Nx, Ny, 2);
+    OpSave.NOPy_rec = zeros(Nx, Ny, 2);
     
     % Analyze chucks in parallel
-    Nx = systemObj.Nx; Ny = systemObj.Ny;
-    
     % Break it into chunks
     NumChunks = timeObj.N_chunks;
     SizeChunk = floor( totRec/ NumChunks );
     NumChunks = ceil( totRec/ SizeChunk);
     
     %OpSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    C_rec    = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
-    POP_rec  = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
-    POPx_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
-    POPy_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
-    NOP_rec  = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
-    NOPx_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
-    NOPy_rec = zeros(systemObj.Nx, systemObj.Ny,  SizeChunk);
+    C_rec    = zeros(Nx, Ny,  SizeChunk);
+    POP_rec  = zeros(Nx, Ny,  SizeChunk);
+    POPx_rec = zeros(Nx, Ny,  SizeChunk);
+    POPy_rec = zeros(Nx, Ny,  SizeChunk);
+    NOP_rec  = zeros(Nx, Ny,  SizeChunk);
+    NOPx_rec = zeros(Nx, Ny,  SizeChunk);
+    NOPy_rec = zeros(Nx, Ny,  SizeChunk);
     
     for jj = 1:NumChunks;
       if jj ~= NumChunks
@@ -128,13 +126,13 @@ if NumFiles2Analyze;
       TimeRecVecTemp = OpTimeRecVec(Ind);
       
       if length(Ind) ~= SizeChunk;
-        C_rec    = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
-        POP_rec  = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
-        POPx_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
-        POPy_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
-        NOP_rec  = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
-        NOPx_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind) );
-        NOPy_rec = zeros(systemObj.Nx, systemObj.Ny,  length(Ind));
+        C_rec    = zeros(Nx, Ny,  length(Ind) );
+        POP_rec  = zeros(Nx, Ny,  length(Ind) );
+        POPx_rec = zeros(Nx, Ny,  length(Ind) );
+        POPy_rec = zeros(Nx, Ny,  length(Ind) );
+        NOP_rec  = zeros(Nx, Ny,  length(Ind) );
+        NOPx_rec = zeros(Nx, Ny,  length(Ind) );
+        NOPy_rec = zeros(Nx, Ny,  length(Ind));
       end
       
       
@@ -142,7 +140,7 @@ if NumFiles2Analyze;
         
         [OPObjTemp] = CPNrecMaker(Nx,Ny,...
           TimeRecVecTemp(kk), DenRecTemp(:,:,:,kk),...
-          gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
+          phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
         
         C_rec(:,:,kk) = OPObjTemp.C_rec;
         POP_rec(:,:,kk) = OPObjTemp.POP_rec;
@@ -164,15 +162,15 @@ if NumFiles2Analyze;
     end %loop over chunks
     
         % Now do it for steady state sol
-    [~,~,phi3D] = meshgrid(1,1,gridObj.phi); 
+    [~,~,phi3D] = meshgrid(1,1,phi); 
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
       [~,~,~,~,OpSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.Nm] ), ...
-      gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
+      OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,Nm] ), ...
+      phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     [~, ~, o] = size(OpSave.C_rec);
     movefile( ['./runfiles/analyzing/' SaveNameRun], DirName );
@@ -188,7 +186,3 @@ fprintf('Finished making OPs. OP made for %d files in %.2g min\n', ...
   NumFiles2Analyze, end_time / 60);
 
 % end
-
-
-
-
