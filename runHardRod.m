@@ -20,6 +20,7 @@ if exist('Params.mat','file') == 0;
   initParams();
 end
 load Params.mat;
+movefile('Params.mat', 'ParamsRunning.mat');
 
 % Copy the master parameter list to ParamObj
 %ParamObj = ParamMaster;
@@ -44,6 +45,7 @@ fprintf('Making time obj\n');
   TimeStepRecMaker(timeMaster.dt,timeMaster.t_tot,...
     timeMaster.t_rec,timeMaster.t_write);
 timeObj.ss_epsilon = timeMaster.ss_epsilon;
+timeObj.amp_cutoff = timeMaster.amp_cutoff;
 fprintf('Finished time obj\n');
 
 % Display everythin
@@ -106,6 +108,6 @@ end
 
 
 dateTime =  datestr(now);
+movefile('ParamsRunning.mat', 'ParamsFinished.mat');
 fprintf('Finished RunHardRod: %s\n', dateTime);
-delete Params.mat
 

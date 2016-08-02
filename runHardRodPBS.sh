@@ -23,9 +23,9 @@
 # Any directives placed after the first shell command will be ignored.
 
 ### Set the job name
-#PBS -N HRrun
+#PBS -N HrTest
 
-### Run in the queue named "short"
+### Run in the queue named "short/long"
 #PBS -q short
 
 ### Use the bourne shell
@@ -48,7 +48,7 @@
 #BS -l nodes=1:ppn=12
 
 ### Tell PBS how much memory you expect to use. Use units of 'b','kb', 'mb' or 'gb'.
-#PBS -l mem=256GB
+#PBS -l mem=24GB
 
 ### Tell PBS the anticipated run-time for your job, where walltime=HH:MM:SS
 ### NOTE if the simulation runs longer than this it will be killed
@@ -81,7 +81,7 @@ module load matlab_R2015b
 
 # Run matlab program
 matlab -nodesktop -nosplash \
-  -r  "try, RunHardRod, catch, exit(1), end, exit(0);" \
+  -r  "try, runHardRod, catch, exit(1), end, exit(0);" \
   2>&1 | tee runHR.out
 echo "Finished. Matlab exit code: $?" 
 echo Time is `date`
