@@ -23,7 +23,7 @@
 # Any directives placed after the first shell command will be ignored.
 
 ### Set the job name
-#PBS -N HrTest
+#PBS -N HrTestPar
 
 ### Run in the queue named "short/long"
 #PBS -q short
@@ -45,7 +45,7 @@
 
 ### Specify the number of cpus for your job.  This example will allocate 4 cores
 ### using 2 processors on each of 2 nodes.
-#BS -l nodes=1:ppn=12
+#PBS -l nodes=1:ppn=12
 
 ### Tell PBS how much memory you expect to use. Use units of 'b','kb', 'mb' or 'gb'.
 #PBS -l mem=24GB
@@ -82,7 +82,7 @@ module load matlab_R2015b
 # Run matlab program
 matlab -nodesktop -nosplash \
   -r  "try, runHardRod, catch, exit(1), end, exit(0);" \
-  2>&1 | tee runHR.out
+  2>&1 | tee ${PBS_JOBNAME}.out
 echo "Finished. Matlab exit code: $?" 
 echo Time is `date`
 

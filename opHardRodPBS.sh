@@ -47,7 +47,7 @@
 
 ### Specify the number of cpus for your job.  This example will allocate 4 cores
 ### using 2 processors on each of 2 nodes.
-#BS -l nodes=1:ppn=12
+#PBS -l nodes=1:ppn=12
 
 ### Tell PBS how much memory you expect to use. Use units of 'b','kb', 'mb' or 'gb'.
 #PBS -l mem=24GB
