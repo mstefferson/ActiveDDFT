@@ -5,7 +5,7 @@ function opHardRod( NumFiles2Analyze )
 tstart = tic;
 % Add Subroutine path
 CurrentDir = pwd;
-addpath( genpath( [CurrentDir '/Subroutines'] ) );
+addpath( genpath( [CurrentDir '/src'] ) );
 
 if nargin == 0; NumFiles2Analyze = 1; end;
 
