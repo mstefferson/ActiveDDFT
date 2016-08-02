@@ -7,8 +7,6 @@ tstart = tic;
 CurrentDir = pwd;
 addpath( genpath( [CurrentDir '/Subroutines'] ) );
 
-
-
 %make output directories if they don't exist
 if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end;
 
@@ -28,8 +26,11 @@ if numDirs
     cd(dirTemp)
     
     % load things
-    RunSave = matfile( ['run_' dirTemp '.mat'] );
-    OpSave  = matfile( ['OP_' dirTemp '.mat'] );
+    runFileName = ['run_' dirTemp '.mat'];
+    opFileName = ['OP_' dirTemp '.mat'];
+    
+    RunSave = matfile( runFileName);
+    OpSave  = matfile( opFileName );
     
     OPobj.C_rec    = OpSave.C_rec;
     OPobj.POP_rec  = OpSave.POP_rec;
@@ -41,9 +42,8 @@ if numDirs
     OPobj.OpTimeRecVec = OpSave.OpTimeRecVec;
     
     DenRecObj = RunSave.DenRecObj;
-    ParamObj  = RunSave.ParamObj;
-    timeObj  = RunSave.timeObj;
-    flags  = RunSave.flags;
+    % See if things exist
+    vars = whos('-file',runFileName);
     gridObj  = RunSave.gridObj;
     
     % Make matlab movies
@@ -62,8 +62,7 @@ if numDirs
         gridObj.x,gridObj.y,gridObj.phi,OPobj,...
         DistRec,OPobj.OpTimeRecVec);
       
-      MovieSuccess = 1;
-      
+      MovieSuccess = 1; 
       
       % Make amplitude plot
       kx0 = systemObj.Nx / 2 + 1;
