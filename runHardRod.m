@@ -1,4 +1,3 @@
-
 % Date
 dateTime =  datestr(now);
 fprintf('Starting RunHardRod: %s\n', dateTime);
@@ -64,7 +63,6 @@ paramLy  = paramMat(:,5); paramvD  = paramMat(:,6);
 parambc  = paramMat(:,7); paramIC  = paramMat(:,8);
 paramSM  = paramMat(:,9); paramrun = paramMat(:,10);
 
-
 % Loops over all run
 fprintf('Starting loop over runs\n');
 if numRuns > 1
@@ -82,10 +80,10 @@ if numRuns > 1
       '_IC' num2str( paramIC(ii) ) '_SM' num2str( paramSM(ii) ) ...
       '_t' num2str( trial ) '.' num2str( paramrun(ii) ) '.mat' ];
     
-    disp(filename);
-    
-  [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
-     runObj, timeObj, rhoInit, flags );
+    fprintf('\nStarting %s \n', filename);
+    [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
+       runObj, timeObj, rhoInit, flags );
+    fprintf('Finished %s \n', filename);
   end
 else
   paramvec = [ paramNx(1) paramNy(1) paramNm(1) paramLx(1) ...
@@ -100,10 +98,10 @@ else
     '_IC' num2str( paramIC(1) ) '_SM' num2str( paramSM(1) ) ...
     '_t' num2str( trial ) '.' num2str( paramrun(1) ) '.mat' ];
   
-  disp(filename);
-  
+  fprintf('\nStarting %s \n', filename);
   [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
     runObj, timeObj, rhoInit, flags );
+  fprintf('Finished %s \n', filename);
 end
 
 
