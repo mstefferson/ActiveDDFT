@@ -1,3 +1,4 @@
+% Executeable for HardRod
 % Date
 dateTime =  datestr(now);
 fprintf('Starting RunHardRod: %s\n', dateTime);
@@ -65,7 +66,10 @@ paramSM  = paramMat(:,9); paramrun = paramMat(:,10);
 
 % Loops over all run
 fprintf('Starting loop over runs\n');
+ticID = tic;
 if numRuns > 1
+  parobj = gcp;
+  fprintf('I have hired %d workers\n',parobj.NumWorkers);
   parfor ii = 1:numRuns
     % Assign parameters
     paramvec = [ paramNx(ii) paramNy(ii) paramNm(ii) paramLx(ii) ...
@@ -103,9 +107,13 @@ else
     runObj, timeObj, rhoInit, flags );
   fprintf('Finished %s \n', filename);
 end
-
+runTime = toc(ticID);
 
 dateTime =  datestr(now);
 movefile('ParamsRunning.mat', 'ParamsFinished.mat');
+runHr = floor( runTime / 3600); runTime = runTime - runHr*3600;
+runMin = floor( runTime / 60);  runTime = runTime - runMin*60;
+runSec = floor(runTime);
+fprintf('RunTime: %.2d:%.2d:%.2d (hr:min:sec)\n', runHr, runMin,runSec);
 fprintf('Finished RunHardRod: %s\n', dateTime);
 
