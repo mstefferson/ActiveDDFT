@@ -31,6 +31,7 @@ if vd == 0
   diffObj.CfMplus1  = 0;
   diffObj.CfMminus1 = 0;
 else
+  diffObj.dr = 1;
   diffObj.CfMplus1  = -vd/2 * ( 1i .* kx2D - ky2D  ) ;
   diffObj.CfMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
 end
