@@ -18,8 +18,13 @@ for ii = 1:length(files2convert);
     particleObj.lMaj = ParamObj.L_rod;
     particleObj.vD = ParamObj.vD;
 
+    runObj.runID = ParamObj.runID;
+    runObj.num_trial = ParamObj.num_trial;
+    runObj.trialID = ParamObj.trialID;
+
     matSave.systemObj = systemObj;
     matSave.particleObj = particleObj;
+    matSave.runObj = runObj;
   end
   if ismember('GridObj', {vars.name})
     GridObj = matSave.GridObj;
