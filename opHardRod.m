@@ -91,6 +91,7 @@ try
       % Set up saving
       OpSave.flags    = flags;
       OpSave.particleObj = particleObj;
+      OpSave.systemObj  = systemObj;
       OpSave.timeObj  = timeObj;
       OpSave.C_rec    = zeros(Nx, Ny, 2);
       OpSave.POP_rec  = zeros(Nx, Ny, 2);

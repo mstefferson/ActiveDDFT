@@ -139,6 +139,7 @@ try
   
   if flags.SaveMe
     RunSave.flags    = flags;
+    RunSave.runObj    = runObj;
     RunSave.systemObj = systemObj;
     RunSave.particleObj = particleObj;
     RunSave.timeObj  = timeObj;

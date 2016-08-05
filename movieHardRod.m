@@ -39,7 +39,9 @@ try
       
       DenRecObj = RunSave.DenRecObj;
       gridObj  = RunSave.gridObj;
-      
+      systemObj  = RunSave.systemObj;
+      runObj  = RunSave.runObj;
+
       % Make matlab movies
       HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
       HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
