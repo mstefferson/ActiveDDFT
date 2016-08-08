@@ -222,8 +222,8 @@ for t = 1:timeObj.N_time-1
         RecIndTemp = RecIndTemp + 1;
         % Save what remains
         if ~isempty(RecIndTemp)
-          RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(1:jrectemp);
-          RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(1:jrectemp);
+          RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
+          RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
         end
       end
       break
