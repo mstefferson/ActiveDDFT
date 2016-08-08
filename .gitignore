@@ -18,6 +18,9 @@
 # Directories
 Outputs/
 Outputs/*
+runfiles/
+runOPfiles/
+analyzedfiles/
 data/
 data/*
 eo/*
