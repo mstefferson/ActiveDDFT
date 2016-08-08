@@ -23,11 +23,11 @@ try
       dirFullPath = ['./runOPfiles/' dirTemp];
       % load things
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
-      opFileName = [dirFullPath '/OP_' dirTemp '.mat'];
+      opFileName = [dirFullPath '/op_' dirTemp '.mat'];
       
-      RunSave = matfile( runFileName);
+      runSave = matfile( runFileName);
       OpSave  = matfile( opFileName );
-      
+
       OPobj.C_rec    = OpSave.C_rec;
       OPobj.POP_rec  = OpSave.POP_rec;
       OPobj.POPx_rec = OpSave.POPx_rec;
@@ -35,20 +35,14 @@ try
       OPobj.NOP_rec  = OpSave.NOP_rec;
       OPobj.NOPx_rec = OpSave.NOPx_rec;
       OPobj.NOPy_rec = OpSave.NOPy_rec;
+      OPobj.distSlice_rec = OpSave.distSlice_rec;
       OPobj.OpTimeRecVec = OpSave.OpTimeRecVec;
       
-      DenRecObj = RunSave.DenRecObj;
-      gridObj  = RunSave.gridObj;
-      systemObj  = RunSave.systemObj;
-      runObj  = RunSave.runObj;
+      denRecObj = runSave.denRecObj;
+      gridObj  = runSave.gridObj;
+      systemObj  = runSave.systemObj;
+      runObj  = runSave.runObj;
 
-      % Make matlab movies
-      HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
-      HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
-      
-      DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
-        [systemObj.Nm length(OPobj.OpTimeRecVec)] );
-      
       % Save Name
       MovStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
       
@@ -56,7 +50,7 @@ try
       try
         OPMovieMakerTgtherDirAvi(MovStr,...
           gridObj.x,gridObj.y,gridObj.phi,OPobj,...
-          DistRec,OPobj.OpTimeRecVec);
+          OPobj.distSlice_rec,OPobj.OpTimeRecVec);
         
         MovieSuccess = 1; 
         
@@ -80,7 +74,7 @@ try
         
         for jj = 1:8
           FTmat2plot(jj,:) =  reshape(...
-            RunSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
+            runSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
             [ 1, Nrec ]  );
         end
         % Plot Amplitudes

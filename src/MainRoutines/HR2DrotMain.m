@@ -1,16 +1,15 @@
-%Obj HR2DrotMain.m
-%
+
 % Program is the main() for running the diffusion of 2D hard rods with
 % orientation. Program handles interactions using DDFT
 
-function  [ DenRecObj ] = ...
+function  [ denRecObj ] = ...
   HR2DrotMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
 
-global RunSave
-DenRecObj = 0;
+global runSave
+denRecObj = 0;
 movieSuccess = 0;
 evolvedSucess = 0;
-MovStr = '';
+movStr = '';
 
 try
   % Move parameter vector to obj
@@ -30,28 +29,30 @@ try
   
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
-    SaveNameRun   = ['run_' filename];
+    saveNameRun   = ['run_' filename];
     if flags.MakeOP == 0
-      DirName    =  './runfiles';
+      dirName    =  './runfiles';
     else
-      SaveNameOP   = ['OP_' filename];
-      DirName  = filename(1:end-4) ;
+      saveNameOP   = ['op_' filename];
+      saveNameParams = ['params_' filename];
+      dirName  = filename(1:end-4) ;
       if flags.MakeMovies == 1
-        DirPath  = ['./analyzedfiles/' DirName ];
-        if exist(DirPath,'dir') == 0;
-          mkdir('./analyzedfiles', DirName);
+        dirPath  = ['./analyzedfiles/' dirName ];
+        if exist(dirPath,'dir') == 0;
+          mkdir('./analyzedfiles', dirName);
         end
-        DirName = DirPath;
+        dirName = dirPath;
       else
-        DirPath  = ['./runOPfiles/' DirName ];
-        if exist(DirPath,'dir') == 0;
-          mkdir('./runOPfiles', DirName);
+        dirPath  = ['./runOPfiles/' dirName ];
+        if exist(dirPath,'dir') == 0;
+          mkdir('./runOPfiles', dirName);
         end
-        DirName = DirPath;
+        dirName = dirPath;
       end
-      OpSave = matfile(SaveNameOP,'Writable',true);
+      opSave = matfile(saveNameOP,'Writable',true);
+      paramSave = matfile(saveNameParams,'Writable',true);
     end
-    RunSave = matfile(SaveNameRun,'Writable',true);
+    runSave = matfile(saveNameRun,'Writable',true);
   end
   
   if flags.Verbose
@@ -66,8 +67,8 @@ try
   tMainID  = tic;
   
   % Create a file that holds warning print statements
-  LocString = sprintf('Loc_%s.txt', filename(1:end-4));
-  lfid      = fopen(LocString,'a+');    % a+ allows to append data
+  locString = sprintf('Loc_%s.txt', filename(1:end-4));
+  lfid      = fopen(locString,'a+');    % a+ allows to append data
   fprintf(lfid,'Starting main, current code\n');
   
   % Make remaining objects
@@ -75,13 +76,13 @@ try
   tGridID = tic;
   [gridObj] = GridMakerPBCxk(systemObj.Nx,systemObj.Ny,systemObj.Nm,...
     systemObj.Lx,systemObj.Ly,systemObj.Lphi);
-  GridrunTime = toc(tGridID);
+  gridrunTime = toc(tGridID);
   if flags.Verbose
     fprintf('Made grid t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, GridrunTime);
+      runObj.trialID, runObj.runID, gridrunTime);
   end
-  fprintf(lfid,'Made Grid: %.3g \n', GridrunTime);
-  runTime.Grid = GridrunTime;
+  fprintf(lfid,'Made Grid: %.3g \n', gridrunTime);
+  runTime.grid = gridrunTime;
   
   %Make diffusion coeff
   tDiffID = tic;
@@ -96,13 +97,13 @@ try
       gridObj.kx, gridObj.ky, gridObj.km);
   end
   
-  DiffrunTime = toc(tDiffID);
+  diffRunTime = toc(tDiffID);
   if flags.Verbose
     fprintf('Made diffusion object t%d_%d: %.3g\n', ...
-      runObj.trialID, runObj.runID, DiffrunTime);
+      runObj.trialID, runObj.runID, diffRunTime);
   end
-  fprintf(lfid,'Made diffusion object: %.3g\n', DiffrunTime);
-  runTime.Diff = DiffrunTime;
+  fprintf(lfid,'Made diffusion object: %.3g\n', diffRunTime);
+  runTime.diff = diffRunTime;
   
   %Initialze density
   tIntDenID = tic;
@@ -125,39 +126,39 @@ try
   [rho] = MakeConc(systemObj,rhoInit,...
     gridObj.x,gridObj.y,gridObj.phi);
   
-  IntDenrunTime = toc(tIntDenID);
+  intDenRunTime = toc(tIntDenID);
   
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, IntDenrunTime);
+      runObj.trialID, runObj.runID, intDenRunTime);
   end
-  fprintf(lfid,'Made initial density: %.3g\n', IntDenrunTime);
-  runTime.IntDen = IntDenrunTime;
+  fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
+  runTime.intDen = intDenRunTime;
   
   % Save everything before running body of code
   % except for Grid because it's currently too bulky
   
   if flags.SaveMe
-    RunSave.flags    = flags;
-    RunSave.runObj    = runObj;
-    RunSave.systemObj = systemObj;
-    RunSave.particleObj = particleObj;
-    RunSave.timeObj  = timeObj;
-    RunSave.rhoInit  = rhoInit;
-    RunSave.Den_rec = zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2);
-    RunSave.DenFT_rec = complex( ...
+    runSave.flags    = flags;
+    runSave.runObj    = runObj;
+    runSave.systemObj = systemObj;
+    runSave.particleObj = particleObj;
+    runSave.timeObj  = timeObj;
+    runSave.rhoInit  = rhoInit;
+    runSave.Den_rec = zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2);
+    runSave.DenFT_rec = complex( ...
       zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2), 0 );
-    RunSave.Den_rec(:,:,:,1) = rho;
-    RunSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
+    runSave.Den_rec(:,:,:,1) = rho;
+    runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
   end
   
   % Run the main code
   tBodyID      = tic;
   if flags.AnisoDiff == 1
-    [DenRecObj]  = HR2DrotDenEvolverFTBody(...
+    [denRecObj]  = HR2DrotDenEvolverFTBody(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
   else
-    [DenRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
+    [denRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
   end
   evolvedSucess = 1;
@@ -167,22 +168,29 @@ try
     % Clean up gridobj
     fields2del = {'kx2D','ky2D'};
     gridObj = rmfield(gridObj,fields2del);
-    RunSave.gridObj  = gridObj;
-    RunSave.DenRecObj = DenRecObj;
+    runSave.gridObj  = gridObj;
+    runSave.denRecObj = denRecObj;
   end
   
-  BodyrunTime  = toc(tBodyID);
+  bodyRunTime  = toc(tBodyID);
   if flags.Verbose
     fprintf('Ran Main Body t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, BodyrunTime);
+      runObj.trialID, runObj.runID, bodyRunTime);
   end
-  fprintf(lfid,'Body Run Time = %f\n\n', BodyrunTime);
-  runTime.Body = BodyrunTime;
+  fprintf(lfid,'Body Run Time = %f\n\n', bodyRunTime);
+  runTime.body = bodyRunTime;
   
   
   % Run movies if you want
   if flags.MakeOP  == 1
     tOpID           = tic ;
+    % Save params in seperate files if making OPobj
+    % Set up saving
+    paramSave.flags = flags;
+    paramSave.particleObj = particleObj;
+    paramSave.systemObj = systemObj;
+    paramSave.timeObj = timeObj;
+    paramSave.denRecObj = runSave.denRecObj;
     
     [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
     cosPhi3d = cos(phi3D);
@@ -191,28 +199,29 @@ try
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
     
-    if  DenRecObj.DidIBreak == 0
-      totRec = length( DenRecObj.TimeRecVec );
-      TimeRecVecTemp = DenRecObj.TimeRecVec ;
-      OpSave.OpTimeRecVec = TimeRecVecTemp;
+    if  denRecObj.DidIBreak == 0
+      totRec = length( denRecObj.TimeRecVec );
+      timeRecVecTemp = denRecObj.TimeRecVec ;
+      opSave.OpTimeRecVec = timeRecVecTemp;
     else %Don't incldue the blowed up denesity for movies. They don't like it.
-      totRec = length( DenRecObj.TimeRecVec ) - 1;
-      TimeRecVecTemp = DenRecObj.TimeRecVec(1:end-1) ;
-      OpSave.OpTimeRecVec = TimeRecVecTemp;
+      totRec = length( denRecObj.TimeRecVec ) - 1;
+      timeRecVecTemp = denRecObj.TimeRecVec(1:end-1) ;
+      opSave.OpTimeRecVec = timeRecVecTemp;
     end
     
     % Set up saving
-    OpSave.flags    = flags;
-    OpSave.systemObj = systemObj;
-    OpSave.particleObj = particleObj;
-    OpSave.timeObj  = timeObj;
-    OpSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.POPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    OpSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    % Distribution slice
+    HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
+    HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
+    opSave.distSlice_rec = reshape( runSave.Den_rec(HoldX, HoldY, : , :),...
+      [systemObj.Nm length(opSave.OpTimeRecVec)] );
+    opSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
+    opSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
+    opSave.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    opSave.POPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    opSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
+    opSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+    opSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
     if flags.MakeMovies
       OPobj.C_rec    = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
@@ -221,40 +230,43 @@ try
       OPobj.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
+      OPobj.distSlice_rec = reshape( runSave.Den_rec(HoldX, HoldY, : , :),...
+        [systemObj.Nm totRec ] );
+      OPobj.OpTimeRecVec = timeRecVecTemp;
     end
     
     % Break it into chunks
-    NumChunks = timeObj.N_chunks;
-    SizeChunk = floor( totRec/ NumChunks );
-    if SizeChunk > 0
-      NumChunks = ceil( totRec/ SizeChunk);
+    numChunks = timeObj.N_chunks;
+    sizeChunk = floor( totRec/ numChunks );
+    if sizeChunk > 0
+      numChunks = ceil( totRec/ sizeChunk);
     else
-      NumChunks = 1;
+      numChunks = 1;
     end
     
-    for i = 1:NumChunks;
-      if i ~= NumChunks
-        Ind =  (i-1) * SizeChunk + 1: i * SizeChunk;
+    for i = 1:numChunks;
+      if i ~= numChunks
+        Ind =  (i-1) * sizeChunk + 1: i * sizeChunk;
       else
-        if NumChunks == 1
+        if numChunks == 1
           Ind = 1:totRec;
         else
-          Ind = (i-1) * SizeChunk:totRec;
+          Ind = (i-1) * sizeChunk:totRec;
         end
       end
       
       [OPObjTemp] = CPNrecMaker(systemObj.Nx,systemObj.Ny,...
-        TimeRecVecTemp(Ind), RunSave.Den_rec(:,:,:,Ind) ,...
+        timeRecVecTemp(Ind), runSave.Den_rec(:,:,:,Ind) ,...
         gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       
       % Save it
-      OpSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
-      OpSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
-      OpSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
-      OpSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
-      OpSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
-      OpSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
-      OpSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+      opSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
+      opSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
+      opSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
+      opSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
+      opSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
+      opSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
+      opSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
       
       if flags.MakeMovies
         OPobj.C_rec(:,:,Ind)    = OPObjTemp.C_rec;
@@ -276,60 +288,56 @@ try
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
     
-    [~,~,~,~,OpSave.NOPeq,~,~] = ...
+    [~,~,~,~,opSave.NOPeq,~,~] = ...
       OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.Nm] ), ...
       gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     if flags.MakeMovies;
-      OPobj.OpTimeRecVec = TimeRecVecTemp;
-      OPobj.NOPeq = OpSave.NOPeq;
+      OPobj.OpTimeRecVec = timeRecVecTemp;
+      OPobj.NOPeq = opSave.NOPeq;
     end
     
-    OprunTime = toc(tOpID);
+    opRunTime = toc(tOpID);
     if flags.Verbose
       fprintf('Made OP object t%d_%d: %.3g \n', ...
-        runObj.trialID, runObj.runID, OprunTime);
+        runObj.trialID, runObj.runID, opRunTime);
     end
-    fprintf(lfid,'OrderParam Run time = %f\n', OprunTime);
-    runTime.OP = OprunTime;
+    fprintf(lfid,'OrderParam Run time = %f\n', opRunTime);
+    runTime.op = opRunTime;
     
     if flags.MakeMovies == 1
       movieSuccess = 0;
       
       % Make matlab movies
       tMovID       = tic;
-      HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
-      HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
-      DistRec =  reshape( RunSave.Den_rec(HoldX, HoldY, : , :),...
-        [systemObj.Nm length(DenRecObj.TimeRecVec)] );
       % Save Name
-      MovStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
+      movStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
       % Run function
-      OPMovieMakerTgtherDirAvi(MovStr,...
+      OPMovieMakerTgtherDirAvi(movStr,...
         gridObj.x,gridObj.y,gridObj.phi,OPobj,...
-        DistRec,OPobj.OpTimeRecVec);
+        OPobj.distSlice_rec,OPobj.OpTimeRecVec);
       
       movieSuccess = 1;
       
       % Move it
-      movefile( MovStr, DirName  )
+      movefile( movStr, dirName  )
       
-      MovrunTime   = toc(tMovID);
+      movRunTime   = toc(tMovID);
       if flags.Verbose
         fprintf('Made movies t%d_%d: %.3g \n', ...
-          runObj.trialID, runObj.runID, MovrunTime);
+          runObj.trialID, runObj.runID, movRunTime);
       end
-      fprintf(lfid,'Make Mov Run Time = %f\n',  MovrunTime);
-      runTime.Mov = MovrunTime;
+      fprintf(lfid,'Make Mov Run Time = %f\n',  movRunTime);
+      runTime.mov = movRunTime;
       
       % Make amplitude plot
       kx0 = systemObj.Nx / 2 + 1;
       ky0 = systemObj.Ny / 2 + 1;
       km0 = systemObj.Nm / 2 + 1;
-      Nrec = length( DenRecObj.TimeRecVec);
+      nRec = length( denRecObj.TimeRecVec);
       
       FTind2plot = zeros( 8, 3 );
-      FTmat2plot = zeros( 8, Nrec );
+      FTmat2plot = zeros( 8, nRec );
       
       FTind2plot(1,:) = [kx0     ky0     km0 + 1];
       FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
@@ -342,11 +350,11 @@ try
       
       for i = 1:8
         FTmat2plot(i,:) =  reshape(...
-          RunSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
-          [ 1, Nrec ]  );
+          runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
+          [ 1, nRec ]  );
       end
       % Plot Amplitudes
-      ampPlotterFT(FTmat2plot, FTind2plot, DenRecObj.TimeRecVec, systemObj.Nx, systemObj.Ny,...
+      ampPlotterFT(FTmat2plot, FTind2plot, denRecObj.TimeRecVec, systemObj.Nx, systemObj.Ny,...
         systemObj.Nm, systemObj.bc,particleObj.vD, runObj.trialID)
       
       % Save it
@@ -355,30 +363,31 @@ try
       saveas(gcf, figtl,'jpg')
       
       % Move it
-      movefile([figtl '.fig'], DirName  )
-      movefile([figtl '.jpg'], DirName  )
+      movefile([figtl '.fig'], dirName  )
+      movefile([figtl '.jpg'], dirName  )
       
     end % End if movies
     
   end % if OP
   
   % Save how long everything took
-  TotrunTime = toc(tMainID);
+  totRunTime = toc(tMainID);
   if flags.Verbose
     fprintf('Run Finished t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, TotrunTime);
+      runObj.trialID, runObj.runID, totRunTime);
   end
-  fprintf(lfid,'Total Run time = %f\n', TotrunTime);
-  runTime.Tot = TotrunTime;
+  fprintf(lfid,'Total Run time = %f\n', totRunTime);
+  runTime.tot = totRunTime;
   
   % Move saved things
   
   if flags.SaveMe
-    RunSave.runTime = runTime;
-    movefile(SaveNameRun,DirName);
+    paramSave.runTime = runTime;
+    movefile(saveNameRun,dirName);
     
     if flags.MakeOP == 1
-      movefile( SaveNameOP,DirName);
+      movefile( saveNameOP,dirName);
+      movefile( saveNameParams,dirName);
     end
     
   end
@@ -387,7 +396,7 @@ catch err %Catch errors
   
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
-  RunSave.err = err;
+  runSave.err = err;
   disp(err);
   
   % Movies can have issues to box size. If they do, just move files
@@ -399,28 +408,29 @@ catch err %Catch errors
       if flags.MakeMovies == 1
         if movieSuccess == 0
           fprintf('Movies failed\n');
-          if exist(MovStr,'file'); delete(MovStr); end
-          rmdir(DirName);
-          DirName    =  './runOPfiles';
+          if exist(movStr,'file'); delete(movStr); end
+          rmdir(dirName);
+          dirName =  './runOPfiles';
         end
       end
       if flags.MakeOP == 1
-        DirName  = filename(1:end-4) ;
-        DirPath  = ['./runOPfiles/' DirName ];
-        if exist(DirPath,'dir') == 0;
-          mkdir('./runOPfiles', DirName);
+        dirName  = filename(1:end-4) ;
+        dirPath  = ['./runOPfiles/' dirName ];
+        if exist(dirPath,'dir') == 0;
+          mkdir('./runOPfiles', dirName);
         end
-        DirName = DirPath;
-        movefile( SaveNameOP,DirName);
+        dirName = dirPath;
+        movefile( saveNameOP,dirName);
+        movefile( saveNameParams,dirName);
       end
-      movefile(SaveNameRun,DirName);
+      movefile(saveNameRun,dirName);
     end
   end
   
 end %End try and catch
 
 fclose(lfid);
-delete(LocString);
+delete(locString);
 
 if flags.Verbose
   fprintf('Leaving Main for t%d.%d\n', ...

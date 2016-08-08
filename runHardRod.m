@@ -85,7 +85,7 @@ if numRuns > 1
       '_t' num2str( trial ) '.' num2str( paramrun(ii) ) '.mat' ];
     
     fprintf('\nStarting %s \n', filename);
-    [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
+    [denRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
        runObj, timeObj, rhoInit, flags );
     fprintf('Finished %s \n', filename);
   end
@@ -103,7 +103,7 @@ else
     '_t' num2str( trial ) '.' num2str( paramrun(1) ) '.mat' ];
   
   fprintf('\nStarting %s \n', filename);
-  [DenRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
+  [denRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
     runObj, timeObj, rhoInit, flags );
   fprintf('Finished %s \n', filename);
 end

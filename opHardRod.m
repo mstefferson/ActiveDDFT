@@ -47,14 +47,14 @@ try
       fprintf('Analyzing %s\n',SaveNameRun);
       
       % Put all variables in a struct
-      RunSave = matfile( ['./runfiles/analyzing/' SaveNameRun] );
-      denRecObj = RunSave.DenRecObj;
-      systemObj  = RunSave.systemObj;
-      particleObj  = RunSave.particleObj;
-      timeObj  = RunSave.timeObj;
-      flags  = RunSave.flags;
-      rhoInit  = RunSave.rhoInit;
-      gridObj  = RunSave.gridObj;
+      runSave = matfile( ['./runfiles/analyzing/' SaveNameRun] );
+      denRecObj = runSave.denRecObj;
+      systemObj  = runSave.systemObj;
+      particleObj  = runSave.particleObj;
+      timeObj  = runSave.timeObj;
+      flags  = runSave.flags;
+      rhoInit  = runSave.rhoInit;
+      gridObj  = runSave.gridObj;
       Nx = systemObj.Nx; Ny = systemObj.Ny; Nm = systemObj.Nm;
       
       % Build phi3D once
@@ -67,8 +67,11 @@ try
       phi = gridObj.phi;
       
       DirName = SaveNameRun(5:end-4);
-      SaveNameOP   = ['OP_' DirName '.mat' ];
+      SaveNameOP   = ['op_' DirName '.mat' ];
+      SaveNameParams = ['params_' DirName '.mat' ];
+ 
       OpSave = matfile(SaveNameOP,'Writable',true);
+      paramSave = matfile(SaveNameParams,'Writable',true);
       
       DirName  = ['./runOPfiles/' DirName ];
       
@@ -89,10 +92,12 @@ try
       end
       
       % Set up saving
-      OpSave.flags    = flags;
-      OpSave.particleObj = particleObj;
-      OpSave.systemObj  = systemObj;
-      OpSave.timeObj  = timeObj;
+      paramSave.flags = flags;
+      paramSave.particleObj = particleObj;
+      paramSave.systemObj = systemObj;
+      paramSave.timeObj = timeObj;
+      paramSave.denRecObj = runSave.denRecObj;
+
       OpSave.C_rec    = zeros(Nx, Ny, 2);
       OpSave.POP_rec  = zeros(Nx, Ny, 2);
       OpSave.POPx_rec = zeros(Nx, Ny, 2);
@@ -115,7 +120,7 @@ try
       NOP_rec  = zeros(Nx, Ny,  SizeChunk);
       NOPx_rec = zeros(Nx, Ny,  SizeChunk);
       NOPy_rec = zeros(Nx, Ny,  SizeChunk);
-      
+
       for jj = 1:NumChunks;
         if jj ~= NumChunks
           Ind =  (jj-1) * SizeChunk + 1: jj * SizeChunk;
@@ -123,7 +128,7 @@ try
           Ind = (jj-1) * SizeChunk:totRec;
         end
         
-        DenRecTemp = RunSave.Den_rec(:,:,:,Ind);
+        DenRecTemp = runSave.Den_rec(:,:,:,Ind);
         TimeRecVecTemp = OpTimeRecVec(Ind);
         
         if length(Ind) ~= SizeChunk;
@@ -161,6 +166,13 @@ try
         OpSave.NOPy_rec(:,:,Ind) = NOPy_rec;
         
       end %loop over chunks
+
+      % Distribution slice
+      HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
+      HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
+      OpSave.distSlice_rec = reshape( runSave.Den_rec(HoldX, HoldY, : , :),...
+        [systemObj.Nm length(OpTimeRecVec)] );
+
       % Now do it for steady state sol
       [~,~,phi3D] = meshgrid(1,1,phi);
       cosPhi3d = cos(phi3D);
@@ -175,6 +187,7 @@ try
       [~, ~, o] = size(OpSave.C_rec);
       movefile( ['./runfiles/analyzing/' SaveNameRun], DirName );
       movefile( SaveNameOP,DirName );
+      movefile( SaveNameParams,DirName );
       fprintf('Finished %s\n', SaveNameRun);
       fprintf('Rec points for C_rec = %d vs totRec = %d\n',o,totRec);
     end %loop over files

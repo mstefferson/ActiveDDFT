@@ -23,10 +23,10 @@
 % Interactions handled using Mayer function.
 
 
-function [DenRecObj] = HR2DrotDenEvolverFTBody(...
+function [denRecObj] = HR2DrotDenEvolverFTBody(...
   rho,systemObj,particleObj,timeObj,gridObj,diffObj, flags,lfid)
 
-global RunSave
+global runSave
 
 fprintf(lfid,'In body of code\n');
 % Create a text file that tells user what percent of the program has
@@ -62,7 +62,7 @@ end
 
 % Recording indecies
 jrectemp = 1; % Temporary holder for Density_rec
-jrec     = 2; % Actual index for RunSave
+jrec     = 2; % Actual index for runSave
 jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space Lopagator, and interaction
@@ -203,8 +203,8 @@ for t = 1:timeObj.N_time-1
           (jchunk-1) *  timeObj.N_recChunk + 1 : jchunk * timeObj.N_recChunk;
         % Shift by one because we include zero
         RecIndTemp = RecIndTemp + 1;
-        RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-        RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+        runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+        runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
         jrectemp = 0;
         jchunk = jchunk + 1;
       end
@@ -222,8 +222,8 @@ for t = 1:timeObj.N_time-1
         RecIndTemp = RecIndTemp + 1;
         % Save what remains
         if ~isempty(RecIndTemp)
-          RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
-          RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+          runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
+          runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
         end
       end
       break
@@ -258,8 +258,8 @@ if flags.SaveMe
         (jchunk-1) *  timeObj.N_recChunk + 1 : jchunk * timeObj.N_recChunk;
       % Shift by one because we include zero
       RecIndTemp = RecIndTemp + 1;
-      RunSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-      RunSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+      runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
     end
     jrec = jrec + 1; % Still +1. Programs assumes this always happens
   end %end recording
@@ -286,11 +286,11 @@ TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
 trun = toc;
 
 % Save useful info
-DenRecObj.DidIBreak    = ShitIsFucked;
-DenRecObj.SteadyState  = SteadyState;
-DenRecObj.MaxReldRho   = MaxReldRho;
-DenRecObj.TimeRecVec   = TimeRecVec;
-DenRecObj.rhoFinal     = rho;
-DenRecObj.runTime      = trun;
+denRecObj.DidIBreak    = ShitIsFucked;
+denRecObj.SteadyState  = SteadyState;
+denRecObj.MaxReldRho   = MaxReldRho;
+denRecObj.TimeRecVec   = TimeRecVec;
+denRecObj.rhoFinal     = rho;
+denRecObj.runTime      = trun;
 
 end %function
