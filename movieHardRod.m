@@ -4,39 +4,39 @@
 try
   tstart = tic;
   % Add Subroutine path
-  CurrentDir = pwd;
-  addpath( genpath( [CurrentDir '/src'] ) );
+  currentDir = pwd;
+  addpath( genpath( [currentDir '/src'] ) );
 
   %make output directories if they don't exist
   if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end;
 
   % see how many dirs to analyze
-  Dir2Analyze = dir( './runOPfiles');
-  numDirs = length(Dir2Analyze) - 2;
+  dir2Analyze = dir( './runOPfiles');
+  numDirs = length(dir2Analyze) - 2;
 
   if numDirs
     fprintf('Making movies for %d dirs \n', numDirs);
-    Dir2Analyze = Dir2Analyze(3:end);
+    dir2Analyze = dir2Analyze(3:end);
     for ii = 1:numDirs
       % move into a dir
-      dirTemp = Dir2Analyze(ii).name;
+      dirTemp = dir2Analyze(ii).name;
       dirFullPath = ['./runOPfiles/' dirTemp];
       % load things
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
       opFileName = [dirFullPath '/op_' dirTemp '.mat'];
       
       runSave = matfile( runFileName);
-      OpSave  = matfile( opFileName );
+      opSave  = matfile( opFileName );
 
-      OPobj.C_rec    = OpSave.C_rec;
-      OPobj.POP_rec  = OpSave.POP_rec;
-      OPobj.POPx_rec = OpSave.POPx_rec;
-      OPobj.POPy_rec = OpSave.POPy_rec;
-      OPobj.NOP_rec  = OpSave.NOP_rec;
-      OPobj.NOPx_rec = OpSave.NOPx_rec;
-      OPobj.NOPy_rec = OpSave.NOPy_rec;
-      OPobj.distSlice_rec = OpSave.distSlice_rec;
-      OPobj.OpTimeRecVec = OpSave.OpTimeRecVec;
+      OPobj.C_rec    = opSave.C_rec;
+      OPobj.POP_rec  = opSave.POP_rec;
+      OPobj.POPx_rec = opSave.POPx_rec;
+      OPobj.POPy_rec = opSave.POPy_rec;
+      OPobj.NOP_rec  = opSave.NOP_rec;
+      OPobj.NOPx_rec = opSave.NOPx_rec;
+      OPobj.NOPy_rec = opSave.NOPy_rec;
+      OPobj.distSlice_rec = opSave.distSlice_rec;
+      OPobj.OpTimeRecVec = opSave.OpTimeRecVec;
       
       denRecObj = runSave.denRecObj;
       gridObj  = runSave.gridObj;
@@ -47,7 +47,6 @@ try
       MovStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
       
       % Call movie routine
-      try
         OPMovieMakerTgtherDirAvi(MovStr,...
           gridObj.x,gridObj.y,gridObj.phi,OPobj,...
           OPobj.distSlice_rec,OPobj.OpTimeRecVec);
@@ -89,15 +88,11 @@ try
         % move it
         movefile([MovStr '*'], dirFullPath);
         movefile([figtl '*'], dirFullPath);
-        movefile(dirFullPath, './analyzedfiles');
-      catch err
-        fprintf('Did not make movie \n');
-        disp(err.message);
-      end % try catch
+
     end % loop over dir
   else
     fprintf('Nothing to make movies for \n');
   end
 catch err
-  throw(err);
+  fprintf('%s', err.getReport('extended')) ;
 end
