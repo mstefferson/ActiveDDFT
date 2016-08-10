@@ -6,7 +6,6 @@ function  [ denRecObj ] = ...
   HR2DrotMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
 
 global runSave
-denRecObj = 0;
 movieSuccess = 0;
 evolvedSucess = 0;
 movStr = '';
@@ -135,8 +134,10 @@ try
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
   
+  % Set up denRecObj just in case code doesn't finish
+  denRecObj.didIrun = 0;
+
   % Save everything before running body of code
-  % except for Grid because it's currently too bulky
   
   if flags.SaveMe
     runSave.flags    = flags;
@@ -145,11 +146,16 @@ try
     runSave.particleObj = particleObj;
     runSave.timeObj  = timeObj;
     runSave.rhoInit  = rhoInit;
+    % Clean up gridobj before saving
+    fields2del = {'kx2D','ky2D'};
+    gridTemp = rmfield(gridObj,fields2del);
+    runSave.gridObj  = gridTemp;
     runSave.Den_rec = zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2);
     runSave.DenFT_rec = complex( ...
       zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2), 0 );
     runSave.Den_rec(:,:,:,1) = rho;
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
+    runSave.denRecObj   = denRecObj;
   end
   
   % Run the main code
@@ -165,10 +171,6 @@ try
   
   % Save it
   if flags.SaveMe
-    % Clean up gridobj
-    fields2del = {'kx2D','ky2D'};
-    gridObj = rmfield(gridObj,fields2del);
-    runSave.gridObj  = gridObj;
     runSave.denRecObj = denRecObj;
   end
   
@@ -211,9 +213,9 @@ try
     
     % Set up saving
     % Distribution slice
-    HoldX = systemObj.Nx /2 + 1; % spatial pos placeholders
-    HoldY = systemObj.Ny /2 + 1; % spatial pos placeholders
-    opSave.distSlice_rec = reshape( runSave.Den_rec(HoldX, HoldY, : , :),...
+    holdX = systemObj.Nx /2 + 1; % spatial pos placeholders
+    holdY = systemObj.Ny /2 + 1; % spatial pos placeholders
+    opSave.distSlice_rec = reshape( runSave.Den_rec(holdX, holdY, : , :),...
       [systemObj.Nm length(opSave.OpTimeRecVec)] );
     opSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
@@ -230,7 +232,7 @@ try
       OPobj.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.distSlice_rec = reshape( runSave.Den_rec(HoldX, HoldY, : , :),...
+      OPobj.distSlice_rec = reshape( runSave.Den_rec(holdX, holdY, : , :),...
         [systemObj.Nm totRec ] );
       OPobj.OpTimeRecVec = timeRecVecTemp;
     end

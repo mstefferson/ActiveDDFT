@@ -270,6 +270,7 @@ TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
 trun = toc;
 
 % Save useful info
+denRecObj.didIrun      = 1;
 denRecObj.DidIBreak    = ShitIsFucked;
 denRecObj.SteadyState  = SteadyState;
 denRecObj.MaxReldRho   = MaxReldRho;
