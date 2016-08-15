@@ -11,24 +11,26 @@ N3 = systemObj.Nx * systemObj.Ny * systemObj.Nm;
 % Perturb coeff is the weight times equilbrium
 % concentration. Make sure it isn't too large
 % Find isotropic density
-IsoDen = systemObj.numPart / (systemObj.Lphi .* systemObj.Lx .* systemObj.Lx);
-MaxPerturb = IsoDen * rhoInit.WeightPert * ...
+isoDen = systemObj.numPart / (systemObj.Lphi .* systemObj.Lx .* systemObj.Lx);
+maxPerturb = isoDen * rhoInit.WeightPert * ...
   (2*rhoInit.NumModesX) * (2*rhoInit.NumModesY) * (2*rhoInit.NumModesM);
-if min(min(min(rho))) < MaxPerturb
-  CoeffMax = IsoDen .* ...
-    rhoInit.WeightPert * min(min(min(rho))) / MaxPerturb;
+if min(min(min(rho))) < maxPerturb
+  coeffMax = isoDen .* ...
+    rhoInit.WeightPert * min(min(min(rho))) / maxPerturb;
 else
-  CoeffMax = IsoDen .* rhoInit.WeightPert; 
+  coeffMax = isoDen .* rhoInit.WeightPert;
 end
 % If it's not random, set Coeff ourside the loop
 % scale by N3 b/c of FT factor
 if rhoInit.RandomAmp == 0
-  Coeff = CoeffMax * N3 * ( 1 + sqrt(-1) );
+  coeff = coeffMax * N3 * ( 1 + sqrt(-1) );
 else
-  CoeffTemp = CoeffMax * N3;
+  coeffTemp = coeffMax * N3;
 end
 % Handle perturbations in Fourier space
 rhoFT = fftshift( fftn( rho ) );
+rhoFT2 = rhoFT;
+rhoFT3 = rhoFT;
 
 % Give index of k = 0
 if systemObj.Nx ~= 1
@@ -46,31 +48,49 @@ if systemObj.Nm ~= 1
 else
   km0 = 1;
 end
-try
-  % Loop over perturbations
-  for ii = 0:rhoInit.NumModesX
-    for jj = 0:rhoInit.NumModesY
-      for kk = 0: rhoInit.NumModesM
-        if ii ~= 0 || jj ~=0 || kk ~= 0
-          if rhoInit.RandomAmp
-            Coeff = CoeffTemp .* ... 
-              ( (-1 + 2 * rand() )  + (-1 + 2 * rand() ) * sqrt(-1) ); 
-          end
-          rhoFT(kx0 + ii, ky0 + jj, km0 + kk) =  ...
-            rhoFT(kx0 + ii, ky0 + jj, km0 + kk) + Coeff;
-          rhoFT(kx0 - ii, ky0 - jj, km0 - kk) =  ...
-            rhoFT(kx0 - ii, ky0 - jj, km0 - kk) + conj( Coeff );
-        end
-      end
-    end
-  end % End loop over modes
-catch err
-  fprintf('%s', err.getReport('extended') );
-  keyboard
+
+% Build Perturbation Matrix
+rhoSave = rhoFT;
+m1 = rhoInit.NumModesX;
+m2 = rhoInit.NumModesY;
+m3 = rhoInit.NumModesM;
+perturb =  zeros( 2*m1 + 1, 2*m2 + 1, 2*m3 + 1 );
+
+if rhoInit.RandomAmp == 1;
+  perturb( 1 : m1+1, 1 : m2+1, 1 : m3+1 ) = coeffTemp .* ( ...
+    rand( m1+1, m2+1, m3+1 ) + sqrt(-1) .* rand( m1+1, m2+1, m3+1 ) );
+  perturb( m1+1 : 2*m1+1, m2+1 : 2*m2+1, 1 : m3+1 ) = coeffTemp .* ( ...
+    rand( m1+1, m2+1, m3+1 ) + sqrt(-1) .* rand( m1+1, m2+1, m3+1 ) );
+  perturb( 1 : m1, m2+2 : 2*m2+1, 1 : m3+1 ) = coeffTemp .* ( ...
+    rand( m1, m2, m3+1 ) + sqrt(-1) .* rand( m1, m2, m3+1 ) );
+  perturb( m1+2 : 2*m1+1, 1 : m2 , 1 : m3 ) = coeffTemp .* ( ...
+    rand( m1, m2, m3 ) + sqrt(-1) .* rand( m1, m2, m3 ) );
+else
+  perturb( 1 : m1+1, 1 : m2+1, 1 : m3+1 ) = coeff;
+  perturb( m1+1 : 2*m1+1, m2+1 : 2*m2+1, 1 : m3+1 ) = coeff;
+  perturb( 1 : m1, m2+2 : 2*m2+1, 1 : m3+1 ) = coeff;
+  perturb( m1+2 : 2*m1+1, 1 : m2 , 1 : m3 ) = coeff;
 end
+
+% Reflection
+perturb( m1+1 : 2*m1+1, m2+1 : 2*m2+1, m3+1 : 2*m3+1 ) = ...
+  conj(flip(flip(flip( perturb( 1 : m1+1, 1 : m2+1, 1 : m3+1  ),1),2),3) );
+perturb( 1 : m1+1, 1 : m2+1,  m3+1 : 2*m3+1 ) = ...
+  conj(flip(flip(flip( perturb(  m1+1 : 2*m1+1, m2+1 : 2*m2+1, 1 : m3+1 ),1),2),3) ) ;
+perturb( m1+2 : 2*m1+1, 1 : m2,  m3+1 : 2*m3+1 ) = ...
+  conj(flip(flip(flip( perturb(  1 : m1, m2+2 : 2*m2+1, 1 : m3+1  ),1),2),3) );  
+perturb( 1 : m1, m2+2 : 2*m2+1,  m3+2 : 2*m3+1 ) = ...
+  conj(flip(flip(flip( perturb(  m1+2 : 2*m1+1, 1 : m2 , 1 : m3  ),1),2),3) );  
+
+perturb(m1+1,m2+1,m3+1) = 0;
+
+% Add perturbation to rhoFT 
+rhoFT( kx0 - m1 : kx0 + m1, ky0 - m2 : ky0 + m2, km0 - m3 : km0 + m3) = ...
+  rhoFT( kx0 - m1 : kx0 + m1, ky0 - m2 : ky0 + m2, km0 - m3 : km0 + m3) + perturb;
 % Inverse transform and Take real part
 rho = real( ifftn( ifftshift( rhoFT ) ) );
 
+% keyboard
 % Fix negative rho if that happened.
 [rho] = FixNegDenFnc(rho);
 
