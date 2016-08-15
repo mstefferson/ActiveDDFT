@@ -10,7 +10,9 @@ movieSuccess = 0;
 evolvedSucess = 0;
 movStr = '';
 
-try
+try 
+  % Set up denRecObj just in case code doesn't finish
+  denRecObj.didIrun = 0;
   % Move parameter vector to obj
   systemObj.Nx = paramVec(1);
   systemObj.Ny = paramVec(2);
@@ -134,8 +136,7 @@ try
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
   
-  % Set up denRecObj just in case code doesn't finish
-  denRecObj.didIrun = 0;
+
 
   % Save everything before running body of code
   
@@ -313,7 +314,8 @@ try
       % Make matlab movies
       tMovID       = tic;
       % Save Name
-      movStr = sprintf('OPmov%d.%d.avi',runObj.trialID,runObj.runID);
+      movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
+        systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
       % Run function
       OPMovieMakerTgtherDirAvi(movStr,...
         gridObj.x,gridObj.y,gridObj.phi,OPobj,...
@@ -322,7 +324,6 @@ try
       movieSuccess = 1;
       
       % Move it
-      movefile( movStr, dirName  )
       
       movRunTime   = toc(tMovID);
       if flags.Verbose
@@ -355,18 +356,22 @@ try
           runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
           [ 1, nRec ]  );
       end
-      % Plot Amplitudes
-      ampPlotterFT(FTmat2plot, FTind2plot, denRecObj.TimeRecVec, systemObj.Nx, systemObj.Ny,...
-        systemObj.Nm, systemObj.bc,particleObj.vD, runObj.trialID)
+     % Plot Amplitudes
+        ampPlotterFT(FTmat2plot, FTind2plot, OPobj.OpTimeRecVec, kx0, ky0, km0);
       
       % Save it
-      figtl = sprintf('AmpFT_%d_%d',runObj.trialID, runObj.runID);
-      savefig(gcf,figtl)
-      saveas(gcf, figtl,'jpg')
+             % Save it       
+        figtl = sprintf('AmpFT.fig');
+        % savefig doesn't like decimals so save it and rename it.
+        savefig(gcf,figtl)
+        figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
+          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+        movefile(figtl,[figtl2 '.fig'])   
+        saveas(gcf, [figtl2 '.jpg'],'jpg')       
       
       % Move it
-      movefile([figtl '.fig'], dirName  )
-      movefile([figtl '.jpg'], dirName  )
+        movefile([figtl2 '*'], dirName);
+        movefile([movStr '*'], dirName);
       
     end % End if movies
     
@@ -415,7 +420,7 @@ catch err %Catch errors
           dirName =  './runOPfiles';
         end
       end
-      if flags.MakeOP == 1
+      if flags.MakeOP == 1 && flags.SaveMe
         dirName  = filename(1:end-4) ;
         dirPath  = ['./runOPfiles/' dirName ];
         if exist(dirPath,'dir') == 0;
