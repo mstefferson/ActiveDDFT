@@ -5,9 +5,9 @@ Nx = length(x);
 Ny = length(y);
 
 DivNumX = 8;
-DivNumY = 10;
-DeltaX  = floor(Nx / DivNumX );
-DeltaY  = floor(Ny / DivNumY);
+DivNumY = 8;
+DeltaX  = ceil(Nx / DivNumX );
+DeltaY  = ceil(Ny / DivNumY);
 SubIndX = 1:DeltaX:(Nx + 1 - DeltaX);
 SubIndY = 1:DeltaY:(Ny + 1 - DeltaY);
 
@@ -76,8 +76,7 @@ axis square
 xlabel('x'); ylabel('y')
 
 for ii = 1:nFrames
-  
-  
+  try
   subplot(axh1);
   pcolor(axh1,x,y,OP.C_rec(:,:,ii)')
   shading(axh1,'interp');
@@ -99,8 +98,7 @@ for ii = 1:nFrames
     OP.POPy_rec(SubIndX,SubIndY,ii)' ,'color',[1,1,1]);
   hold off
   title(axh2,TitlStr)
-  
-  
+   
   % Distribution
   subplot(axh3);
   plot( axh3, phi, DistRec(:,ii) );
@@ -132,14 +130,9 @@ for ii = 1:nFrames
   
   Fr = getframe(Fig);
   writeVideo(Mov,Fr);
-  
-  %     if ii ~= nFrames
-  %         delete(axh1);
-  %         delete(axh2);
-  %         delete(axh3);
-  %         delete(axh4);
-  %     end
-  
+  catch
+    keyboard
+  end
   
 end %% End frame loop
 

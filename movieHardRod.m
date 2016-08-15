@@ -57,10 +57,10 @@ try
       kx0 = systemObj.Nx / 2 + 1;
       ky0 = systemObj.Ny / 2 + 1;
       km0 = systemObj.Nm / 2 + 1;
-      Nrec = length( OPobj.OpTimeRecVec);
+      nRec = length( OPobj.OpTimeRecVec);
       
       FTind2plot = zeros( 8, 3 );
-      FTmat2plot = zeros( 8, Nrec );
+      FTmat2plot = zeros( 8, nRec );
       
       FTind2plot(1,:) = [kx0     ky0     km0 + 1];
       FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
@@ -72,9 +72,9 @@ try
       FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
       
       for jj = 1:8
-        FTmat2plot(jj,:) =  reshape(...
-          runSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
-          [ 1, Nrec ]  );
+        FTmat2plot(jj,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
+          reshape(runSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
+          [ 1, nRec ]  );
       end
       
       % Plot Amplitudes
