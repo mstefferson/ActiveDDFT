@@ -178,7 +178,8 @@ try
         % Distribution slice
         holdX = systemObj.Nx /2 + 1; % spatial pos placeholders
         holdY = systemObj.Ny /2 + 1; % spatial pos placeholders
-        OpSave.distSlice_rec = reshape( runSave.Den_rec(holdX, holdY, : , :),...
+        OpSave.distSlice_rec = reshape( ...
+          runSave.Den_rec(holdX, holdY, : , 1:length(OpTimeRecVec)),...
           [systemObj.Nm length(OpTimeRecVec)] );
         
         % Now do it for steady state sol

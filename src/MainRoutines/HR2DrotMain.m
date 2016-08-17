@@ -204,20 +204,21 @@ try
     
     if  denRecObj.DidIBreak == 0
       totRec = length( denRecObj.TimeRecVec );
-      timeRecVecTemp = denRecObj.TimeRecVec ;
-      opSave.OpTimeRecVec = timeRecVecTemp;
+      opTimeRecVec = denRecObj.TimeRecVec ;
+      opSave.OpTimeRecVec = opTimeRecVec;
     else %Don't incldue the blowed up denesity for movies. They don't like it.
       totRec = length( denRecObj.TimeRecVec ) - 1;
-      timeRecVecTemp = denRecObj.TimeRecVec(1:end-1) ;
-      opSave.OpTimeRecVec = timeRecVecTemp;
+      opTimeRecVec = denRecObj.TimeRecVec(1:end-1) ;
+      opSave.OpTimeRecVec = opTimeRecVec;
     end
     
     % Set up saving
     % Distribution slice
     holdX = systemObj.Nx /2 + 1; % spatial pos placeholders
     holdY = systemObj.Ny /2 + 1; % spatial pos placeholders
-    opSave.distSlice_rec = reshape( runSave.Den_rec(holdX, holdY, : , :),...
-      [systemObj.Nm length(opSave.OpTimeRecVec)] );
+    opSave.distSlice_rec = reshape( ...
+      runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
+      [systemObj.Nm length(opTimeRecVec)] );
     opSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
@@ -225,6 +226,7 @@ try
     opSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+
     if flags.MakeMovies
       OPobj.C_rec    = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
@@ -233,9 +235,8 @@ try
       OPobj.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.distSlice_rec = reshape( runSave.Den_rec(holdX, holdY, : , :),...
-        [systemObj.Nm totRec ] );
-      OPobj.OpTimeRecVec = timeRecVecTemp;
+      OPobj.distSlice_rec = opSave.distSlice_rec;
+      OPobj.OpTimeRecVec = opTimeRecVec;
     end
     
     % Break it into chunks
@@ -259,7 +260,7 @@ try
       end
       
       [OPObjTemp] = CPNrecMaker(systemObj.Nx,systemObj.Ny,...
-        timeRecVecTemp(Ind), runSave.Den_rec(:,:,:,Ind) ,...
+        opTimeRecVec(Ind), runSave.Den_rec(:,:,:,Ind) ,...
         gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       
       % Save it
@@ -296,7 +297,7 @@ try
       gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     if flags.MakeMovies;
-      OPobj.OpTimeRecVec = timeRecVecTemp;
+      OPobj.OpTimeRecVec = opTimeRecVec;
       OPobj.NOPeq = opSave.NOPeq;
     end
     
@@ -353,11 +354,12 @@ try
       
       for i = 1:8
         FTmat2plot(i,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
-          reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),: ),...
+          reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
           [ 1, nRec ]  );
       end
      % Plot Amplitudes
-        ampPlotterFT(FTmat2plot, FTind2plot, OPobj.OpTimeRecVec, kx0, ky0, km0);
+        ampPlotterFT(FTmat2plot, FTind2plot, ...
+          denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0);
       
       % Save it
              % Save it       
@@ -400,7 +402,7 @@ try
   end
   
 catch err %Catch errors
-  
+  keyboard
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
   runSave.err = err;

@@ -44,6 +44,7 @@ try
       particleObj  = runSave.particleObj;
       systemObj  = runSave.systemObj;
       runObj  = runSave.runObj;
+      denRecObj = runSave.denRecObj;
       
       % Save Name
       movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
@@ -57,7 +58,7 @@ try
       kx0 = systemObj.Nx / 2 + 1;
       ky0 = systemObj.Ny / 2 + 1;
       km0 = systemObj.Nm / 2 + 1;
-      nRec = length( OPobj.OpTimeRecVec);
+      nRec = length(  denRecObj.TimeRecVec );
       
       FTind2plot = zeros( 8, 3 );
       FTmat2plot = zeros( 8, nRec );
@@ -70,15 +71,16 @@ try
       FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
       FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
       FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
-      
+
       for jj = 1:8
         FTmat2plot(jj,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
-          reshape(runSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),: ),...
+          reshape(runSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),1:nRec ),...
           [ 1, nRec ]  );
       end
       
       % Plot Amplitudes
-      ampPlotterFT(FTmat2plot, FTind2plot, OPobj.OpTimeRecVec, kx0, ky0, km0);
+      ampPlotterFT(FTmat2plot, FTind2plot,  denRecObj.TimeRecVec(1:nRec),...
+        kx0, ky0, km0);
       
       % Save it
       figtl = sprintf('AmpFT.fig');
