@@ -2,3 +2,6 @@
 
 rm ./*.txt
 rm ./*.mat
+rm ./*.avi
+rm ./*.jpg
+rm ./*.fig
