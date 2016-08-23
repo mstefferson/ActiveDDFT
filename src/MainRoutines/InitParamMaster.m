@@ -47,8 +47,8 @@ timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording
 timeMaster.t_write    = 0.2;  % time elapsed before writing to file
 timeMaster.t_tot      = 1.0;  % total run time
-timeMaster.ss_epsilon = 1e-3; % steady state condition
-timeMaster.amp_cutoff = 1e-2; % Amplitude cut-off for checking steady state
+timeMaster.ss_epsilon = 0.5 * 10^(-3); % steady state condition
+timeMaster.amp_cutoff = 1e-7; % Amplitude cut-off for checking steady state
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
@@ -115,6 +115,10 @@ end;
 if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 );
   rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 1; 
 end;
+
+% Scale ampcut-off so it's independent of N
+timeMaster.amp_cutoff = timeMaster.amp_cutoff .* ...
+  ( systemMaster.Nx * systemMaster.Ny * systemMaster.Nm);
 
 % Fix Ls if we want the box to be square
 if flagMaster.SquareBox == 1; 
