@@ -11,7 +11,8 @@ N3 = systemObj.Nx * systemObj.Ny * systemObj.Nm;
 % Perturb coeff is the weight times equilbrium
 % concentration. Make sure it isn't too large
 % Find isotropic density
-isoDen = systemObj.numPart / (systemObj.Lphi .* systemObj.Lx .* systemObj.Lx);
+isoDen = systemObj.c / ( systemObj.Lphi);
+
 maxPerturb = isoDen * rhoInit.WeightPert * ...
   (2*rhoInit.NumModesX) * (2*rhoInit.NumModesY) * (2*rhoInit.NumModesM);
 if min(min(min(rho))) < maxPerturb
