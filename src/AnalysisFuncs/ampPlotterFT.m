@@ -1,10 +1,18 @@
-function ampPlotterFT(FTmat2plot, FTind2plot, TimeRec, kx0, ky0, km0)
+function ampPlotterFT(FTmat2plot, FTind2plot, TimeRec, kx0, ky0, km0, maxTime)
 
+  [totMode, ~] = size(FTind2plot);
   figure()
+  plotColumns = 4;
+  plotRows = totMode / plotColumns;
 
-  for i = 1:8
-      subplot(2,4,i)
-      [Ax, ~, ~] = plotyy( TimeRec, real( FTmat2plot(i,:) ) ,TimeRec, imag( FTmat2plot(i,:) ) );
+  for i = 1:totMode
+      subplot(plotRows,plotColumns,i)
+      [Ax, ~, ~] = plotyy( TimeRec, abs( real( FTmat2plot(i,:) ) ), ...
+        TimeRec, abs( imag( FTmat2plot(i,:) ) ) );
+      hold all
+      scatter( [TimeRec(end) ], ...
+        [0 ] );
+      Ax(1).XLim = [0 maxTime];  Ax(2).XLim = [0 maxTime];
       titstr = sprintf('(%d, %d, %d)', ...
           FTind2plot(i,1) - kx0, FTind2plot(i,2) - ky0, FTind2plot(i,3) - km0 );
       title(titstr)

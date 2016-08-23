@@ -10,7 +10,7 @@ movieSuccess = 0;
 evolvedSucess = 0;
 movStr = '';
 
-try 
+try
   % Set up denRecObj just in case code doesn't finish
   denRecObj.didIrun = 0;
   % Move parameter vector to obj
@@ -136,8 +136,8 @@ try
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
   
-
-
+  
+  
   % Save everything before running body of code
   
   if flags.SaveMe
@@ -226,7 +226,7 @@ try
     opSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
     opSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-
+    
     if flags.MakeMovies
       OPobj.C_rec    = zeros(systemObj.Nx, systemObj.Ny, totRec);
       OPobj.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
@@ -340,40 +340,46 @@ try
       km0 = systemObj.Nm / 2 + 1;
       nRec = length( denRecObj.TimeRecVec);
       
-      FTind2plot = zeros( 8, 3 );
-      FTmat2plot = zeros( 8, nRec );
+      totModes   = 12;
+      FTind2plot = zeros( totModes , 3 );
+      FTmat2plot = zeros( totModes , nRec );
       
-      FTind2plot(1,:) = [kx0     ky0     km0 + 1];
-      FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
-      FTind2plot(3,:) = [kx0     ky0 + 1 km0 + 1];
-      FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 + 1];
-      FTind2plot(5,:) = [kx0     ky0     km0 + 2];
-      FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
-      FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
-      FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
+      FTind2plot(1,:) = [kx0     ky0     km0 ];
+      FTind2plot(2,:) = [kx0 + 1 ky0     km0 ];
+      FTind2plot(3,:) = [kx0     ky0 + 1 km0 ];
+      FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 ];
+      FTind2plot(5,:) = [kx0     ky0     km0 + 1];
+      FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 1];
+      FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 1];
+      FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 1];
+      FTind2plot(9,:) = [kx0     ky0     km0 + 2];
+      FTind2plot(10,:) = [kx0 + 1 ky0     km0 + 2];
+      FTind2plot(11,:) = [kx0     ky0 + 1 km0 + 2];
+      FTind2plot(12,:) = [kx0 + 1 ky0 + 1 km0 + 2];
       
-      for i = 1:8
+      % Scale by N so it's N independent
+      for i = 1:totModes 
         FTmat2plot(i,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
           reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
           [ 1, nRec ]  );
       end
-     % Plot Amplitudes
-        ampPlotterFT(FTmat2plot, FTind2plot, ...
-          denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0);
+      % Plot Amplitudes
+      ampPlotterFT(FTmat2plot, FTind2plot, ...
+        denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0, timeObj.t_tot);
       
       % Save it
-             % Save it       
-        figtl = sprintf('AmpFT.fig');
-        % savefig doesn't like decimals so save it and rename it.
-        savefig(gcf,figtl)
-        figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-        movefile(figtl,[figtl2 '.fig'])   
-        saveas(gcf, [figtl2 '.jpg'],'jpg')       
+      % Save it
+      figtl = sprintf('AmpFT.fig');
+      % savefig doesn't like decimals so save it and rename it.
+      savefig(gcf,figtl)
+      figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
+        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+      movefile(figtl,[figtl2 '.fig'])
+      saveas(gcf, [figtl2 '.jpg'],'jpg')
       
       % Move it
-        movefile([figtl2 '*'], dirName);
-        movefile([movStr '*'], dirName);
+      movefile([figtl2 '*'], dirName);
+      movefile([movStr '*'], dirName);
       
     end % End if movies
     
@@ -402,11 +408,11 @@ try
   end
   
 catch err %Catch errors
-  keyboard
+  
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
   runSave.err = err;
-  disp(err);
+  
   
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
