@@ -377,9 +377,17 @@ try
       movefile(figtl,[figtl2 '.fig'])
       saveas(gcf, [figtl2 '.jpg'],'jpg')
       
+      % Plot final slices of final order parameters
+      sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+      
+      sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+        OPobj.NOP_rec(:,:,end), systemObj, ...
+        gridObj, denRecObj.rhoFinal, sliceSaveTag )
       % Move it
       movefile([figtl2 '*'], dirName);
       movefile([movStr '*'], dirName);
+      movefile([sliceSaveTag '*'], dirName);
       
     end % End if movies
     

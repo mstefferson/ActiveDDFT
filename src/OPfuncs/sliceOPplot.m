@@ -3,6 +3,14 @@
 function sliceOPplot( cFinal, poFinal, noFinal, systemObj, ...
   gridObj, rhoFinal, saveTag )
 
+if nargin == 6
+  saveFlag = 0;
+else
+  saveFlag = 1;
+end
+
+varCutoff = 1e-6; % If variance is below this, edits axis;
+axisFactor =  1e3;
 ampFract  = 0.05; % for pos, phi plot
 Nx = systemObj.Nx;
 Ny = systemObj.Ny;
@@ -16,15 +24,17 @@ colVar = std( cFinal( 1, : ) );
 
 % Take slices
 if rowVar >= colVar
+  maxVar = rowVar;
   rows = 1:Nx;
   cols = 1;
   height = 1:Nm;
   NposVar = Nx;
   posVar = x;
+  posVarLab = 'x';
   shiftDim = 1;
   centerPos = Nx / 2;
-  
 else
+  maxVar = colVar;
   rows = 1;
   cols = 1:Ny;
   height = 1:Nm;
@@ -34,6 +44,12 @@ else
   shiftDim = 2;
   centerPos = Ny / 2;
 end
+
+if maxVar < varCutoff
+  aveC    = mean( mean( cFinal ) );
+  deltaC  = aveC / axisFactor;
+end
+
 
 [maxC, maxCind] = max( cFinal( rows,cols ) );
 [maxPO, maxPOind] = max( poFinal( rows,cols ) );
@@ -52,6 +68,10 @@ distroSlice = circshift( distroSlice, centerPos - maxCind, 1);
 maxDist = max(max( distroSlice ) );
 distroSliceChop = distroSlice;
 distroSliceChop( distroSlice >  maxDist * ampFract ) = 0;
+if maxVar < varCutoff
+  aveDistro    = mean( mean( distroSlice ) );
+  deltaDistro  = aveDistro / axisFactor;
+end
 
 % Plot various distros
 deltaCPpeak = abs( maxCind - maxPOind );
@@ -69,6 +89,7 @@ title( 'C' );
 xlabel('x'); ylabel('y');
 Ax = gca;
 Ax.YDir = 'normal';
+if maxVar < varCutoff;  Ax.CLim = [ aveC-deltaC aveC+deltaC]; end;
 
 subplot(1,3,2)
 imagesc( x, y, poFinal' );
@@ -91,9 +112,11 @@ Ax.YDir = 'normal';
 Ax.CLim = [0 1];
 
 % Save it
-tempTag = '_OPsurf';
-savefig( gcf, [saveTag tempTag '.fig'] );
-saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+if saveFlag
+  tempTag = '_OPsurf';
+  savefig( gcf, [saveTag tempTag '.fig'] );
+  saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+end
 
 % Plot a slide through space
 figure()
@@ -103,7 +126,7 @@ plot( posVar, cFinal( rows, cols )./ maxC,...
   posVar, noFinal( rows, cols )./ maxNO );
 xlabel(posVarLab); ylabel('Normalized amp');
 title('Normalized Order Parameters')
-legend('c','po', 'no' )
+legend('C','P', 'N' )
 
 subplot(2,2,2)
 plot( posVar, cFinal( rows, cols ) );
@@ -111,25 +134,28 @@ xlabel(posVarLab); ylabel('C')
 title('C')
 Ax = gca;
 Ax.YDir = 'normal';
+if maxVar < varCutoff;  Ax.YLim = [ aveC-deltaC aveC+deltaC]; end;
 
 subplot(2,2,3)
 plot( posVar, poFinal( rows, cols ) );
-xlabel(posVarLab); ylabel('PO')
-title('PO')
+xlabel(posVarLab); ylabel('P')
+title('Polar Order')
 Ax = gca;
 Ax.YDir = 'normal';
 
 subplot(2,2,4)
 plot( posVar, noFinal( rows, cols ) );
-xlabel(posVarLab); ylabel('NO')
-title('NO')
+xlabel(posVarLab); ylabel('N')
+title('Nematic Order')
 Ax = gca;
 Ax.YDir = 'normal';
 
 % Save it
-tempTag = '_OPslice';
-savefig( gcf, [saveTag tempTag '.fig'] );
-saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+if saveFlag
+  tempTag = '_OPslice';
+  savefig( gcf, [saveTag tempTag '.fig'] );
+  saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+end
 
 % Plot distribution at different positions
 figure()
@@ -142,6 +168,7 @@ title('Distibution sliced through position and angle')
 Ax = gca;
 Ax.YDir = 'normal';
 shading interp;
+if maxVar < varCutoff;  Ax.CLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; end;
 
 subplot(1,2,2)
 pcolor(posVar, phi,distroSliceChop)
@@ -152,15 +179,19 @@ title('Distribution with high ampiltude sliced out')
 Ax = gca;
 Ax.YDir = 'normal';
 shading interp;
+if maxVar < varCutoff;  Ax.CLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; end;
+
 
 % Save it
-tempTag = '_DistroSurf';
-savefig( gcf, [saveTag tempTag '.fig'] );
-saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+if saveFlag
+  tempTag = '_DistroSurf';
+  savefig( gcf, [saveTag tempTag '.fig'] );
+  saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+end
 
 figure()
 counter = 1;
-for ii = 1:length( plotInd )  
+for ii = 1:length( plotInd )
   if plotInd(ii) ~= centerPos
     subplot( 2,2, counter )
     plot( phi,  distroSlice( plotInd(ii), : ), ...
@@ -170,14 +201,18 @@ for ii = 1:length( plotInd )
       deltaCPpeak ./ NposVar );
     title(titStr)
     xlabel('\phi'); ylabel('f(\phi)')
-    
+    if maxVar < varCutoff; ...
+        Ax.YLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; 
+    end
     deltaStr = sprintf( 'Cmax + (%.1f) ', deltaInd(ii) ./ NposVar );
     legend( deltaStr, 'C max' );
-  end  
+  end
 end
 
 % Save it
-tempTag = '_DistroSlices';
-savefig( gcf, [saveTag tempTag '.fig'] );
-saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+if saveFlag
+  tempTag = '_DistroSlices';
+  savefig( gcf, [saveTag tempTag '.fig'] );
+  saveas( gcf, [saveTag tempTag '.jpg'], 'jpg')
+end
 

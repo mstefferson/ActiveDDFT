@@ -45,6 +45,7 @@ try
       systemObj  = runSave.systemObj;
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
+      timeObj =  runSave.timeObj;
       
       % Save Name
       movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
@@ -58,30 +59,35 @@ try
       kx0 = systemObj.Nx / 2 + 1;
       ky0 = systemObj.Ny / 2 + 1;
       km0 = systemObj.Nm / 2 + 1;
-      nRec = length(  denRecObj.TimeRecVec );
+      nRec = length( denRecObj.TimeRecVec);
       
-      FTind2plot = zeros( 8, 3 );
-      FTmat2plot = zeros( 8, nRec );
+      totModes   = 12;
+      FTind2plot = zeros( totModes , 3 );
+      FTmat2plot = zeros( totModes , nRec );
       
-      FTind2plot(1,:) = [kx0     ky0     km0 + 1];
-      FTind2plot(2,:) = [kx0 + 1 ky0     km0 + 1];
-      FTind2plot(3,:) = [kx0     ky0 + 1 km0 + 1];
-      FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 + 1];
-      FTind2plot(5,:) = [kx0     ky0     km0 + 2];
-      FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 2];
-      FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 2];
-      FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 2];
-
-      for jj = 1:8
-        FTmat2plot(jj,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
-          reshape(runSave.DenFT_rec( FTind2plot(jj,1), FTind2plot(jj,2), FTind2plot(jj,3),1:nRec ),...
+      FTind2plot(1,:) = [kx0     ky0     km0 ];
+      FTind2plot(2,:) = [kx0 + 1 ky0     km0 ];
+      FTind2plot(3,:) = [kx0     ky0 + 1 km0 ];
+      FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 ];
+      FTind2plot(5,:) = [kx0     ky0     km0 + 1];
+      FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 1];
+      FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 1];
+      FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 1];
+      FTind2plot(9,:) = [kx0     ky0     km0 + 2];
+      FTind2plot(10,:) = [kx0 + 1 ky0     km0 + 2];
+      FTind2plot(11,:) = [kx0     ky0 + 1 km0 + 2];
+      FTind2plot(12,:) = [kx0 + 1 ky0 + 1 km0 + 2];
+      
+      % Scale by N so it's N independent
+      for i = 1:totModes 
+        FTmat2plot(i,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
+          reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
           [ 1, nRec ]  );
       end
-      
       % Plot Amplitudes
-      ampPlotterFT(FTmat2plot, FTind2plot,  denRecObj.TimeRecVec(1:nRec),...
-        kx0, ky0, km0);
-      
+      ampPlotterFT(FTmat2plot, FTind2plot, ...
+        denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0, timeObj.t_tot);
+     
       % Save it
       figtl = sprintf('AmpFT.fig');
       % savefig doesn't like decimals so save it and rename it.
@@ -91,9 +97,18 @@ try
       movefile(figtl,[figtl2 '.fig'])
       saveas(gcf, [figtl2 '.jpg'],'jpg')
       
+      % Plot final slices of final order parameters
+      sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+      
+      sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+        OPobj.NOP_rec(:,:,end), systemObj, ...
+        gridObj, denRecObj.rhoFinal, sliceSaveTag )
+      
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);
       movefile([figtl2 '*'], dirFullPath);
+      movefile([sliceSaveTag '*'], dirFullPath);
       % move directory
       movefile(dirFullPath, ['./analyzedfiles/' dirTemp ] )
       
