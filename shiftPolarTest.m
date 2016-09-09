@@ -1,5 +1,13 @@
-% 1D example
+% Add Subroutine path
+currentDir = pwd;
+addpath( genpath( [currentDir '/src'] ) );
 
+run1D = 0;
+run2D = 0;
+run3D = 1;
+
+if run1D
+% 1D example
 Nm  = 32;
 dphi = 2 * pi / Nm;
 
@@ -13,11 +21,10 @@ f =  1 ./ normTemp .* f;
 
 % perturbation
 pAmp = 1 / (2*pi);
-pVar = 2 * pi / 2;
+pVar = 2 * pi / 4;
 
 % p = aphi .* cos(phi);
 [~, maxfInd] = max( f );
-
 p =  gaussShift( phi, pAmp, pVar, phi( maxfInd ) );
 
 % New distro
@@ -33,192 +40,302 @@ figure()
 plot( phi, f, phi, p, phi, gNoSpat )
 
 legend( 'original', 'perturbation', 'final')
+end
 
-%% 2D example
+%% 2D example'
+
+if run2D
+
+% Parameters
+Nx  = 24;
+Nm  = 24;
+Lx  = 1;
+spatC = 2;
+
+%Perturbation parameters
+aXf = 0.5; % factor of ampitude you want pert to be
+aPhif = 0.5; % factor of ampitude you want pert to be
+varX = Lx / 4;
+varPhi = 2 * pi / 4;
+centerX = Lx / 2;
 
 % grid stuff
-c   = 2;
-Nx  = 24;
-Lx  = 1;
-Nm  = 24;
 dphi = 2 * pi / Nm;
 dx = Lx / Nx;
-
-% perturbation
-pAmpPhi = 1 / (2*pi); % amptiude of gaussian for phi as function of x
-pVarPhi = Lx / 2;  % variance of amps in pos
-pVar = 2 * pi / 4;
 phi = 0 : dphi : 2*pi - dphi;
 x = 0 : dx : Lx - dx;
 
-% [phi2, x2] = meshgrid( phi,x );
-
 % 1D distro
+isoC = 1 / (2 .* pi);
 f = 1 + cos( 2 .* phi );
 normTemp = trapz_periodic( phi, f );
 f =  1 ./ normTemp .* f;
+%Perturbation parameters
+aX = aXf .* spatC;
+aPhi   = aPhif .* isoC; 
+centerPhi = phi( f == max(f) );
+if length(centerPhi) > 1; centerPhi = centerPhi(1); end;
+
+% Build 2D
 f = repmat( f, [Nx,1] );
+rho = spatC .* f;
 
-rho = c .* f;
+% build perturbations
+pX = gaussShift( x, aX, varX , centerX); % amp(x)
+pX2 = repmat( pX', [1, Nm] );
+pPhi = gaussShift( phi, aPhi, varPhi, centerPhi ); % amp(x)
+pPhi2 = repmat( pPhi, [Nx, 1] );
 
-% perturbation
+pPolarAll    = pPhi2;
+pPolarStripe = pX2 .* pPhi2;
 
-
-% ampitude for gaussian that changes vs position
-aX  =  gaussShift( x, pAmpPhi, Lx / 2, pVarPhi ); % amp(x)
-% p2 = zeros(Nx,Nm);
-
-[~, maxfInd] = max( rho(1,:) );
-p = gaussShift( phi, 1, pVar, phi( maxfInd ) );
-
-p2 = repmat( p, [Nx, 1] );
-
-aX2 =  repmat( aX', [1 Nm] );
-
-gNoSpat =rho + aX2 .* p2;
-
-% 
-% % homogenous
-% for ii = 1:Nx
-%   [~, maxfInd] = max( rho(ii,:) );
-%   p2( ii, : ) = gaussShift( phi, aX(ii), pVar, phi( maxfInd ) );
-%   gNoSpat( ii, : ) = p2( ii, : ) + rho( ii,: );
-%   
-%   normTemp = trapz_periodic( phi, gNoSpat( ii, : ) );
-%   gNoSpat( ii, : ) = normTemp ./ c .* gNoSpat( ii, : ) ;
-% end
-
-gNoSpat = p2 + rho;
-gmin = min( min(gNoSpat) );
-
-if gmin < 0
-  gNoSpat = gNoSpat - gmin;
+% Homogenous polar everywhere
+gHomPAll = rho + pPolarAll;
+minG = min( min( gHomPAll ) );
+if minG < 0;
+  gHomPAll = gHomPAll - minG;
 end
+normTemp = trapz_periodic( x, trapz_periodic( phi, gHomPAll, 2 ) );
+gHomPAll = spatC ./ normTemp .* gHomPAll;
 
-normTemp = trapz_periodic( x, trapz_periodic( phi, gNoSpat, 2 ), 1 );
-gNoSpat =  c  ./ normTemp .* gNoSpat;
+% Homogenous polar stripe
+gHomPStr = rho + pPolarStripe;
+minG = min( min( gHomPStr ) );
+if minG < 0;
+  gHomPStr = gHomPStr - minG;
+end
+% Normalize the concentration
+normVec = trapz_periodic( phi, gHomPStr, 2 );
+normRep = repmat( normVec, [1, Nm ] );
+gHomPStr = spatC ./ normRep .* gHomPStr;
+
+% InHomogenous polar stripe
+gInhomPStr = rho + pPolarStripe;
+minG = min( min( gInhomPStr ) );
+if minG < 0;
+  gInhomPStr = gInhomPStr - minG;
+end
+% Normalize the concentration
+normTemp = trapz_periodic( x, trapz_periodic( phi, gInhomPStr, 2 ), 1 );
+gInhomPStr = spatC ./ normTemp .* gInhomPStr;
+% % homogenous
 
 figure()
-subplot(1,3,1)
+subplot(2,3,1)
 imagesc( x, phi, rho')
 xlabel('x'); ylabel( 'phi');
 title( 'orig' )
 colorbar
 axis square
 
-subplot(1,3,2)
-imagesc( x, phi, gNoSpat')
+subplot(2,3,2)
+imagesc( x, phi, gHomPAll')
 xlabel('x'); ylabel( 'phi');
-title('no conc variance')
+title('Polar everywhere')
 colorbar
 axis square
 
-% subplot(2,2,3)
-% imagesc( x, phi, ax')
-% xlabel('x'); ylabel( 'phi');
-% title('spatial slope')
-% colorbar
-% axis square
-% 
-% subplot(2,2,4)
-% imagesc( x, phi, p')
-% xlabel('x'); ylabel( 'phi');
-% title('pert')
-% colorbar
-% axis square
+subplot(2,3,3)
+imagesc( x, phi, gHomPStr')
+xlabel('x'); ylabel( 'phi');
+title('Homogenous Stripe')
+colorbar
+axis square
 
-legend( 'original', 'perturbation', 'final')
+subplot(2,3,4)
+imagesc( x, phi, gInhomPStr')
+xlabel('x'); ylabel( 'phi');
+title('Inhomogenous Stripe')
+colorbar
+axis square
 
+
+subplot(2,3,5)
+imagesc( x, phi, pPolarAll')
+xlabel('x'); ylabel( 'phi');
+title('Polar All pert')
+colorbar
+axis square
+
+subplot(2,3,6)
+imagesc( x, phi, pPolarStripe')
+xlabel('x'); ylabel( 'phi');
+title('Inhom Stripe perturb')
+colorbar
+axis square
+
+%%
+figure()
+plot( phi, gHomPAll( 1, : ), phi, gHomPAll( Nx/4, : ), phi, gHomPAll( Nx/2, : ) )
+title('gHomPolarAll')
+
+figure()
+plot( phi, gHomPStr( 1, : ), phi, gHomPStr( Nx/4, : ), phi, gHomPStr( Nx/2, : ) )
+title('gHom Stripe')
+%%
+end
 %% 3D
-normTot = 2;
+if run3D
+% Parameters
 Nx  = 24;
-Lx  = 1;
+Ny  = 24;
 Nm  = 24;
+Lx  = 1;
+Ly  = 1;
+spatC = 2;
+
+%Perturbation parameters
+aXf = 0.5; % factor of ampitude you want pert to be
+aYf = 0.5;
+aPhif = 0.5; % factor of ampitude you want pert to be
+varX = Lx / 4;
+varY = Ly / 4;
+centerX = Lx / 2;
+centerY = Ly / 2;
+varPhi = 2 * pi / 4;
+
+% grid stuff
 dphi = 2 * pi / Nm;
-dx = Lx / Nx;
-
 phi = 0 : dphi : 2*pi - dphi;
+dx = Lx / Nx;
 x = 0 : dx : Lx - dx;
-
-[phi2, x2] = meshgrid( phi,x );
+dy = Ly / Ny;
+y = 0 : dy : Ly - dy;
 
 % 1D distro
+isoC = 1 / (2 .* pi);
 f = 1 + cos( 2 .* phi );
 normTemp = trapz_periodic( phi, f );
 f =  1 ./ normTemp .* f;
-f = repmat( f, [Nx,1] );
+%Perturbation parameters
+aX = aXf .* spatC;
+aY = aYf .* spatC;
+aPhi   = aPhif .* isoC; 
+centerPhi = phi( f == max(f) );
+if length(centerPhi) > 1; centerPhi = centerPhi(1); end;
 
-% perturbation
-aphi = 1 / (2*pi);
-aspat = 1/ (2*pi);
-ax = -aphi .* x2  .* (x2 -Lx) ;
+% Build 2D
+f = repmat( reshape(f, [1,1,Nm] ), [Nx,Ny,1] );
+rho = spatC .* f;
 
-pnospat = ax .* cos(phi2);
-gVar = Lx/4;
-pSpat = ax .* cos(phi2) + aspat .* exp( - ( x2 - Lx/2 ) .^ 2  ./ ( 2 * gVar .^2 )  );
-pNoSpat = ax .* cos(phi2);
+% build perturbations
+pX = gaussShift( x, aX, varX , centerX); % amp(x)
+pX3 = repmat( pX', [1, Ny, Nm] );
+pY = gaussShift( y, aY, varY , centerY); % amp(x)
+pY3 = repmat( pY, [Nx, 1, Nm] );
+pPhi = gaussShift( phi, aPhi, varPhi, centerPhi ); % amp(x)
+pPhi3 = repmat( reshape( pPhi, [1, 1, Nm] ), [Nx, Ny, 1] );
 
-gNoSpat = f + pNoSpat ;
-gSpat = f + pSpat;
+pPolarAll    = pPhi3;
+pPolarStripe = pX3 .* pPhi3;
+pPolarBall = pX3 .* pY3 .* pPhi3;
 
-% Fix negatives
-gmin = min( min(gNoSpat) );
-if gmin < 0
-  gNoSpat = gNoSpat - gmin;
+% Homogenous polar everywhere
+gHomPAll = rho + pPolarAll;
+minG = min( min( min( gHomPAll ) ) );
+if minG < 0;
+  gHomPAll = gHomPAll - minG;
 end
+normTemp = trapz_periodic( x , trapz_periodic( y, trapz_periodic( phi, gHomPAll, 3 ), 2 ), 1 );
+gHomPAll = spatC ./ normTemp .* gHomPAll;
 
-gmin = min( min(gSpat) );
-if gmin < 0
-  gSpat = gSpat - gmin;
+% Homogenous polar stripe
+gHomPStr = rho + pPolarStripe;
+minG = min( min( min( gHomPStr ) ) );
+if minG < 0;
+  gHomPStr = gHomPStr - minG;
 end
+% Normalize the concentration
+normSqr = trapz_periodic( phi, gHomPStr, 3 );
+normRep = repmat( normSqr, [1, 1, Nm ] );
+gHomPStr = spatC ./ normRep .* gHomPStr;
 
-% g inhomogenous (in x)
-normTemp = trapz_periodic( trapz_periodic( phi, gSpat, 2 ), 1 );
-ginhom =  normTot  ./ normTemp .* gSpat;
-normTemp = trapz_periodic( phi, ginhom, 2 );
-
-% g homogenous (in x)
-ghom = gSpat;
-normTemp = trapz_periodic( phi, gSpat, 2 );
-
-for ii = 1:Nx
-  ghom(ii,:) =  normTot  ./ normTemp(ii) .* gSpat(ii,:);
+% InHomogenous polar stripe
+gInhomPStr = rho + pPolarStripe;
+minG = min ( min( min( gInhomPStr ) ) );
+if minG < 0;
+  gInhomPStr = gInhomPStr - minG;
 end
+% Normalize the concentration
+normTemp = trapz_periodic( x , trapz_periodic( ...
+  y, trapz_periodic( phi, gInhomPStr, 3 ), 2 ), 1 );
+gInhomPStr = spatC ./ normTemp .* gInhomPStr;
 
-normTemp = trapz_periodic( phi, ghom, 2 );
+% Homogenous polar ball
+gHomPBall = rho + pPolarBall;
+minG = min( min( min( gHomPBall ) ) );
+if minG < 0;
+  gHomPBall = gHomPBall - minG;
+end
+% Normalize the concentration
+normSqr = trapz_periodic( phi, gHomPBall, 3 );
+normRep = repmat( normSqr, [1, 1, Nm ] );
+gHomPBall = spatC ./ normRep .* gHomPBall;
+
+% InHomogenous polar ball
+gInhomPBall = rho + pPolarBall;
+minG = min ( min( min( gInhomPBall ) ) );
+if minG < 0;
+  gInhomPBall = gInhomPBall - minG;
+end
+% Normalize the concentration
+normTemp = trapz_periodic( x , trapz_periodic( ...
+  y, trapz_periodic( phi, gInhomPBall, 3 ), 2 ), 1 );
+gInhomPBall = spatC ./ normTemp .* gInhomPBall;
+
+
+%% figures
+gHomPAll; gHomPStr; gInhomPStr; gHomPBall; gInhomPBall; 
+gTemp = gInhomPBall;
+gStr = 'inhomo polar ball';
+
+[~,~,phi3D] = meshgrid(phi);
+cosPhi3d = cos(phi3D);
+sinPhi3d = sin(phi3D);
+cos2Phi3d = cosPhi3d .^ 2;
+sin2Phi3d = sinPhi3d .^ 2;
+cossinPhi3d = cosPhi3d .* sinPhi3d;
+
+[C,PO,~,~,NO,~,~] = OpCPNCalc(Nx,Ny,gTemp,...
+phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
+
 
 figure()
 subplot(2,2,1)
-imagesc( x, phi, f')
-xlabel('x'); ylabel( 'phi');
-title( 'orig' )
+imagesc( x, y, C')
+xlabel('x'); ylabel( 'y');
+title( 'C' )
 colorbar
 axis square
 
 subplot(2,2,2)
-imagesc( x, phi, gNoSpat')
-xlabel('x'); ylabel( 'phi');
-title('final no norm')
+imagesc( x, y, PO')
+xlabel('x'); ylabel( 'y')
+title('PO')
+ax = gca;
+ax.CLim = [0 max(max( PO ) ) ];
 colorbar
 axis square
 
+
 subplot(2,2,3)
-imagesc( x, phi, ginhom')
-xlabel('x'); ylabel( 'phi');
-title('inhom')
+imagesc( x, y, NO')
+xlabel('x'); ylabel( 'y');
+ax = gca;
+ax.CLim = [0 max(max( NO ) ) ];
+title('NO')
 colorbar
 axis square
 
 subplot(2,2,4)
-imagesc( x, phi, ghom')
-xlabel('x'); ylabel( 'phi');
-title('hom')
-colorbar
+plot( phi, reshape( gTemp( 1, 1, : ), [Nm, 1] ), ...
+  phi, reshape( gTemp( 1, Ny/2, : ), [Nm, 1] ), ...
+  phi, reshape( gTemp( Nx/2, 1, : ), [Nm, 1] ), ...
+  phi, reshape( gTemp( Nx/2, Ny/2, : ), [Nm, 1] ) )
+xlabel('phi'); ylabel( 'distro');
+title( gStr );
+legend( ' (1,1) ', ' (1,Ny/2) ', ' Nx/2,1 ', ' Nx/2, Ny/2 ' );
 axis square
 
-legend( 'original', 'perturbation', 'final')
-
-%% 3D
-
-% Guassian maker with center as input
-
+ 
+end
