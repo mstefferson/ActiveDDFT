@@ -60,9 +60,9 @@ xlabel('x'); ylabel('y')
 for ii = 1:nFrames
     
     %     set(axh1,'position',axpos1,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbar
-    pcolor(axh1,gridObj.x,gridObj.y,OrderParamObj.C_rec(:,:,ii)')
+    pcolor(axh1,gridObj.x,gridObj.y,OrderParamObj.C_rec(:,:,ii)' ./ pi)
     shading(axh1,'interp');
-    TitlStr = sprintf('Concentration t = %.2f', OrderParamObj.TimeRec(ii));
+    TitlStr = sprintf('Scaled Concentration (bc) t = %.2f', OrderParamObj.TimeRec(ii));
     title(axh1,TitlStr)
     
     % Polar order

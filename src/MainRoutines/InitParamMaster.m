@@ -168,8 +168,7 @@ end
 particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded volume per particle
 particleMaster.mobPos = particleMaster.mob;
 
-% Turn movies off is Save is off
-if flagMaster.SaveMe == 0; flagMaster.MakeOP = 0; flagMaster.MakeMovies = 0;end
+% Make OP if making movies 
 if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
 if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
 

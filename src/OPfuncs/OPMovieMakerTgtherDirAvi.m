@@ -41,7 +41,7 @@ colorbar('peer',axh1)
 axpos1 = get(axh1,'position'); % Save the position as ax
 set(axh1,'NextPlot','replaceChildren',...
   'CLim',...
-  [min(min(min(OP.C_rec))) max(max(max(OP.C_rec)))],...
+   1 /pi * [min(min(min(OP.C_rec ))) max(max(max(OP.C_rec)))],...
   'YDir','normal');
 axis square
 set(axh1,'position',axpos1,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbar
@@ -91,9 +91,9 @@ try
     
     % Concentration
     subplot(axh1);
-    pcolor(axh1,x,y,OP.C_rec(:,:,ii)')
+    pcolor(axh1,x,y,OP.C_rec(:,:,ii)' ./ pi)
     shading(axh1,'interp');
-    TitlStr = sprintf('Concentration t = %.2f', TimeRec(ii));
+    TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
     title(axh1,TitlStr)
     drawnow;
     pause(0.001);    
