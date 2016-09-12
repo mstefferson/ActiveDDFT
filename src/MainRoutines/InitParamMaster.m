@@ -62,6 +62,19 @@ rhoInitMaster.LoadName  = ''; % File name to load if IC 3
 rhoInitMaster.WeightPert = 1e-3;
 rhoInitMaster.RandomAmp = 1;       % Random perturbation coeffs
 
+% Gaussian perturbation 
+%phi
+rhoInitMaster.aPhif = 0; % Gauss amp in phi fraction of concentration
+rhoInitMaster.varPhi = 0; % Variance of gaussian in phi
+%x
+rhoInitMaster.aXf = 0; % Gauss amp in x as fraction of concentration
+rhoInitMaster.varX  = 0; % Variance of gaussian in x
+rhoInitMaster.centerX = 0; % Center of gaussian in x
+%y
+rhoInitMaster.aYf = 0; % Gauss amp in x as fraction of concentration
+rhoInitMaster.varY  = 0; % Variance of gaussian in x
+rhoInitMaster.centerY = 0; % Center of gaussian in x
+
 % Key
 % The number of k-modes above and below k = 0 added as a perturbation
 % Type of Inital Condition
@@ -69,9 +82,8 @@ rhoInitMaster.RandomAmp = 1;       % Random perturbation coeffs
 % 1: Plane wave perturbation over the equilibrium distribution
 % 2: Plane wave perturbation over a nematic distribution
 % 3: Load an equilbrium distribution
-% 4: Seperate plane waves over an isotropic distribution (non-sensical)
-% 5: Seperate plane waves over an nematic distribution (non-sensical)
-% 6: A gaussian initial condition
+% 4: Gaussian perturbations with homogenous concentration 
+% 5: Gaussian perturbations with inhomogenous concentration 
 
 % Calculated stuff- fix times, etc.
 % Change odd gridspacings to even unless it's one. 
@@ -114,6 +126,23 @@ if( rhoInitMaster.NumModesY >= systemMaster.Ny / 2 );
 end;
 if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 );
   rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 1; 
+end;
+
+%  Make sure variance isn't zero if doing polar
+if rhoInitMaster.varX ~= 0; 
+  if varX == 0;
+    rhoInitMaster.varX = systemMaster.Lx/2; 
+  end;
+end;
+if rhoInitMaster.varY ~= 0; 
+  if varY == 0;
+    rhoInitMaster.varY = systemMaster.Ly/2; 
+  end;
+end;
+if rhoInitMaster.varPhi ~= 0; 
+  if varPhi == 0;
+    rhoInitMaster.varPhi = systemMaster.Lphi/2; 
+  end;
 end;
 
 % Scale ampcut-off so it's independent of N

@@ -124,9 +124,8 @@ try
     rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
   end
   % Build initial density
-  [rho] = MakeConc(systemObj,rhoInit,...
-    gridObj.x,gridObj.y,gridObj.phi);
-  
+  [rho] = MakeConc(systemObj,rhoInit,gridObj);
+
   intDenRunTime = toc(tIntDenID);
   
   if flags.Verbose
@@ -135,8 +134,6 @@ try
   end
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
-  
-  
   
   % Save everything before running body of code
   
@@ -258,7 +255,7 @@ try
           Ind = (i-1) * sizeChunk:totRec;
         end
       end
-      
+
       [OPObjTemp] = CPNrecMaker(systemObj.Nx,systemObj.Ny,...
         opTimeRecVec(Ind), runSave.Den_rec(:,:,:,Ind) ,...
         gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
@@ -380,10 +377,17 @@ try
       % Plot final slices of final order parameters
       sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-      
-      sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
-        OPobj.NOP_rec(:,:,end), systemObj, ...
-        gridObj, denRecObj.rhoFinal, sliceSaveTag )
+
+      if denRecObj.DidIBreak == 0
+        sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+          OPobj.NOP_rec(:,:,end), systemObj, ...
+          gridObj, denRecObj.rhoFinal, sliceSaveTag )
+      else
+        stepsNb = length(OPobj.OpTimeRecVec);
+        sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+          OPobj.NOP_rec(:,:,end), systemObj, ...
+          gridObj, runSave.Den_rec( :,:,:, stepsNb), sliceSaveTag );
+      end
       % Move it
       movefile([figtl2 '*'], dirName);
       movefile([movStr '*'], dirName);
