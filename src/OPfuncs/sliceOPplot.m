@@ -62,7 +62,7 @@ noFinal = circshift( noFinal, centerPos - maxCind, shiftDim  );
 
 % distro slice
 distroSlice = ...
-  reshape( rhoFinal( rows, cols, height ), [Nx Nm] );
+  reshape( rhoFinal( rows, cols, height ), [NposVar Nm] );
 % Shift it
 distroSlice = circshift( distroSlice, centerPos - maxCind, 1);
 maxDist = max(max( distroSlice ) );
@@ -73,11 +73,11 @@ if maxVar < varCutoff
   deltaDistro  = aveDistro / axisFactor;
 end
 
-% Plot various distros
+% Plot various tros
 deltaCPpeak = abs( maxCind - maxPOind );
 deltaInd = ...
   [-2*deltaCPpeak  -deltaCPpeak 0 deltaCPpeak 2*deltaCPpeak];
-plotInd = mod( centerPos + deltaInd -1 , Nm ) + 1;
+plotInd = mod( centerPos + deltaInd -1 , NposVar ) + 1;
 
 % Plot OPs
 figure()
@@ -160,10 +160,10 @@ end
 % Plot distribution at different positions
 figure()
 subplot(1,2,1)
-pcolor(posVar, phi,distroSlice)
+pcolor(posVar, phi,distroSlice')
 axis square
 colorbar
-xlabel('\phi'); ylabel(posVarLab);
+xlabel(posVarLab); ylabel('\phi');
 title('Distibution sliced through position and angle')
 Ax = gca;
 Ax.YDir = 'normal';
@@ -171,10 +171,10 @@ shading interp;
 if maxVar < varCutoff;  Ax.CLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; end;
 
 subplot(1,2,2)
-pcolor(posVar, phi,distroSliceChop)
+pcolor(posVar, phi,distroSliceChop')
 axis square
 colorbar
-xlabel('\phi'); ylabel(posVarLab);
+xlabel(posVarLab); ylabel('\phi');
 title('Distribution with high ampiltude sliced out')
 Ax = gca;
 Ax.YDir = 'normal';

@@ -100,15 +100,22 @@ try
       % Plot final slices of final order parameters
       sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-      
+
       sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
         OPobj.NOP_rec(:,:,end), systemObj, ...
         gridObj, denRecObj.rhoFinal, sliceSaveTag )
+
+      % Plot max order parameters vs time
+      maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+      plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
+        OPobj.OpTimeRecVec, maxSaveTag );
       
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);
       movefile([figtl2 '*'], dirFullPath);
       movefile([sliceSaveTag '*'], dirFullPath);
+      movefile([maxSaveTag '*'], dirFullPath);
       % move directory
       movefile(dirFullPath, ['./analyzedfiles/' dirTemp ] )
       

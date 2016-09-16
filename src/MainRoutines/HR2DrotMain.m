@@ -388,10 +388,16 @@ try
           OPobj.NOP_rec(:,:,end), systemObj, ...
           gridObj, runSave.Den_rec( :,:,:, stepsNb), sliceSaveTag );
       end
+      % Plot max order parameters vs time
+      maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+      plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
+        OPobj.OpTimeRecVec, maxSaveTag );
       % Move it
       movefile([figtl2 '*'], dirName);
       movefile([movStr '*'], dirName);
       movefile([sliceSaveTag '*'], dirName);
+      movefile([maxSaveTag '*'], dirName);
       
     end % End if movies
     
