@@ -188,6 +188,7 @@ try
     % Set up saving
     paramSave.flags = flags;
     paramSave.particleObj = particleObj;
+    paramSave.rhoInit = rhoInit;
     paramSave.systemObj = systemObj;
     paramSave.timeObj = timeObj;
     paramSave.denRecObj = runSave.denRecObj;
