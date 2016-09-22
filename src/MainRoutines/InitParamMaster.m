@@ -12,6 +12,7 @@ flagMaster.MakeOP       = 1; % No OPs if save is zero
 flagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
 flagMaster.SquareBox    = 0; % Forces box to be square
 flagMaster.StepMeth     = [0]; % Stepping (integrating) method (vec)
+flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 
 %%%%%% Parameters %%%%%%%%%%%%%%%%%

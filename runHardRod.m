@@ -39,6 +39,14 @@ else
   fprintf('Isotropic Hard Rod \n')
 end
 
+% Scramble seed if you want
+if flags.rndStrtUpSeed
+  rng('shuffle');
+  fprintf('Shuffling startup seed\n')
+else
+  fprintf('Using MATLABs original seed\n');
+end
+
 % Fix the time
 fprintf('Making time obj\n');
 [timeObj]= ...
