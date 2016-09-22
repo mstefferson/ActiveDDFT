@@ -125,7 +125,6 @@ try
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);
-
   intDenRunTime = toc(tIntDenID);
   
   if flags.Verbose
@@ -190,6 +189,7 @@ try
     paramSave.particleObj = particleObj;
     paramSave.rhoInit = rhoInit;
     paramSave.systemObj = systemObj;
+    paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
     paramSave.denRecObj = runSave.denRecObj;
     

@@ -13,12 +13,11 @@ try
   if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end;
   
   % see how many dirs to analyze
-  dir2Analyze = dir( './runOPfiles');
-  numDirs = length(dir2Analyze) - 2;
+  dir2Analyze = dir( './runOPfiles/*Ani*');
+  numDirs = length(dir2Analyze);
   
   if numDirs
     fprintf('Making movies for %d dirs \n', numDirs);
-    dir2Analyze = dir2Analyze(3:end);
     for ii = 1:numDirs
       % move into a dir
       dirTemp = dir2Analyze(ii).name;

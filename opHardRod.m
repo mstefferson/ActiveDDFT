@@ -55,8 +55,9 @@ try
       flags  = runSave.flags;
       rhoInit  = runSave.rhoInit;
       gridObj  = runSave.gridObj;
+      runObj  = runSave.runObj;
       Nx = systemObj.Nx; Ny = systemObj.Ny; Nm = systemObj.Nm;
-      
+
       % Build phi3D once
       [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
       cosPhi3d = cos(phi3D);
@@ -75,8 +76,14 @@ try
       
       dirName  = ['./runOPfiles/' dirName ];
       
-      if exist(dirName ,'dir') == 0;
+     if exist(dirName ,'dir') == 0;
         mkdir(dirName);
+      end
+      
+      % Old files don't have denRecObj.didIrun. Assume it did for now
+      if isfield(denRecObj, 'didIrun' ) == 0
+        denRecObj.didIrun = 1;
+        runSave.denRecObj = denRecObj;
       end
       
       if denRecObj.didIrun == 0
@@ -118,10 +125,11 @@ try
       % Set up saving
       paramSave.flags = flags;
       paramSave.particleObj = particleObj;
-      haramSave.rhoInit = rhoInit;
+      paramSave.rhoInit = rhoInit;
       paramSave.systemObj = systemObj;
       paramSave.timeObj = timeObj;
       paramSave.denRecObj = runSave.denRecObj;
+      paramSave.runObj = runObj;
       
       OpSave.C_rec    = zeros(Nx, Ny, 2);
       OpSave.POP_rec  = zeros(Nx, Ny, 2);
