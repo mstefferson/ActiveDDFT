@@ -109,7 +109,7 @@ try
     hold on
     quiver(axh2,x(SubIndX),y(SubIndY),...
       polarTempX(:,:,ii)',...
-      polarTempY(:,:,ii), 0,'color',[1,1,1]);
+      polarTempY(:,:,ii)', 0,'color',[1,1,1]);
     hold off
     title(axh2,TitlStr)
     drawnow;
