@@ -46,9 +46,9 @@ dt = timeObj.dt;
 rho_FT = fftshift(fftn(rho));
 rhoVec_FT = reshape(rho_FT,N3,1);
 if Nm == 1
-  constConc = rho_FT( Nx/2 + 1, Nx/2 + 1);
+  constConc = rho_FT( Nx/2 + 1, Ny/2 + 1);
 else
-  constConc = rho_FT( Nx/2 + 1, Nx/2 + 1, Nm/2 + 1);
+  constConc = rho_FT( Nx/2 + 1, Ny/2 + 1, Nm/2 + 1);
 end
 
 %Initialize matrices that change size the +1 is to include initial density
