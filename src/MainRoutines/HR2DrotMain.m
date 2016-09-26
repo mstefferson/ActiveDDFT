@@ -193,7 +193,7 @@ try
     paramSave.timeObj = timeObj;
     paramSave.denRecObj = runSave.denRecObj;
     
-    [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
+    [~,~,phi3D] = meshgrid(gridObj.y,gridObj.x,gridObj.phi);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;

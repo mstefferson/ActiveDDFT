@@ -59,7 +59,7 @@ try
       Nx = systemObj.Nx; Ny = systemObj.Ny; Nm = systemObj.Nm;
 
       % Build phi3D once
-      [~,~,phi3D] = meshgrid(gridObj.x,gridObj.y,gridObj.phi);
+      [~,~,phi3D] = meshgrid(gridObj.y,gridObj.x,gridObj.phi);
       cosPhi3d = cos(phi3D);
       sinPhi3d = sin(phi3D);
       cos2Phi3d = cosPhi3d .^ 2;
@@ -234,7 +234,7 @@ try
   
 catch err
   fprintf('%s', err.getReport('extended')) ;
-  keyboard
+%   keyboard
 end
 
 % end

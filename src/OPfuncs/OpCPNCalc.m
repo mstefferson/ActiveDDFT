@@ -26,7 +26,6 @@ function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = ...
 %angles
 C = trapz_periodic(phi,rho,3);
 
-% keyboard
 % Calculate the first moment of the distribution orientation. This gives
 % the orientation field
 %
