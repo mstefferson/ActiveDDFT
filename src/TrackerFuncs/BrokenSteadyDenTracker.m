@@ -4,17 +4,14 @@
 % Description: Tracks broken densities and steady state
 
 function [SteadyState,ShitIsFucked,MaxReldRho] = ...
-  BrokenSteadyDenTracker(rho,rho_FT,rho_FTnext,constConc,timeObj,systemObj)
+  BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc,timeObj,systemObj)
 
 SteadyState = 0;
 ShitIsFucked = 0;
 
-temp = rho_FT( abs(rho_FT) > timeObj.amp_cutoff);
-tempNext = rho_FTnext( abs(rho_FT) > timeObj.amp_cutoff);
+WeightDensityChange =  abs( 1 - rhoPrev ./ rho  );
 
-WeightDensityChange =  1 - abs( tempNext ./ temp  );
-
-MaxReldRho = max(WeightDensityChange);
+MaxReldRho = max( max( max(WeightDensityChange) ) );
 
 if MaxReldRho < timeObj.ss_epsilon
   SteadyState = 1;
@@ -23,7 +20,7 @@ end
 %See if something broke
 
 %Negative Density check
-if min(min(min(rho))) < 0
+if rho < 0
   fprintf('Forgive me, your grace. Density has become negative\n');
   ShitIsFucked  = 1;
 end

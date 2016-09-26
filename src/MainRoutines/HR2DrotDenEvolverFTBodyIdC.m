@@ -133,6 +133,7 @@ fprintf(lfid,'Starting master time loop\n');
 for t = 1:timeObj.N_time-1
  %Need to update rho!!!
   rho_FT = rho_FTnext;
+  rhoPrev = rho;
   
   % Calculate rho if there is driving or interactions
   if flags.Interactions || flags.Drive
@@ -181,7 +182,7 @@ for t = 1:timeObj.N_time-1
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     [SteadyState,ShitIsFucked,MaxReldRho] = ...
-      BrokenSteadyDenTracker(rho, rho_FT, rho_FTnext, constConc, timeObj, systemObj);
+      BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
     if flags.SaveMe
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
