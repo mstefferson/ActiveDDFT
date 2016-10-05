@@ -26,7 +26,7 @@ plot( time, P );
 xlabel('time'); ylabel('Max P'); title('Max Polar Order');
 
 subplot(1,3,3);
-plot( time, P );
+plot( time, N );
 xlabel('time'); ylabel('Max N'); title('Max Nematic Order');
 
 if saveFlag
