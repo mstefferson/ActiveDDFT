@@ -13,7 +13,7 @@ WeightDensityChange =  abs( 1 - rhoPrev ./ rho  );
 
 MaxReldRho = max( max( max(WeightDensityChange) ) );
 
-if MaxReldRho < timeObj.ss_epsilon
+if MaxReldRho < timeObj.ss_epsilon_dt
   SteadyState = 1;
 end
 

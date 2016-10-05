@@ -48,7 +48,7 @@ timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording
 timeMaster.t_write    = 0.2;  % time elapsed before writing to file
 timeMaster.t_tot      = 1.0;  % total run time
-timeMaster.ss_epsilon = 1 * 10^(-7); % steady state condition
+timeMaster.ss_epsilon = 1 * 10^(-7); % steady state condition dRho
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
@@ -147,7 +147,7 @@ end;
 
 % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
 % steady state instead of d rho
-timeMaster.ss_epsilon = timeMaster.ss_epsilon .* timeMaster.dt;
+timeMaster.ss_epsilon_dt = timeMaster.ss_epsilon .* timeMaster.dt;
 
 % Fix Ls if we want the box to be square
 if flagMaster.SquareBox == 1; 
