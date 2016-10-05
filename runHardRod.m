@@ -57,7 +57,7 @@ timeObj.ss_epsilon = timeMaster.ss_epsilon;
 fprintf('Finished time obj\n');
 
 % Display everythin
-disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
+disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
 
 % Make paramMat
 fprintf('Building parameter mat \n');
