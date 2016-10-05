@@ -15,18 +15,12 @@
 # variables, use the ``V'' switch when you submit the job script:
 #
 # qsub -V myjob-pbs.sh
-#
-# or uncomment the following line by removing the initial ``###''
-### #PBS -V
 
 # Note: group all PBS directives at the beginning of your script.
 # Any directives placed after the first shell command will be ignored.
 
-### Set the job name
-#PBS -N HrTestPar
-
 ### Run in the queue named "short/long"
-#PBS -q short
+#PBS -q long
 
 ### Use the bourne shell
 #PBS -S /bin/bash
@@ -44,7 +38,7 @@
 #PBS -o /Users/mist7261/HardRodML/eo/
 
 ### Specify the number of cpus for your job.  This example will allocate 4 cores
-### using 2 processors on each of 2 nodes.
+### using 12 processors on each of 1 nodes.
 #PBS -l nodes=1:ppn=12
 
 ### Tell PBS how much memory you expect to use. Use units of 'b','kb', 'mb' or 'gb'.
@@ -52,7 +46,7 @@
 
 ### Tell PBS the anticipated run-time for your job, where walltime=HH:MM:SS
 ### NOTE if the simulation runs longer than this it will be killed
-#PBS -l walltime=23:59:59
+#PBS -l walltime=167:59:59
 
 ### Switch to the working directory; by default TORQUE launches processes
 ### from your home directory.
@@ -70,13 +64,10 @@ echo Running on host `hostname`
 echo Time is `date`
 echo Directory is `pwd`
 echo Using ${NPROCS} processors across ${NNODES} nodes
-
-### OpenMPI will automatically launch processes on all allocated nodes.
-## MPIRUN=`which mpirun`
-## ${MPIRUN} my-openmpi-program
+echo "Job name: ${PBS_JOBNAME}. Job ID: ${PBS_JOBID}"
+echo "I'm sending you mail"
 
 ### Or, just run your serial program
-## $HOME/my-program
 module load matlab_R2015b
 
 # Run matlab program

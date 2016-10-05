@@ -1,0 +1,66 @@
+#!/bin/bash
+# Submit jobs to a temp working directory
+# ./submitHr jobName mailFlag
+
+# Hard code working dir
+runDir=~/RunDir/HardRodML/
+defaultDir=hardRod
+homeDir=`pwd`;
+
+echo "In $homeDir. Making a temp directory in $runDir"
+
+# Variables from inputs
+if [ $# -le 0 ]
+then
+  echo "no jobname or mail flag given"
+  jobFlag=0;
+  mailFlag=0;
+  workingDir=$runDir$defaultDir$RANDOM
+elif [ $# -eq 1 ]
+then
+  jobFlag=1;
+  mailFlag=0;
+  jobName=$1;
+  workingDir=$runDir$jobName$RANDOM
+  echo "jobname is $jobName"
+  echo "no mail flag given"
+else
+  jobFlag=1;
+  jobName=$1;
+  mailFlag=$2;
+  # Make sure you don't duplicate directories
+  workingDir=$runDir$jobName$RANDOM
+  echo "jobname is $jobName"
+  echo "mail flag=$mailFlag;"
+fi
+
+#Make dir and copy over all files
+echo "Making working directory is $workingDir"
+mkdir $workingDir
+cp ./*.m $workingDir
+cp ./*.sh $workingDir
+cp -r ./src $workingDir
+
+# cd in
+cd $workingDir
+echo "In `pwd`, submitting jobs"
+mkdir eo
+# submit!
+if [ $jobFlag -eq 1 ]
+then
+  if [ $mailFlag -eq 0 ]
+  then
+    echo "qsub -N $jobName HrPBS.sh"
+    qsub -N $jobName hrPBS.sh
+  else
+    echo "qsub -N $jobName HrMailPBS.sh"
+    qsub -N $jobName hrMailPBS.sh
+  fi
+else
+    echo "qsub HrPBS.sh"
+    qsub hrPBS.sh
+fi
+
+# return home!
+echo "Jobs submitted. Homeward bound."
+cd $homeDir

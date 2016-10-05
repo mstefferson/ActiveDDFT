@@ -1,0 +1,40 @@
+#!/bin/bash
+# Collects runs and deletes temp run directories
+
+# Hard code working dir
+runDir=~/RunDir/HardRodML
+homeDir=`pwd`;
+
+echo "In $homeDir. Collecting runs in $runDir"
+
+# Go into all directories in rundir and see if they are done
+cd $runDir
+echo "In $runDir"
+for i in `ls`; 
+  do 
+  cd $i;
+  echo "In $i";
+  # Check status of job by seeing what's up with run_*.mat
+  runfiles=`ls | grep 'run' | grep '.mat'`
+  if [ -z "$runfiles" ];
+  then
+    rundir=`ls | grep 'runfiles'`
+    if [ -z "$rundir" ];
+    then #it hasn't started
+      echo "Code hasn't started yet. I'm out of here"
+      cd ..
+    else #it is done
+      echo "Code finished. Collecting files"
+      mv ./runfiles/* $homeDir/runfiles
+      mv ./runOPfiles/* $homeDir/runOPfiles
+      cd ..
+      rm -r $i
+    fi
+  else #code still running
+    echo "Code is still running. I'm out of here"
+  cd ..
+  fi
+done
+
+echo "Files collected. Coming home"
+cd $homeDir
