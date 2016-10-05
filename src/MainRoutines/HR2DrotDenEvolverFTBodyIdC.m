@@ -262,6 +262,8 @@ if ShitIsFucked
 elseif SteadyState
   fprintf('Things are going steady if you know what I mean.\n');
   fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
+else
+  fprintf('Ran for the full time %.1f\n',timeObj.t_tot);
 end
 
 % Create vector of recorded times
@@ -278,5 +280,6 @@ denRecObj.MaxReldRho   = MaxReldRho;
 denRecObj.TimeRecVec   = TimeRecVec;
 denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
+denRecObj.simTime      = TimeRecVec(end);
 
 end %function
