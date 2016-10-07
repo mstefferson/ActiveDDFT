@@ -1,4 +1,5 @@
-function [JxDiff, JyDiff, JphiDiff]= fluxDiff( rho, D, dx, dy, dphi, systemObj )
+function [JxDiff, JyDiff, JphiDiff] = ...
+  fluxDiff( rho, D, dx, dy, dphi, systemObj )
 % Commonly used variables
 Nx = systemObj.Nx;
 Ny = systemObj.Ny;
@@ -31,7 +32,7 @@ drho_dphi( :, : , Nm ) = 1 / ( 2 * dphi ) .* ...
   ( rho( :, : , Nm-1 ) - rho( :, : , 1 ) );
 
 % Calculate fluxes
-JxDiff = - ( D(1,1) .* drho_dx + D(1,2) .* drho_dy );
-JyDiff = - ( D(2,1) .* drho_dx + D(2,2) .* drho_dy );
-JphiDiff = - ( D(3,3) .* drho_dphi );
+JxDiff = - ( D.xx .* drho_dx + D.xy .* drho_dy );
+JyDiff = - ( D.xy .* drho_dx + D.yy .* drho_dy );
+JphiDiff = - ( D.mm .* drho_dphi );
 

@@ -1,4 +1,5 @@
-function fluxInt( rho, rho_FT, D, diffObj, systemObj )
+function [JxInt, JyInt, JphiInt] =  ...
+  fluxInt( rho, rho_FT, D, diffObj, systemObj, particleObj )
 
 % Mayer function stuff %
 Fm_FT = fftshift(fftn( mayerFncHr(...
@@ -25,7 +26,7 @@ jy = - rho .* dMuEx_dy;    %Flux in the y direction with isostropic diffusion
 jphi = - rho .* dMuEx_dphi;  %Flux in the angular direction with isostropic diffusio
 
 % Now for flux
-JxInt = - ( D(1,1) .* jx + D(1,2) .* drho_dy );
-JyInt = - ( D(2,1) .* jx + D(2,2) .* drho_dy );
-JphiInt = - ( D(3,3) .* jphi );
+JxInt = - ( D.xx .* jx + D.xy .* jy );
+JyInt = - ( D.xy .* jx + D.yy .* jy );
+JphiInt = - ( D.mm .* jphi );
 

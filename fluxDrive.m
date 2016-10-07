@@ -1,4 +1,5 @@
-function [JxDr, JyDr, JphiDr] = fluxDiff( rho, vd, systemOb, cosPhi, sinPhi )
+function [JxDr, JyDr, JphiDr] = ...
+  fluxDrive( rho, vd, systemObj, cosPhi, sinPhi )
 
 % Flux from driving
 JxDr = vd .* cosPhi .* rho;
