@@ -26,7 +26,7 @@ jy = - rho .* dMuEx_dy;    %Flux in the y direction with isostropic diffusion
 jphi = - rho .* dMuEx_dphi;  %Flux in the angular direction with isostropic diffusio
 
 % Now for flux
-JxInt = - ( D.xx .* jx + D.xy .* jy );
-JyInt = - ( D.xy .* jx + D.yy .* jy );
-JphiInt = - ( D.mm .* jphi );
+JxInt = ( D.xx .* jx + D.xy .* jy );
+JyInt = ( D.xy .* jx + D.yy .* jy );
+JphiInt =  ( D.mm .* jphi );
 

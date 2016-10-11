@@ -1,4 +1,4 @@
-function fluxCmpr( rho, rho_FT, C, N, P, flags, systemObj, particleObj, gridObj )
+function fluxCmpr( rho, rho_FT, C, flags, systemObj, particleObj, gridObj )
 
 % Build 3d trig functions
 [~,~,phi3D] = meshgrid( gridObj.y, gridObj.x, gridObj.phi );
@@ -15,7 +15,7 @@ dphi = gridObj.phi(2) - gridObj.phi(1);
 
 % 2D k vectors
 [ky2D, kx2D] = meshgrid( gridObj.ky, gridObj.kx );
-keyboard
+
 % Build diffusion object
 if flags.AnisoDiff
     [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
@@ -71,14 +71,53 @@ jmagDr = jposMagDr + jphiDrAve.^2;
 jposMagDr =  sqrt( jposMagDr );
 % jmagDr = sqrt( jmagDr );
 
+% Total
+jxT = jxDiff + jxInt + jxDr;
+jyT = jyDiff + jyInt + jyDr;
+jphiT = jphiDiff + jphiInt + jphiDr;
+jxTAve = trapz_periodic( gridObj.phi, jxT, 3);
+jyTAve = trapz_periodic( gridObj.phi, jyT, 3);
+jphiTAve = trapz_periodic( gridObj.phi, jphiT, 3);
+
+
 %%
+%% Make subset of vector fields to plot
+divNumX = 8;
+divNumY = 8;
+deltaX  = ceil(systemObj.Nx / divNumX );
+deltaY  = ceil(systemObj.Ny / divNumY);
+subIndX = 1:deltaX:(systemObj.Nx + 1 - deltaX);
+subIndY = 1:deltaY:(systemObj.Ny + 1 - deltaY);
+xSub = gridObj.x(subIndX);
+ySub = gridObj.y(subIndY);
+x = gridObj.x;
+y = gridObj.y;
+%
+figure()
+% Total Flux
+imagesc( x, y, C' );
+colorbar
+hold on
+quiver( xSub, ySub, jxTAve(subIndX,subIndY)', ...
+  jyTAve(subIndX,subIndY)','color',[1,1,1])
+hold off
+ax = gca;
+ax.YDir = 'normal';
+axis square
+title('Total spatial flux');
+xlabel('x'); ylabel('y');
+
+
+%
+% keyboard
 figure()
 % Diffusion Quiver
 subplot( 2, 3, 1)
-imagesc( gridObj.x, gridObj.y, jposMagDiff' );
+imagesc( x, y, C' );
 colorbar
 hold on
-quiver( gridObj.x, gridObj.y, jxDiffAve', jyDiffAve','color',[1,1,1])
+quiver( xSub, ySub, jxDiffAve(subIndX,subIndY)', ...
+  jyDiffAve(subIndX,subIndY)','color',[1,1,1])
 hold off
 ax = gca;
 ax.YDir = 'normal';
@@ -88,10 +127,11 @@ xlabel('x'); ylabel('y');
 
 % Interactions Quiver
 subplot( 2, 3, 2)
-imagesc( gridObj.x, gridObj.y, jposMagInt' )
+imagesc( x, y, C' )
 colorbar
 hold on
-quiver( gridObj.x, gridObj.y, jxIntAve', jyIntAve','color',[1,1,1])
+quiver( xSub, ySub, jxIntAve(subIndX,subIndY)', ...
+  jyIntAve(subIndX,subIndY)','color',[1,1,1])
 hold off
 ax = gca;
 ax.YDir = 'normal';
@@ -101,10 +141,11 @@ xlabel('x'); ylabel('y');
 
 % Driving Quiver
 subplot( 2, 3, 3)
-imagesc( gridObj.x, gridObj.y, jposMagDr' )
+imagesc( x, y, C' )
 colorbar
 hold on
-quiver( gridObj.x, gridObj.y, jxDrAve', jyDrAve','color',[1,1,1])
+quiver( xSub, ySub, jxDrAve(subIndX,subIndY)', ...
+  jyDrAve(subIndX,subIndY)','color',[1,1,1])
 hold off
 ax = gca;
 ax.YDir = 'normal';
@@ -114,7 +155,7 @@ xlabel('x'); ylabel('y');
 
 % Diffusion angular magnitude
 subplot( 2, 3, 4)
-imagesc( gridObj.x, gridObj.y, jphiDiffAve' )
+imagesc( x, y, jphiDiffAve' )
 colorbar
 ax = gca;
 ax.YDir = 'normal';
@@ -124,7 +165,7 @@ xlabel('x'); ylabel('y');
 
 % Interaction angular magnitude
 subplot( 2, 3, 5)
-imagesc( gridObj.x, gridObj.y, jphiIntAve' )
+imagesc( x, y, jphiIntAve' )
 colorbar
 ax = gca;
 ax.YDir = 'normal';
@@ -134,7 +175,7 @@ xlabel('x'); ylabel('y');
 
 % driving angular magnitude
 subplot( 2, 3, 6)
-imagesc( gridObj.x, gridObj.y, jphiDrAve' )
+imagesc( x, y, jphiDrAve' )
 colorbar
 ax = gca;
 ax.YDir = 'normal';
@@ -142,3 +183,9 @@ axis square
 title('Driving angular flux');
 xlabel('x'); ylabel('y');
 
+%% playground
+
+jxDiffAve(subIndX,subIndY) +  jxIntAve(subIndX,subIndY) + jxDrAve(subIndX,subIndY)
+
+ 
+keyboard
