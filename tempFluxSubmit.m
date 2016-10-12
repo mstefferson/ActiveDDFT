@@ -1,7 +1,7 @@
 %%
-rho = Den_rec(:,:,:,end);
-rho_FT = DenFT_rec(:,:,:,end);
+rho = denRecObj.rhoFinal;
+rhoFT = fftshift(fftn( rho ) );
 C = C_rec(:,:,end);
 
 %%
-fluxCmpr( rho, rho_FT, C, flags, systemObj, particleObj, gridObj );
+fluxCmpr( rho, rhoFT, C, flags, systemObj, particleObj, gridObj );

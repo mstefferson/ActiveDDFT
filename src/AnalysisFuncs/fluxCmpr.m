@@ -43,12 +43,13 @@ mob.xy = D.xy ./ systemObj.Tmp;
 mob.yy = D.yy ./ systemObj.Tmp;
 mob.mm = D.mm ./ systemObj.Tmp;
 % Flux from diffusion
-[jxDiff, jyDiff, jphiDiff] = fluxDiff( rho, D, dx, dy, dphi, systemObj );
+%[jxDiff, jyDiff, jphiDiff] = fluxDiff( rho, D, dx, dy, dphi, systemObj );
+[jxDiff, jyDiff, jphiDiff] = fluxDiffFt( rho_FT, D, diffObj);
 jxDiffAve = trapz_periodic( gridObj.phi, jxDiff, 3);
 jyDiffAve = trapz_periodic( gridObj.phi, jyDiff, 3);
 jphiDiffAve = trapz_periodic( gridObj.phi, jphiDiff, 3);
 jposMagDiff = jxDiffAve .^ 2 + jyDiffAve .^2;
-jmagDiff = jposMagDiff + jphiDiffAve.^2;
+% jmagDiff = jposMagDiff + jphiDiffAve.^2;
 jposMagDiff = sqrt( jposMagDiff );
 % jmagDiff = sqrt( jmagDiff );
 
@@ -59,7 +60,7 @@ jxIntAve = trapz_periodic( gridObj.phi, jxInt, 3);
 jyIntAve = trapz_periodic( gridObj.phi, jyInt, 3);
 jphiIntAve = trapz_periodic( gridObj.phi, jphiInt, 3);
 jposMagInt = jxIntAve .^ 2 + jyIntAve .^2;
-jmagInt = jposMagInt + jphiIntAve.^2;
+% jmagInt = jposMagInt + jphiIntAve.^2;
 jposMagInt = sqrt( jposMagInt );
 % jmagInt = sqrt( jmagInt );
 
@@ -68,125 +69,30 @@ jposMagInt = sqrt( jposMagInt );
   fluxDrive( rho, particleObj.vD, systemObj, cosPhi, sinPhi );
 jxDrAve = trapz_periodic( gridObj.phi, jxDr, 3);
 jyDrAve = trapz_periodic( gridObj.phi, jyDr, 3);
-jphiDrAve = trapz_periodic( gridObj.phi, jphiDr, 3);
+% jphiDrAve = trapz_periodic( gridObj.phi, jphiDr, 3);
 jposMagDr = jxDrAve .^ 2 + jyDrAve .^2;
-jmagDr = jposMagDr + jphiDrAve.^2;
+% jmagDr = jposMagDr + jphiDrAve.^2;
 jposMagDr =  sqrt( jposMagDr );
 % jmagDr = sqrt( jmagDr );
 
 % Total
 jxT = jxDiff + jxInt + jxDr;
 jyT = jyDiff + jyInt + jyDr;
+% jTsp  = sqrt( jxT .^ 2 + jyT .^ 2 );
 jphiT = jphiDiff + jphiInt + jphiDr;
 jxTAve = trapz_periodic( gridObj.phi, jxT, 3);
 jyTAve = trapz_periodic( gridObj.phi, jyT, 3);
 jphiTAve = trapz_periodic( gridObj.phi, jphiT, 3);
-
+jposMagT  = sqrt( jxTAve .^ 2 + jyTAve .^ 2 );
 
 %%
 %% Make subset of vector fields to plot
-divNumX = 8;
-divNumY = 8;
-deltaX  = ceil(systemObj.Nx / divNumX );
-deltaY  = ceil(systemObj.Ny / divNumY);
-subIndX = 1:deltaX:(systemObj.Nx + 1 - deltaX);
-subIndY = 1:deltaY:(systemObj.Ny + 1 - deltaY);
-xSub = gridObj.x(subIndX);
-ySub = gridObj.y(subIndY);
 x = gridObj.x;
 y = gridObj.y;
-%
-figure()
-% Total Flux
-imagesc( x, y, C' );
-colorbar
-hold on
-quiver( xSub, ySub, jxTAve(subIndX,subIndY)', ...
-  jyTAve(subIndX,subIndY)','color',[1,1,1])
-hold off
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Total spatial flux');
-xlabel('x'); ylabel('y');
 
-% keyboard
-figure()
-% Diffusion Quiver
-subplot( 2, 3, 1)
-imagesc( x, y, C' );
-colorbar
-hold on
-quiver( xSub, ySub, jxDiffAve(subIndX,subIndY)', ...
-  jyDiffAve(subIndX,subIndY)','color',[1,1,1])
-hold off
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Diffusion spatial flux');
-xlabel('x'); ylabel('y');
+fluxPlotSpt( x,y, systemObj, C, ...
+  jxDiffAve, jyDiffAve, jxIntAve, jyIntAve,...
+  jxTAve, jyTAve, jxDrAve, jyDrAve,...
+  jposMagT, jposMagDiff, jposMagInt, jposMagDr);
 
-% Interactions Quiver
-subplot( 2, 3, 2)
-imagesc( x, y, C' )
-colorbar
-hold on
-quiver( xSub, ySub, jxIntAve(subIndX,subIndY)', ...
-  jyIntAve(subIndX,subIndY)','color',[1,1,1])
-hold off
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Interaction spatial flux');
-xlabel('x'); ylabel('y');
-
-% Driving Quiver
-subplot( 2, 3, 3)
-imagesc( x, y, C' )
-colorbar
-hold on
-quiver( xSub, ySub, jxDrAve(subIndX,subIndY)', ...
-  jyDrAve(subIndX,subIndY)','color',[1,1,1])
-hold off
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Driving spatial flux');
-xlabel('x'); ylabel('y');
-
-% Diffusion angular magnitude
-subplot( 2, 3, 4)
-imagesc( x, y, jphiDiffAve' )
-colorbar
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Diffusion angular flux');
-xlabel('x'); ylabel('y');
-
-% Interaction angular magnitude
-subplot( 2, 3, 5)
-imagesc( x, y, jphiIntAve' )
-colorbar
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Interaction angular flux');
-xlabel('x'); ylabel('y');
-
-% driving angular magnitude
-subplot( 2, 3, 6)
-imagesc( x, y, jphiDrAve' )
-colorbar
-ax = gca;
-ax.YDir = 'normal';
-axis square
-title('Driving angular flux');
-xlabel('x'); ylabel('y');
-
-%% playground
-
-jxDiffAve(subIndX,subIndY) +  jxIntAve(subIndX,subIndY) + jxDrAve(subIndX,subIndY)
-
- 
-keyboard
+fluxPlotPhi( x,y, jphiDiffAve, jphiIntAve, jphiTAve )

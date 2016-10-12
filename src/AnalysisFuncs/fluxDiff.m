@@ -7,7 +7,7 @@ Nm = systemObj.Nm;
 % Allocate
 drho_dx = zeros( Nx, Ny, Nm );
 drho_dy = zeros( Nx, Ny, Nm );
-rho_dphi =  zeros( Nx, Ny, Nm );
+drho_dphi =  zeros( Nx, Ny, Nm );
 
 % Take derivatives on points. df(i) = f(i+1) - f(i-1)
 % Bulk derivatives
@@ -35,3 +35,4 @@ drho_dphi( :, : , Nm ) = 1 / ( 2 * dphi ) .* ...
 JxDiff = - ( D.xx .* drho_dx + D.xy .* drho_dy );
 JyDiff = - ( D.xy .* drho_dx + D.yy .* drho_dy );
 JphiDiff = - ( D.mm .* drho_dphi );
+
