@@ -7,7 +7,7 @@ Nm = systemObj.Nm;
 % Allocate
 drho_dx = zeros( Nx, Ny, Nm );
 drho_dy = zeros( Nx, Ny, Nm );
-drho_dphi =  zeros( Nx, Ny, Nm );
+rho_dphi =  zeros( Nx, Ny, Nm );
 
 % Take derivatives on points. df(i) = f(i+1) - f(i-1)
 % Bulk derivatives
@@ -20,19 +20,18 @@ drho_dphi( :, :, 2:Nm-1 ) = 1 / ( 2 * dphi ) .* ...
 % Surface derivatives
 drho_dx( 1, :, : ) = 1 / ( 2 * dx ) .* ...
   ( rho( 2, :, : ) - rho( Nx, :, : ) );
-drho_dx( Nx, :, : ) = 1 / ( 2 * dx ) .* ...
-  ( rho( Nx-1, :, : ) - rho( 1, :, : ) );
 drho_dy( :, 1, : ) = 1 / ( 2 * dy ) .* ...
   ( rho( :, 2, : ) - rho( :, Ny, : ) );
-drho_dy( :, Ny, : ) = 1 / ( 2 * dy ) .* ...
-  ( rho( :, Ny-1, : ) - rho( :, 1, : ) );
 drho_dphi( :, : , 1) = 1 / ( 2 * dphi ) .* ...
   ( rho( :, : , 2 ) - rho( :, : , Nm ) );
+drho_dx( Nx, :, : ) = 1 / ( 2 * dx ) .* ...
+  ( rho( 1, :, : ) - rho( Nx-1, :, : ) );
+drho_dy( :, Ny, : ) = 1 / ( 2 * dy ) .* ...
+  ( rho( :, 1, : ) - rho( :, Ny-1, : ) );
 drho_dphi( :, : , Nm ) = 1 / ( 2 * dphi ) .* ...
-  ( rho( :, : , Nm-1 ) - rho( :, : , 1 ) );
+  ( rho( :, : , 1 ) - rho( :, : , Nm-1 ) );
 
 % Calculate fluxes
 JxDiff = - ( D.xx .* drho_dx + D.xy .* drho_dy );
 JyDiff = - ( D.xy .* drho_dx + D.yy .* drho_dy );
 JphiDiff = - ( D.mm .* drho_dphi );
-

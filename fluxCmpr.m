@@ -37,7 +37,11 @@ else
   D.yy = diffObj.D_pos;
   D.mm= diffObj.D_rot ;
 end
-
+% Mobility for j_int
+mob.xx = D.xx ./ systemObj.Tmp;
+mob.xy = D.xy ./ systemObj.Tmp;
+mob.yy = D.yy ./ systemObj.Tmp;
+mob.mm = D.mm ./ systemObj.Tmp;
 % Flux from diffusion
 [jxDiff, jyDiff, jphiDiff] = fluxDiff( rho, D, dx, dy, dphi, systemObj );
 jxDiffAve = trapz_periodic( gridObj.phi, jxDiff, 3);
@@ -48,10 +52,9 @@ jmagDiff = jposMagDiff + jphiDiffAve.^2;
 jposMagDiff = sqrt( jposMagDiff );
 % jmagDiff = sqrt( jmagDiff );
 
-
 % Flux from interactions
 [jxInt, jyInt, jphiInt] = ...
-  fluxInt( rho, rho_FT, D, diffObj, systemObj, particleObj );
+  fluxInt( rho, rho_FT, mob, diffObj, systemObj, particleObj );
 jxIntAve = trapz_periodic( gridObj.phi, jxInt, 3);
 jyIntAve = trapz_periodic( gridObj.phi, jyInt, 3);
 jphiIntAve = trapz_periodic( gridObj.phi, jphiInt, 3);
@@ -107,8 +110,6 @@ axis square
 title('Total spatial flux');
 xlabel('x'); ylabel('y');
 
-
-%
 % keyboard
 figure()
 % Diffusion Quiver
