@@ -13,9 +13,9 @@ cStats.vdiff = cStats.vdiff / cStats.aveV;
 % P slice: two peaks so be careful
  deltaInd = round( cStats.fwhd / Lvar .* NposVar);
 if maxInd > length(Pslice) / 2;
-  pInd = maxInd-deltaInd:maxInd;
+  pInd = max(1, maxInd-deltaInd):maxInd;
 else
-  pInd = maxInd:maxInd+deltaInd;
+  pInd = maxInd:min( maxInd+deltaInd, NposVar );
 end
 
 [pStats.maxV, pStats.minV, pStats.aveV, ...

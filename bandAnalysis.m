@@ -1,4 +1,8 @@
-function [output] = bandAnalysis( dirlist )
+function [output] = bandAnalysis( dirlist, plotFlag )
+% Set plot flag to 1 if not specified
+if nargin == 1
+  plotFlag = 1;
+end
 
 % Allocate for what we want
 numFiles = length( dirlist );
@@ -132,62 +136,8 @@ if analysisFlag
   output.nFDWHD = output.nFDWHD(indSort);
 end
 
-% Max and diff
-figure()
-% C max and diff
-subplot(3,1,1);
-ylab = 'C';
-[Ax] = plotyy( p.val, output.cMax, p.val, output.cDiff );
-xlabel(p.name); ylabel(Ax(1), [ ylab ' Max']); ylabel(Ax(2), [ ylab ' diff']);
-title( [ ylab ' vs ' p.name ] );
-% P max and diff
-subplot(3,1,2);
-ylab = 'P';
-[Ax] = plotyy( p.val, output.pMax, p.val, output.pDiff );
-xlabel(p.name); ylabel(Ax(1), [ ylab ' Max']); ylabel(Ax(2), [ ylab ' diff']);
-title( [ ylab ' vs ' p.name ] );
-ylab = 'Max P';
-xlabel(p.name); ylabel(ylab);
-title( [ ylab ' vs ' p.name ] );
-% N max and diff
-subplot(3,1,3);
-ylab = 'N';
-[Ax] = plotyy( p.val, output.nMax, p.val, output.nDiff );
-xlabel(p.name); ylabel(Ax(1), [ ylab ' Max']); ylabel(Ax(2), [ ylab ' diff']);
-title( [ ylab ' vs ' p.name ] );
-
-% fwhm
-figure()
-% C fwhm
-subplot(3,1,1);
-ylab = 'C';
-plot( p.val, output.cFDWHD );
-xlabel(p.name); ylabel( [ylab ' FWHM']);
-title( [ ylab ' vs ' p.name ] );
-% P fwhm
-subplot(3,1,2);
-ylab = 'P';
-plot( p.val, output.pFDWHD );
-xlabel(p.name); ylabel( [ylab ' FWHM']);
-title( [ ylab ' vs ' p.name ] );
-% N fwhm
-subplot(3,1,3);
-ylab = 'N';
-plot( p.val, output.nFDWHD );
-xlabel(p.name); ylabel( [ylab ' FWHM']);
-title( [ ylab ' vs ' p.name ] );
-
-posV =  ( 0: NposVar-1 ) ./  NposVar * Lvar;
-figure()
-plot(posV, C(rows,cols ) );
-title('C')
-
-figure()
-plot(posV, P(rows,cols ) );
-title('P')
-
-figure()
-plot(posV, N(rows,cols ) );
-title('N')
-
-keyboard
+% plotting
+if plotFlag
+  bandPlotMaxDiff( p, output );
+  bandPlotFWHM( p, output );
+end
