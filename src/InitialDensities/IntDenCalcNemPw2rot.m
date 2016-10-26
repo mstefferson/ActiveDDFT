@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcNemPw2rot(systemObj,rhoInit,x,y,phi)
+function [rho] = IntDenCalcNemPw2rot(systemObj,phi)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -37,17 +37,3 @@ rho = systemObj.c .* ...
 for i = 1:systemObj.Nm
     rho(:,:,i) = rho(:,:,i) .* f(i);
 end
-
-% systemObj.numPart / (systemObj.Lx .* systemObj.Lx);
-% b = particleObj.lMaj^2 / pi;
-% c =  systemObj.bc / b;
-% f_reshape =  reshape(rho(17,17,:) / c  , 1, 32 );
-% trapz_periodic(phi,f)
-% trapz_periodic(phi,f_reshape)
-% keyboard
-% Normalize it
-% Integrate first along the depth of matrix w.r.t theta, then across the
-% columns w.r.t x, then down the rows w.r.t. y
-% keyboard
-CurrentNorm = trapz_periodic(y,trapz_periodic(x,trapz_periodic(phi,rho,3),2),1);
-rho = rho .* systemObj.numPart ./ CurrentNorm;

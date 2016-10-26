@@ -60,6 +60,7 @@ timeMaster.ss_epsilon = 1 * 10^(-5); % steady state condition dRho
 % 3: Load an equilbrium distribution and fit it to your box
 % 4: Gaussian perturbations with homogenous concentration 
 % 5: Gaussian perturbations with inhomogenous concentration 
+% 6: Delta function in polar order 
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
 rhoInitMaster.LoadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %

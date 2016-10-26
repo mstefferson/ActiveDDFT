@@ -1,7 +1,7 @@
 %IntDenCalcLoaded2Drot: Initial density is loaded from a saved rho. Fit it to
 % you box using linear interpolation
 
-function [ rho ] = IntDenCalcLoaded2Drot( filename, systemObj, x, y, phi )
+function [ rho ] = IntDenCalcLoaded2Drot( filename, systemObj)
 
 % paths
 path = './src/InitialDensities/SavedRhos/';
@@ -25,9 +25,6 @@ mfTemp = 0: 1 / systemObj.Nm : (1 - 1 / systemObj.Nm );
 % use n-d linear interp. Don't need 3d variables for inputs, but you do for
 % final grid
 rho = interpn( xiTemp, yiTemp, miTemp, rho, x3fTemp, y3fTemp, m3fTemp );
-
-CurrentNorm = trapz_periodic(x,trapz_periodic(y,trapz_periodic(phi,rho,3),2),1);
-rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end
 

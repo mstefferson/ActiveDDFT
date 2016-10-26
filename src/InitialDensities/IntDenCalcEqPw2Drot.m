@@ -5,7 +5,7 @@
 % A_k is an input parameter
 
 
-function [rho] = IntDenCalcEqPw2Drot(systemObj, rhoInit, x, y, phi)
+function [rho] = IntDenCalcEqPw2Drot(systemObj, rhoInit)
 
 %Add in some slight deviation from the equilbrium density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the
@@ -28,10 +28,5 @@ rho = systemObj.c .* ...
 for i = 1:systemObj.Nm
     rho(:,:,i) = rho(:,:,i) .* rhoInit.feq(i);
 end
-
-% Integrate first along the depth of matrix w.r.t theta, then across the
-% columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(x,trapz_periodic(y,trapz_periodic(phi,rho,3),2),1);
-rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end %end function

@@ -97,6 +97,6 @@ rho = real( ifftn( ifftshift( rhoFT ) ) );
 
 % keyboard
 % Fix negative rho if that happened.
-[rho] = FixNegDenFnc(rho,systemObj);
+[rho] = FixNegDenFnc(rho);
 
 end

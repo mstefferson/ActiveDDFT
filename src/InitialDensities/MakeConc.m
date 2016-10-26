@@ -13,26 +13,22 @@ elseif rhoInit.IntCond == 1
     systemObjTemp = systemObj;
     systemObjTemp.bc = 1.502;
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(...
-      systemObjTemp,rhoInit,gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObjTemp,rhoInit);
     % Perturb it
     [rho] = PwPerturbFT(rho,systemObjTemp,rhoInit);
   else
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit,...
-      gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit);
     % Perturb it
     [rho] = PwPerturbFT(rho,systemObj,rhoInit);
   end
 elseif rhoInit.IntCond == 2
   % Initial distribution
-  [rho] = IntDenCalcNemPw2rot(systemObj,rhoInit,...
-    gridObj.x,gridObj.y,gridObj.phi);
+  [rho] = IntDenCalcNemPw2rot(systemObj,gridObj.phi);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 3
-  [rho] = IntDenCalcLoaded2Drot(rhoInit.LoadName,systemObj, ...
-      gridObj.x,gridObj.y,gridObj.phi);
+  [rho] = IntDenCalcLoaded2Drot(rhoInit.LoadName,systemObj);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 4 || rhoInit.IntCond == 5
@@ -42,19 +38,29 @@ elseif rhoInit.IntCond == 4 || rhoInit.IntCond == 5
     systemObjTemp = systemObj;
     systemObjTemp.bc = 1.502;
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObjTemp,rhoInit,...
-      gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObjTemp,rhoInit);
   else
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit,...
-      gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit);
   end
   % Gaussian perturb
   [rho] = polarPerturbGauss( rho, systemObj, rhoInit, gridObj );
+elseif rhoInit.IntCond == 6
+  % delta function in polar order
+  [rho] = deltaPolarIc(systemObj);
+  % Perturb it
+  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 else
   fprintf('Error not written');
   error('Error not written');
   rho = 0;
 end
+
+% Renormalize out here
+% Integrate first along the depth of matrix w.r.t theta, then across the
+% columns w.r.t x, then down the rows w.r.t. y
+CurrentNorm = trapz_periodic(gridObj.y,...
+  trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end
