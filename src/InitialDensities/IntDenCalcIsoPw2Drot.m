@@ -5,7 +5,7 @@
 % rho = \sum A_k exp( i (k_x x + k_y y + k_phi phi)
 % A_k is an input parameter
 
-function [rho] = IntDenCalcIsoPw2Drot(systemObj,rhoInit)
+function [rho] = IntDenCalcIsoPw2Drot(systemObj)
 
 %Add in some slight deviation from a uniform density at specific modes.
 % The number of modes counts the modes above and below k=0. But given the

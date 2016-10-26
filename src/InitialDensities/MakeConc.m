@@ -4,7 +4,7 @@
 function [rho] = MakeConc(systemObj,rhoInit,gridObj)
 
 if rhoInit.IntCond == 0
-  [rho] = IntDenCalcIsoPw2Drot(systemObj,rhoInit);
+  [rho] = IntDenCalcIsoPw2Drot(systemObj);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 1
@@ -19,17 +19,20 @@ elseif rhoInit.IntCond == 1
     [rho] = PwPerturbFT(rho,systemObjTemp,rhoInit);
   else
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit,gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit,...
+      gridObj.x,gridObj.y,gridObj.phi);
     % Perturb it
     [rho] = PwPerturbFT(rho,systemObj,rhoInit);
   end
 elseif rhoInit.IntCond == 2
   % Initial distribution
-  [rho] = IntDenCalcNemPw2rot(systemObj,rhoInit,gridObj.x,gridObj.y,gridObj.phi);
+  [rho] = IntDenCalcNemPw2rot(systemObj,rhoInit,...
+    gridObj.x,gridObj.y,gridObj.phi);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 3
-  [rho] = IntDenCalcLoaded2Drot(rhoInit.LoadName);
+  [rho] = IntDenCalcLoaded2Drot(rhoInit.LoadName,systemObj, ...
+      gridObj.x,gridObj.y,gridObj.phi);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 4 || rhoInit.IntCond == 5
@@ -39,10 +42,12 @@ elseif rhoInit.IntCond == 4 || rhoInit.IntCond == 5
     systemObjTemp = systemObj;
     systemObjTemp.bc = 1.502;
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObjTemp,rhoInit,gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObjTemp,rhoInit,...
+      gridObj.x,gridObj.y,gridObj.phi);
   else
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit,gridObj.x,gridObj.y,gridObj.phi);
+    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit,...
+      gridObj.x,gridObj.y,gridObj.phi);
   end
   % Gaussian perturb
   [rho] = polarPerturbGauss( rho, systemObj, rhoInit, gridObj );

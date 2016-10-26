@@ -51,6 +51,15 @@ timeMaster.t_tot      = 1.0;  % total run time
 timeMaster.ss_epsilon = 1 * 10^(-7); % steady state condition dRho
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
+% Key
+% The number of k-modes above and below k = 0 added as a perturbation
+% Type of Inital Condition
+% 0: Plane wave perturbation over an isotropic distribution
+% 1: Plane wave perturbation over the equilibrium distribution
+% 2: Plane wave perturbation over a nematic distribution
+% 3: Load an equilbrium distribution and fit it to your box
+% 4: Gaussian perturbations with homogenous concentration 
+% 5: Gaussian perturbations with inhomogenous concentration 
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
 rhoInitMaster.NumModesX = 8; % Perturb # modes x
 rhoInitMaster.NumModesY = 8; % Perturb # modes y
@@ -74,16 +83,6 @@ rhoInitMaster.centerX = 0; % Center of gaussian in x
 rhoInitMaster.aYf = 0; % Gauss amp in x as fraction of concentration
 rhoInitMaster.varY  = 0; % Variance of gaussian in x
 rhoInitMaster.centerY = 0; % Center of gaussian in x
-
-% Key
-% The number of k-modes above and below k = 0 added as a perturbation
-% Type of Inital Condition
-% 0: Plane wave perturbation over an isotropic distribution
-% 1: Plane wave perturbation over the equilibrium distribution
-% 2: Plane wave perturbation over a nematic distribution
-% 3: Load an equilbrium distribution
-% 4: Gaussian perturbations with homogenous concentration 
-% 5: Gaussian perturbations with inhomogenous concentration 
 
 % Calculated stuff- fix times, etc.
 % Change odd gridspacings to even unless it's one. 

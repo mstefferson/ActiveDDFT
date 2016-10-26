@@ -6,6 +6,7 @@
 % Does everything in Fourier space
 
 function [rho] = PwPerturbFT(rho,systemObj,rhoInit)
+
 % N3 can be commonly used. Declare it
 N3 = systemObj.Nx * systemObj.Ny * systemObj.Nm;
 % Perturb coeff is the weight times equilbrium
@@ -87,6 +88,7 @@ perturb( 1 : m1, m2+2 : 2*m2+1,  m3+2 : 2*m3+1 ) = ...
 
 perturb(m1+1,m2+1,m3+1) = 0;
 
+
 % Add perturbation to rhoFT
 rhoFT( kx0 - m1 : kx0 + m1, ky0 - m2 : ky0 + m2, km0 - m3 : km0 + m3) = ...
   rhoFT( kx0 - m1 : kx0 + m1, ky0 - m2 : ky0 + m2, km0 - m3 : km0 + m3) + perturb;
@@ -95,6 +97,6 @@ rho = real( ifftn( ifftshift( rhoFT ) ) );
 
 % keyboard
 % Fix negative rho if that happened.
-[rho] = FixNegDenFnc(rho);
+[rho] = FixNegDenFnc(rho,systemObj);
 
 end
