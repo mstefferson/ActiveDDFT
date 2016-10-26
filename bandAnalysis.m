@@ -1,9 +1,11 @@
-function [output] = bandAnalysis( dirlist, plotFlag )
+function [output] = bandAnalysis( dirpath, plotFlag )
 % Set plot flag to 1 if not specified
 if nargin == 1
   plotFlag = 1;
 end
 
+% get all the dirs
+dirlist = dir([dirpath '/Hr*']);
 % Allocate for what we want
 numFiles = length( dirlist );
 % params and such
@@ -26,6 +28,7 @@ output.pMin = zeros( 1, numFiles ); % Min P
 output.pAve = zeros( 1, numFiles ); % Ave P
 output.pDiff = zeros( 1, numFiles ); % P Max - P Min spaled by input bp
 output.pFDWHD = zeros( 1, numFiles ); % P full width half (max - min)
+output.pP2P = zeros( 1, numFiles ); % P peak to peak distance
 %n
 output.nMax = zeros( 1, numFiles ); % Max N
 output.nMin = zeros( 1, numFiles ); % Min N
@@ -37,10 +40,11 @@ output.nFDWHD = zeros( 1, numFiles ); % N full width half (max - min)
 for ii = 1 : numFiles
   dirname = dirlist( ii ).name;
   % load params and opObj from current WD
-  paramsMat = dir( [ dirname '/param*' ] );
-  opMat = dir( [ dirname '/op*' ] );
-  load( [ dirname '/' paramsMat.name ] );
-  fileObj = matfile( [ dirname   '/' opMat.name ] ); 
+  fullpath = [ dirpath '/' dirname ];
+  paramsMat = dir( [ fullpath '/param*' ] );
+  opMat = dir( [ fullpath '/op*' ] );
+  load( [ fullpath '/' paramsMat.name ] );
+  fileObj = matfile( [ fullpath   '/' opMat.name ] ); 
   C = fileObj.C_rec(:,:,end);
   P = fileObj.POP_rec(:,:,end);
   N = fileObj.NOP_rec(:,:,end);
@@ -69,6 +73,8 @@ for ii = 1 : numFiles
   output.pAve(ii) = pStats.aveV; 
   output.pDiff(ii) = pStats.vdiff; 
   output.pFDWHD(ii) = pStats.fwhd; 
+  output.pP2P(ii) = pStats.p2p; 
+
   %n
   output.nMax(ii) = nStats.maxV;
   output.nMin(ii) = nStats.minV; 
@@ -140,4 +146,5 @@ end
 if plotFlag
   bandPlotMaxDiff( p, output );
   bandPlotFWHM( p, output );
+  polarP2Pplot( p, output );
 end
