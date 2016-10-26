@@ -48,7 +48,7 @@ timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording
 timeMaster.t_write    = 0.2;  % time elapsed before writing to file
 timeMaster.t_tot      = 1.0;  % total run time
-timeMaster.ss_epsilon = 1 * 10^(-7); % steady state condition dRho
+timeMaster.ss_epsilon = 1 * 10^(-5); % steady state condition dRho
 
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 % Key
@@ -61,15 +61,15 @@ timeMaster.ss_epsilon = 1 * 10^(-7); % steady state condition dRho
 % 4: Gaussian perturbations with homogenous concentration 
 % 5: Gaussian perturbations with inhomogenous concentration 
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
-rhoInitMaster.NumModesX = 8; % Perturb # modes x
-rhoInitMaster.NumModesY = 8; % Perturb # modes y
-rhoInitMaster.NumModesM = 8; % Perturb # modes m
 rhoInitMaster.LoadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbation weight is a fraction of the isotropic density
 % If about a nematic, code will correct for negative densities.
+rhoInitMaster.RandomAmp = 1; % Random perturbation coeffs
+rhoInitMaster.NumModesX = 8; % Perturb # modes x
+rhoInitMaster.NumModesY = 8; % Perturb # modes y
+rhoInitMaster.NumModesM = 8; % Perturb # modes m
 rhoInitMaster.WeightPert = 1e-3;
-rhoInitMaster.RandomAmp = 1;       % Random perturbation coeffs
 
 % Gaussian perturbation 
 %phi
