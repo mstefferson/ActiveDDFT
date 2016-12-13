@@ -50,7 +50,6 @@ if maxVar < varCutoff
   deltaC  = aveC / axisFactor;
 end
 
-
 [maxC, maxCind] = max( cFinal( rows,cols ) );
 [maxPO, maxPOind] = max( poFinal( rows,cols ) );
 [maxNO, ~] = max( noFinal( rows,cols ) );
@@ -89,7 +88,14 @@ title( 'C' );
 xlabel('x'); ylabel('y');
 Ax = gca;
 Ax.YDir = 'normal';
-if maxVar < varCutoff;  Ax.CLim = [ aveC-deltaC aveC+deltaC]; end;
+
+if maxVar < varCutoff
+  if aveC == 0
+   Ax.CLim = [ 0 0.1]; 
+  else
+  Ax.CLim = [ aveC-deltaC aveC+deltaC]; 
+  end
+end
 
 subplot(1,3,2)
 imagesc( x, y, poFinal' );
@@ -134,7 +140,13 @@ xlabel(posVarLab); ylabel('C')
 title('C')
 Ax = gca;
 Ax.YDir = 'normal';
-if maxVar < varCutoff;  Ax.YLim = [ aveC-deltaC aveC+deltaC]; end;
+if maxVar < varCutoff
+  if aveC == 0
+   Ax.CLim = [ 0 0.1]; 
+  else
+  Ax.CLim = [ aveC-deltaC aveC+deltaC]; 
+  end
+end
 
 subplot(2,2,3)
 plot( posVar, poFinal( rows, cols ) );
@@ -163,24 +175,35 @@ subplot(1,2,1)
 pcolor(posVar, phi,distroSlice')
 axis square
 colorbar
-xlabel(posVarLab); ylabel('\phi');
+xlabel(posVarLab); ylabel('$$\phi$$');
 title('Distibution sliced through position and angle')
 Ax = gca;
 Ax.YDir = 'normal';
 shading interp;
-if maxVar < varCutoff;  Ax.CLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; end;
+if maxVar < varCutoff
+  if aveC == 0
+   Ax.CLim = [ 0 0.1]; 
+  else
+  Ax.CLim =  [ aveDistro-deltaDistro aveDistro+deltaDistro]; 
+  end
+end
 
 subplot(1,2,2)
 pcolor(posVar, phi,distroSliceChop')
 axis square
 colorbar
-xlabel(posVarLab); ylabel('\phi');
+xlabel(posVarLab); ylabel('$$\phi$$');
 title('Distribution with high ampiltude sliced out')
 Ax = gca;
 Ax.YDir = 'normal';
 shading interp;
-if maxVar < varCutoff;  Ax.CLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; end;
-
+if maxVar < varCutoff
+  if aveC == 0
+   Ax.CLim = [ 0 0.1]; 
+  else
+  Ax.CLim =  [ aveDistro-deltaDistro aveDistro+deltaDistro]; 
+  end
+end
 
 % Save it
 if saveFlag
@@ -200,7 +223,7 @@ for ii = 1:length( plotInd )
     titStr = sprintf('Distro at fixed pos (Cmax - POmax) = %.1f', ...
       deltaCPpeak ./ NposVar );
     title(titStr)
-    xlabel('\phi'); ylabel('f(\phi)')
+    xlabel('$$\phi$$'); ylabel('$$f(\phi)$$')
     if maxVar < varCutoff; ...
         Ax.YLim = [ aveDistro-deltaDistro aveDistro+deltaDistro]; 
     end

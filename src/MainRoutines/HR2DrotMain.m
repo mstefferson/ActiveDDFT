@@ -4,6 +4,8 @@
 
 function  [ denRecObj ] = ...
   HR2DrotMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
+% use latex for plots
+set(0,'defaulttextinterpreter','latex')
 
 global runSave
 movieSuccess = 0;

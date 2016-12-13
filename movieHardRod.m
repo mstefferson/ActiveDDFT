@@ -2,7 +2,8 @@
 %
 % Takes all files in ./runOPfiles, makes movies, and moves them to analyzed
 function movieHardRod()
-
+% use latex for plots
+set(0,'defaulttextinterpreter','latex')
 try
   tstart = tic;
   % Add Subroutine path
@@ -21,6 +22,7 @@ try
     for ii = 1:numDirs
       % move into a dir
       dirTemp = dir2Analyze(ii).name;
+      fprintf('Movies for %s\n', dirTemp);
       dirFullPath = ['./runOPfiles/' dirTemp];
       % load things
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
@@ -53,7 +55,6 @@ try
       OPMovieMakerTgtherDirAvi(movStr,...
         gridObj.x,gridObj.y,gridObj.phi,OPobj,...
         OPobj.distSlice_rec,OPobj.OpTimeRecVec);
-      
       % Make amplitude plot
       kx0 = systemObj.Nx / 2 + 1;
       ky0 = systemObj.Ny / 2 + 1;
@@ -95,11 +96,9 @@ try
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
       movefile(figtl,[figtl2 '.fig'])
       saveas(gcf, [figtl2 '.jpg'],'jpg')
-      
       % Plot final slices of final order parameters
       sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-
       sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
         OPobj.NOP_rec(:,:,end), systemObj, ...
         gridObj, denRecObj.rhoFinal, sliceSaveTag )

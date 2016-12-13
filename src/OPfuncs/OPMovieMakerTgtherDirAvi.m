@@ -37,17 +37,25 @@ nFrames = length(TimeRec);
 set(gcf,'renderer','zbuffer')
 
 axh1 = subplot(2,2,1); % Save the handle of the subplot
+axh1.TickLabelInterpreter = 'latex';
 colorbar('peer',axh1)
 axpos1 = get(axh1,'position'); % Save the position as ax
+minC = min(min(min(OP.C_rec )));
+maxC = max(max(max(OP.C_rec)));
+if minC >= maxC
+  minC = 0;
+  maxC = 0.1;
+end
 set(axh1,'NextPlot','replaceChildren',...
   'CLim',...
-   1 /pi * [min(min(min(OP.C_rec ))) max(max(max(OP.C_rec)))],...
+  1 /pi * [minC maxC],...
   'YDir','normal');
 axis square
 set(axh1,'position',axpos1,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbar
 xlabel('x'); ylabel('y')
 
 axh2 = subplot(2,2,2); % Save the handle of the subplot
+axh2.TickLabelInterpreter = 'latex';
 colorbar('peer',axh2)
 axpos2 = get(axh2,'position'); % Save the position as ax
 set(axh2,'position',axpos2,'NextPlot','replaceChildren',...
@@ -56,15 +64,20 @@ axis square
 xlabel('x'); ylabel('y')
 
 axh3 = subplot(2,2,3); % Save the handle of the subplot
-% colorbar('peer',axh3)
+axh3.TickLabelInterpreter = 'latex';
 axpos3 = get(axh3,'position'); % Save the position as ax
 set(axh3,'position',axpos3); % Manually setting this holds the position with colorbar
 xlabel('x'); ylabel('y')
-set(axh3,'NextPlot','replaceChildren','YLim',[ 0 max(max( DistRec ) )  ] ) ;
+maxDist = max(max( DistRec ) );
+if maxDist <= 0
+  maxDist = 0.1;
+end
+set(axh3,'NextPlot','replaceChildren','YLim',[ 0 maxDist  ] ) ;
 axis square
-xlabel('\phi'); ylabel('f(\phi)')
+xlabel('$$\phi$$'); ylabel('f($$\phi$$)')
 
 axh4 = subplot(2,2,4); % Save the handle of the subplot
+axh4.TickLabelInterpreter = 'latex';
 colorbar('peer',axh4)
 axpos4 = get(axh4,'position'); % Save the position as ax
 set(axh4,'position',axpos4,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbar
@@ -88,7 +101,6 @@ nemTempY = nemTempY .* OP.NOP_rec(SubIndX,SubIndY,:) ./ maxNem;
 
 try
   for ii = 1:nFrames
-    
     % Concentration
     subplot(axh1);
     pcolor(axh1,x,y,OP.C_rec(:,:,ii)' ./ pi)
@@ -96,7 +108,7 @@ try
     TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
     title(axh1,TitlStr)
     drawnow;
-    pause(0.001);    
+    pause(0.001);
     % Polar order
     subplot(axh2);
     set(axh2,'NextPlot','replaceChildren',...
@@ -121,7 +133,7 @@ try
     TtlStr = sprintf('Distribution t = %.2f',...
       TimeRec(ii));
     title(axh3,TtlStr);
-
+    
     drawnow;
     pause(0.001);
     % Nematic order
@@ -149,10 +161,10 @@ try
     writeVideo(Mov,Fr);
     
   end% End frame loop
-
+  
 catch err
   fprintf('%s', err.getReport('extended')) ;
-%   keyboard
+  %   keyboard
 end % try catch
 
 close(Fig)
