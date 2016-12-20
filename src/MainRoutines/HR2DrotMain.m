@@ -41,13 +41,13 @@ try
       dirName  = filename(1:end-4) ;
       if flags.MakeMovies == 1
         dirPath  = ['./analyzedfiles/' dirName ];
-        if exist(dirPath,'dir') == 0;
+        if exist(dirPath,'dir') == 0
           mkdir('./analyzedfiles', dirName);
         end
         dirName = dirPath;
       else
         dirPath  = ['./runOPfiles/' dirName ];
-        if exist(dirPath,'dir') == 0;
+        if exist(dirPath,'dir') == 0
           mkdir('./runOPfiles', dirName);
         end
         dirName = dirPath;
@@ -124,6 +124,10 @@ try
   else
     [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.phi,rhoInit.bc); % Calculate coeff
     rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
+    % shift it
+    rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
+    [~,shiftInd] = min( abs( gridObj.phi - rhoInit.shiftAngle ) );
+    rhoInit.feq = circshift( rhoInit.feq, shiftInd - 1 );
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);
@@ -248,7 +252,7 @@ try
       numChunks = 1;
     end
     
-    for i = 1:numChunks;
+    for i = 1:numChunks
       if i ~= numChunks
         Ind =  (i-1) * sizeChunk + 1: i * sizeChunk;
       else
@@ -258,7 +262,7 @@ try
           Ind = (i-1) * sizeChunk:totRec;
         end
       end
-
+      
       [OPObjTemp] = CPNrecMaker(systemObj.Nx,systemObj.Ny,...
         opTimeRecVec(Ind), runSave.Den_rec(:,:,:,Ind) ,...
         gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
@@ -296,7 +300,7 @@ try
       OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.Nm] ), ...
       gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
-    if flags.MakeMovies;
+    if flags.MakeMovies
       OPobj.OpTimeRecVec = opTimeRecVec;
       OPobj.NOPeq = opSave.NOPeq;
     end
@@ -358,7 +362,7 @@ try
       FTind2plot(12,:) = [kx0 + 1 ky0 + 1 km0 + 2];
       
       % Scale by N so it's N independent
-      for i = 1:totModes 
+      for i = 1:totModes
         FTmat2plot(i,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
           reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
           [ 1, nRec ]  );
@@ -380,7 +384,7 @@ try
       % Plot final slices of final order parameters
       sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-
+      
       if denRecObj.DidIBreak == 0
         sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
           OPobj.NOP_rec(:,:,end), systemObj, ...
@@ -434,7 +438,6 @@ catch err %Catch errors
   fprintf('%s', err.getReport('extended')) ;
   runSave.err = err;
   
-  
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
@@ -452,7 +455,7 @@ catch err %Catch errors
       if flags.MakeOP == 1 && flags.SaveMe
         dirName  = filename(1:end-4) ;
         dirPath  = ['./runOPfiles/' dirName ];
-        if exist(dirPath,'dir') == 0;
+        if exist(dirPath,'dir') == 0
           mkdir('./runOPfiles', dirName);
         end
         dirName = dirPath;

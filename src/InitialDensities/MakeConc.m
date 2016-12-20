@@ -24,7 +24,7 @@ elseif rhoInit.IntCond == 1
   end
 elseif rhoInit.IntCond == 2
   % Initial distribution
-  [rho] = IntDenCalcNemPw2rot(systemObj,gridObj.phi);
+  [rho] = IntDenCalcNemPw2rot(systemObj,gridObj.phi,rhoInit.shiftAngle);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 3

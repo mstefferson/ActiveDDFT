@@ -11,7 +11,7 @@ flagMaster.MakeMovies   = 0; % No movies if save is zero
 flagMaster.MakeOP       = 1; % No OPs if save is zero
 flagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
 flagMaster.SquareBox    = 0; % Forces box to be square
-flagMaster.StepMeth     = [0]; % Stepping (integrating) method (vec)
+flagMaster.StepMeth     = [6]; % Stepping (integrating) method (vec)
 flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 
@@ -35,7 +35,7 @@ systemMaster.Ly = [10];  % Box length (vec)
 systemMaster.Lphi = 2 * pi;
 systemMaster.Tmp = 1;   % Temperature
 
-if flagMaster.AnisoDiff; 
+if flagMaster.AnisoDiff
   particleMaster.mobPar  = 2*particleMaster.mob; 
 else
   particleMaster.mobPar = particleMaster.mob; 
@@ -70,8 +70,8 @@ rhoInitMaster.RandomAmp = 1; % Random perturbation coeffs
 rhoInitMaster.NumModesX = 8; % Perturb # modes x
 rhoInitMaster.NumModesY = 8; % Perturb # modes y
 rhoInitMaster.NumModesM = 8; % Perturb # modes m
-rhoInitMaster.WeightPert = 1e-3;
-
+rhoInitMaster.WeightPert = 1e-3; % Weight of perturbations
+rhoInitMaster.shiftAngle = 0; % If perturbing about nematic, shift distribution by this much
 % Gaussian perturbation 
 %phi
 rhoInitMaster.aPhif = 0; % Gauss amp in phi fraction of concentration
@@ -84,7 +84,6 @@ rhoInitMaster.centerX = 0; % Center of gaussian in x
 rhoInitMaster.aYf = 0; % Gauss amp in x as fraction of concentration
 rhoInitMaster.varY  = 0; % Variance of gaussian in x
 rhoInitMaster.centerY = 0; % Center of gaussian in x
-
 % Calculated stuff- fix times, etc.
 % Change odd gridspacings to even unless it's one. 
 % L=1 for N=1 is for integrations
@@ -118,71 +117,64 @@ if systemMaster.Nm == 1
 end
 
 % Don't perturb more more than you are allowed to
-if( rhoInitMaster.NumModesX >= systemMaster.Nx / 2 ); 
+if( rhoInitMaster.NumModesX >= systemMaster.Nx / 2 )
   rhoInitMaster.NumModesX = floor(systemMaster.Nx / 2) - 1; 
-end;
-if( rhoInitMaster.NumModesY >= systemMaster.Ny / 2 ); 
+end
+if( rhoInitMaster.NumModesY >= systemMaster.Ny / 2 )
   rhoInitMaster.NumModesY = floor(systemMaster.Ny / 2) - 1;
-end;
-if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 );
+end
+if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 )
   rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 1; 
-end;
+end
 
 %  Make sure variance isn't zero if doing polar
-if rhoInitMaster.varX ~= 0; 
-  if varX == 0;
+if rhoInitMaster.varX ~= 0
+  if varX == 0
     rhoInitMaster.varX = systemMaster.Lx/2; 
-  end;
-end;
-if rhoInitMaster.varY ~= 0; 
-  if varY == 0;
+  end
+end
+if rhoInitMaster.varY ~= 0
+  if varY == 0
     rhoInitMaster.varY = systemMaster.Ly/2; 
-  end;
-end;
-if rhoInitMaster.varPhi ~= 0; 
-  if varPhi == 0;
+  end
+end
+if rhoInitMaster.varPhi ~= 0
+  if varPhi == 0
     rhoInitMaster.varPhi = systemMaster.Lphi/2; 
-  end;
-end;
-
+  end
+end
 % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
 % steady state instead of d rho
 timeMaster.ss_epsilon_dt = timeMaster.ss_epsilon .* timeMaster.dt;
-
 % Fix Ls if we want the box to be square
-if flagMaster.SquareBox == 1; 
+if flagMaster.SquareBox == 1
   systemMaster.L_box = unique( [systemMaster.Lx systemMaster.Ly] );
   systemMaster.Lx = systemMaster.L_box; 
   systemMaster.Ly = systemMaster.L_box; 
 end
-
 % Fix Lx is we want all Ns to be the same
-if flagMaster.AllNsSame == 1; 
+if flagMaster.AllNsSame == 1
   Nvec = unique( [systemMaster.Nx systemMaster.Ny systemMaster.Nm] );
   systemMaster.Nx = Nvec;
   systemMaster.Ny = Nvec; 
   systemMaster.Nm = Nvec;
 end
-
 % Concentration and rod stuff
 particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded volume per particle
 particleMaster.mobPos = particleMaster.mob;
-
 % Make OP if making movies 
 if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
 if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
-
 % Give time warnings
-if timeMaster.dt > timeMaster.t_rec;
+if timeMaster.dt > timeMaster.t_rec
   fprintf('Recorded interval is shorter then timestep fix before proceeding\n');
 end
-if timeMaster.t_rec > timeMaster.t_write;
+if timeMaster.t_rec > timeMaster.t_write
   fprintf('File write interval is shorter than recordord interval. Fix it \n');
 end
-if timeMaster.t_write > timeMaster.t_tot;
+if timeMaster.t_write > timeMaster.t_tot
   fprintf('Total time interval is shorter then record interval\n');
 end
-
 % Save the Params
 save('Params.mat','particleMaster','systemMaster',...
   'runMaster','timeMaster','flagMaster','rhoInitMaster')
