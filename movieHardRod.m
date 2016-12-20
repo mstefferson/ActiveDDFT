@@ -47,7 +47,6 @@ try
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
       timeObj =  runSave.timeObj;
-      
       % Save Name
       movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
         systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
@@ -65,7 +64,7 @@ try
       totModes   = 12;
       FTind2plot = zeros( totModes , 3 );
       FTmat2plot = zeros( totModes , nRec );
-      
+      % fill in amps
       FTind2plot(1,:) = [kx0     ky0     km0 ];
       FTind2plot(2,:) = [kx0 + 1 ky0     km0 ];
       FTind2plot(3,:) = [kx0     ky0 + 1 km0 ];
@@ -88,7 +87,6 @@ try
       % Plot Amplitudes
       ampPlotterFT(FTmat2plot, FTind2plot, ...
         denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0, timeObj.t_tot);
-     
       % Save it
       figtl = sprintf('AmpFT.fig');
       % savefig doesn't like decimals so save it and rename it.
@@ -103,13 +101,11 @@ try
       sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
         OPobj.NOP_rec(:,:,end), systemObj, ...
         gridObj, denRecObj.rhoFinal, sliceSaveTag )
-
       % Plot max order parameters vs time
       maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
       plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
         OPobj.OpTimeRecVec, maxSaveTag );
-      
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);
       movefile([figtl2 '*'], dirFullPath);
@@ -117,7 +113,6 @@ try
       movefile([maxSaveTag '*'], dirFullPath);
       % move directory
       movefile(dirFullPath, ['./analyzedfiles/' dirTemp ] )
-      
     end % loop over dir
   else
     fprintf('Nothing to make movies for \n');

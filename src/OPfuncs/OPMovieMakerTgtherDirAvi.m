@@ -1,9 +1,14 @@
 
 function OPMovieMakerTgtherDirAvi(MovStr,x,y,phi,OP,DistRec,TimeRec)
-% Set up a indice vector so quiver is too crowded
+nFrames = length(TimeRec);
 Nx = length(x);
 Ny = length(y);
-% plot axis divisions
+Lx = x(end) + x(2);
+Ly = y(end) + y(2);
+% Find ticks
+xTick = [0 Lx/2 Lx];
+yTick = [0 Ly/2 Ly];
+% Set up a index vector so quiver is too crowded
 DivNumX = 8;
 DivNumY = 8;
 DeltaX  = ceil(Nx / DivNumX );
@@ -21,30 +26,38 @@ FigPos      = [ floor( 0.5 * ( ScreenWidth - FigWidth ) ) ...
   FigWidth FigHeight];
 %Build a square box set by smallest dimension of screen
 Fig = figure();
-% set(Fig, 'WindowStyle', 'normal');
+Fig.WindowStyle = 'normal';
 Fig.Position = FigPos;
 %Initialize the movie structure
 Mov = VideoWriter(MovStr);
 Mov.FrameRate = 4;
 open(Mov);
-% C
-nFrames = length(TimeRec);
+% Concentration
 set(gcf,'renderer','zbuffer')
 axh1 = subplot(2,2,1); % Save the handle of the subplot
 axh1.TickLabelInterpreter = 'latex';
 h = colorbar('peer',axh1);
 h.TickLabelInterpreter = 'latex';
+axh1.NextPlot = 'replaceChildren';
 minC = min(min(min(OP.C_rec )));
 maxC = max(max(max(OP.C_rec)));
 if minC >= maxC
   minC = 0;
   maxC = 0.1;
 end
-axh1.NextPlot = 'replaceChildren';
 axh1.CLim = 1 /pi * [minC maxC];
+axh1.XLim = [0 Lx]; %row and columns are flipped
+axh1.YLim = [0 Ly]; %row and columns are flipped
+axh1.YDir = 'rev';
 % axh1.YDir = 'normal';
+axh1.XTick = xTick;
+axh1.YTick = yTick;
+% wantedTickLabel =  axh1.YTickLabel;
+wantedTickLabel = flip( axh1.YTickLabel );
+axh1.YTickLabel =  wantedTickLabel;
+shading(axh1,'interp');
+xlabel(axh1,'x'); ylabel(axh1,'y') %rename x and y
 axis square
-% xlabel('x'); ylabel('y')
 % Polar order
 axh2 = subplot(2,2,2); % Save the handle of the subplot
 axh2.TickLabelInterpreter = 'latex';
@@ -52,9 +65,16 @@ h = colorbar('peer',axh2);
 h.TickLabelInterpreter = 'latex';
 axh2.NextPlot = 'replaceChildren';
 axh2.CLim = [0 1];
+axh2.XLim = [0 Lx]; %row and columns are flipped
+axh2.YLim = [0 Ly]; %row and columns are flipped
+axh2.YDir = 'rev';
 % axh2.YDir = 'normal';
+axh2.XTick = xTick;
+axh2.YTick = yTick;
+axh2.YTickLabel =  wantedTickLabel;
+shading(axh2,'interp');
+xlabel(axh2,'x'); ylabel(axh2,'y') %rename x and y
 axis square
-% xlabel('x'); ylabel('y')
 % Distribution
 axh3 = subplot(2,2,3); % Save the handle of the subplot
 axh3.TickLabelInterpreter = 'latex';
@@ -67,6 +87,7 @@ if maxDist <= 0
 end
 axh3.NextPlot = 'replaceChildren';
 axh3.YLim = [0 maxDist];
+axh3.XLim = [0 2*pi];
 axis square
 xlabel('$$\phi$$'); ylabel('f($$\phi$$)')
 % Nematic order
@@ -76,9 +97,15 @@ h = colorbar('peer',axh4);
 h.TickLabelInterpreter = 'latex';
 axh4.NextPlot = 'replaceChildren';
 axh4.CLim = [0 1];
+axh4.XLim = [0 Lx]; %row and columns are flipped
+axh4.YLim = [0 Ly]; %row and columns are flipped
 % axh4.YDir = 'normal';
-axh4.YTick = linspace(0, Nx, 10)  ;
-
+axh4.YDir = 'rev';
+axh4.XTick = xTick;
+axh4.YTick = yTick;
+axh4.YTickLabel = wantedTickLabel;
+shading(axh4,'interp');
+xlabel(axh4,'x'); ylabel(axh4,'y') %rename x and y
 axis square
 % Scale polar order by it's max value to for it changes.
 polarTempX = OP.POPx_rec(SubIndX,SubIndY,:);
@@ -91,82 +118,49 @@ nemTempY = OP.NOPy_rec(SubIndX,SubIndY,:);
 maxNem = max( max( max( OP.NOP_rec(SubIndX,SubIndY,:) ) ) );
 nemTempX = nemTempX .* OP.NOP_rec(SubIndX,SubIndY,:) ./ maxNem;
 nemTempY = nemTempY .* OP.NOP_rec(SubIndX,SubIndY,:) ./ maxNem;
-% loop over framces
 % keyboard
+% loop over frames
 try
-
-%   for ii = 1:nFrames
-    ii = nFrames;
+ vec2loop = nFrames;
+%  vec2loop = 1:nFrames;
+  for ii = vec2loop
     % Concentration
     subplot(axh1);
-%     pcolor(axh1,x,y,OP.C_rec(:,:,ii)' ./ pi)
-%     imagesc(axh1,y,x,OP.C_rec(:,:,ii) ./ pi)
-    % Matlab's way
-    imagesc(axh1, y, x, OP.C_rec(:,:,ii) ./ pi)
-    axh1.YDir = 'rev';
-
-    shading(axh1,'interp');
+    cla(axh1);
+    imagesc(axh1, x, y, rot90( OP.C_rec(:,:,ii) ) ./ pi);
     TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
-    title(axh1,TitlStr)
-    drawnow;
+    title(axh1,TitlStr);
     pause(0.001);
+    drawnow;
     % Polar order
     subplot(axh2);
-    set(axh2,'NextPlot','replaceChildren',...
-      'CLim',[0 1]);
-    axh2.YDir = 'rev';
-    %pcolor(axh2,x,y,OP.POP_rec(:,:,ii)');
-    %imagesc(axh2,y,x,OP.POP_rec(:,:,ii));
-    %imageQuiver( amps, xDir, yDir, myMethod, ax)
-    shading(axh2,'interp'); 
+    cla(axh2);
+    imagesc(axh2,x,y, rot90( OP.POP_rec(:,:,ii) ) );
     TitlStr = sprintf('Polar Order t = %.2f', TimeRec(ii));
-    % What I and Matlab call x/y are switched
-    % matlab's way
-    %imagesc(axh2,OP.POP_rec(:,:,ii));
-    %quiver(axh2,y(SubIndX),x(SubIndY),...
-      %polarTempX(:,:,ii),...
-      %polarTempY(:,:,ii), 0,'color',[1,1,1]);
     hold on
-    quiver(axh2,y(SubIndY),x(SubIndX),...
-      polarTempX(:,:,ii),...
-      -polarTempY(:,:,ii), 0,'color',[1,1,1]);
-    hold off
-    %imageQuiver( OP.POP_rec(:,:,ii), OP.POPx_rec(:,:,ii), ...
-    %  OP.POPy_rec(:,:,ii),1, axh2 )
-
+    quiver(axh2,x(SubIndX),y(SubIndY),...
+      rot90( polarTempX(:,:,ii) ),...
+      rot90( -polarTempY(:,:,ii) ), 0,'color',[1,1,1]);
     title(axh2,TitlStr)
-    drawnow;
     pause(0.001);
-    
+    drawnow;
     % Distribution
     subplot(axh3);
     plot( axh3, phi, DistRec(:,ii) );
     TtlStr = sprintf('Distribution t = %.2f',...
       TimeRec(ii));
     title(axh3,TtlStr);
-    drawnow;
     pause(0.001);
+    drawnow;
     % Nematic order
+    cla(axh4)
     subplot(axh4);
-    set(axh4,'NextPlot','replaceChildren',...
-      'CLim',[0 1]);
-    %pcolor(axh4, x, y, OP.NOP_rec(:,:,ii)');
-    % Matlab's way
-    imageQuiver( OP.POP_rec(:,:,ii), OP.POPx_rec(:,:,ii), ...
-      OP.POPy_rec(:,:,ii),1, axh2 )
-    %imagesc(axh4, y, x, OP.NOP_rec(:,:,ii));
-    imagesc(axh4,y, x, OP.NOP_rec(:,:,ii));
-    axh4.YDir = 'rev';
-    shading(axh4,'interp'); colorbar('peer',axh4)
+    imagesc(axh4, x, y, rot90( OP.NOP_rec(:,:,ii) ) );
     TitlStr = sprintf('Nem. Order t = %.2f ', TimeRec(ii));
     hold on
-    %quiver(axh4,y(SubIndX),x(SubIndY),...
-      %nemTempX(:,:,ii)',nemTempY(:,:,ii)',0,...
-      %'color',[1,1,1],'ShowArrowHead','off','LineWidth',0.1);
-    quiver(axh4,y(SubIndY),x(SubIndX),...
-      nemTempX(:,:,ii),-nemTempY(:,:,ii)',0,...
+    quiver(axh4, x(SubIndX),y(SubIndY),...
+      rot90( nemTempX(:,:,ii) ), rot90( -nemTempY(:,:,ii) ),0,...
       'color',[1,1,1],'ShowArrowHead','off','LineWidth',0.1);
-    hold off
     title(axh4,TitlStr)
     drawnow;
     pause(0.001);
@@ -174,12 +168,8 @@ try
     % before graphics render. Fix with drawnow and a pause.
     Fr = getframe(Fig);
     writeVideo(Mov,Fr);
-    keyboard
-%   end% End frame loop
-  
+  end% End frame loop
 catch err
   fprintf('%s', err.getReport('extended')) ;
-  %   keyboard
 end % try catch
-
 close(Fig)

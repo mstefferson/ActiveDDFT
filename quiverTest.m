@@ -1,25 +1,99 @@
 %%
-theta11 = pi/4;
-theta12 = -pi/2;
-theta13 = pi/2;
-theta21 = -pi/4;
-theta22 = pi;
-theta23 = pi/4;
+% theta11 = pi/4;
+% theta12 = -pi/2;
+% theta13 = pi/2;
+% theta21 = -pi/4;
+% theta22 = pi;
+% theta23 = pi/4;
+% % 
+
+thetaAll = 0;
+theta11 = thetaAll;
+theta12 = thetaAll;
+theta13 = thetaAll;
+theta21 = thetaAll;
+theta22 = thetaAll;
+theta23 = thetaAll;
 
 Ax = [ cos(theta11) cos(theta12) cos(theta13); ...
       cos(theta21) cos(theta22) cos(theta23)];
 Ay = [ sin(theta11) sin(theta12) sin(theta13); ...
       sin(theta21) sin(theta22) sin(theta23)];
-Amps = [ 1 2 3; 4 5 6];
+    
+theta11actMat = theta11 - pi/2 ;
+theta12actMat = theta12 - pi/2 ;
+theta13actMat = theta13 - pi/2 ;
+theta21actMat = theta21 - pi/2 ;
+theta22actMat = theta22 - pi/2 ;
+theta23actMat = theta23 - pi/2 ;
+
+AxAct = [ cos(theta11actMat) cos(theta12actMat) cos(theta13actMat); ...
+      cos(theta21actMat) cos(theta22actMat) cos(theta23actMat)];
+AyAct = [ sin(theta11actMat) sin(theta12actMat) sin(theta13actMat); ...
+      sin(theta21actMat) sin(theta22actMat) sin(theta23actMat)];
+%    
+% Amps = [ 1 2 3; 1.5 2.5 3.5];
+Amps = [ 3 2 1; 1 3 2 ];
 
 disp(Ax); disp(Ay);disp(Amps);
 
 columns = 1:3;
 rows = 1:2;
-%%
+
+%
+% testing flips and rotation
+figure()
+subplot(2,2,1)
+imagesc(columns,rows,Amps);
+colorbar
+ax = gca;
+ax.YDir = 'rev';
+ax.NextPlot = 'add';
+quiver(columns,rows,AxAct,-AyAct)
+axis square
+xlabel('columns'); ylabel('rows');
+title([ 'phi M.C.S. actual matrix phi = ' num2str(theta11) ] )
+
+subplot(2,2,2)
+imagesc(rows,columns, rot90(Amps) );
+colorbar
+ax = gca;
+ax.YDir = 'rev';
+ax.NextPlot = 'add';
+quiver(rows, columns, rot90( Ax ), rot90( -Ay ) )
+axis square
+ax.YTick = columns;
+ax.YTickLabel = flip(columns);
+xlabel('rows'); ylabel('columns');
+title([ 'phi M.C.S. rotated matrix phi = ' num2str(theta11) ] )
+
+subplot(2,2,3)
+imagesc(columns,rows,Amps);
+colorbar
+ax = gca;
+ax.YDir = 'rev';
+ax.NextPlot = 'add';
+quiver(columns,rows,Ax,-Ay)
+axis square
+xlabel('columns'); ylabel('rows');
+title([ 'phi N.C.S. actual matrix phi = ' num2str(theta11) ] )
+
+subplot(2,2,4)
+imagesc(rows,columns, rot90(Amps) );
+colorbar
+ax = gca;
+ax.YDir = 'rev';
+ax.NextPlot = 'add';
+quiver(rows, columns, rot90( -Ay ), rot90( -Ax ) )
+axis square
+ax.YTick = columns;
+ax.YTickLabel = flip(columns);
+xlabel('rows'); ylabel('columns');
+title([ 'phi N.C.S. rotated matrix phi = ' num2str(theta11) ] )
+
+%% Test image Quiver
 imageQuiver( Amps, Ax, Ay, 1)
 imageQuiver( Amps, Ax, Ay, 2)
-%%
 %% Test imagesc
 figure()
 subplot(2,1,1)
@@ -45,7 +119,6 @@ ax2.YDir = 'rev';
 title('switched (rev) exact copy')
 
 %% Method 1: exact copy of matrix
-
 %figure()
 % Matlab way M( y , x )
 figure()
@@ -67,7 +140,6 @@ ax.YTickLabel = rows;
 title('Method 1: exact Copy')
 disp(Ax); disp(Ay);disp(Amps);
 %%
-
 %% Method 2: flip rows
 
 %figure()

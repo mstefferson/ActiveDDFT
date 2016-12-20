@@ -87,7 +87,7 @@ colorbar
 title( 'C' );
 xlabel('x'); ylabel('y');
 Ax = gca;
-Ax.YDir = 'normal';
+Ax.YDir = 'rev';
 
 if maxVar < varCutoff
   if aveC == 0
@@ -104,7 +104,7 @@ colorbar
 title( 'PO' );
 xlabel('x'); ylabel('y');
 Ax = gca;
-Ax.YDir = 'normal';
+Ax.YDir = 'rev';
 Ax.CLim = [0 1];
 
 subplot(1,3,3)
@@ -114,7 +114,7 @@ colorbar
 title( 'NO' );
 xlabel('x'); ylabel('y');
 Ax = gca;
-Ax.YDir = 'normal';
+Ax.YDir = 'rev';
 Ax.CLim = [0 1];
 
 % Save it
@@ -172,7 +172,7 @@ end
 % Plot distribution at different positions
 figure()
 subplot(1,2,1)
-pcolor(posVar, phi,distroSlice')
+imagesc(posVar, phi,distroSlice)
 axis square
 colorbar
 xlabel(posVarLab); ylabel('$$\phi$$');
@@ -187,9 +187,8 @@ if maxVar < varCutoff
   Ax.CLim =  [ aveDistro-deltaDistro aveDistro+deltaDistro]; 
   end
 end
-
 subplot(1,2,2)
-pcolor(posVar, phi,distroSliceChop')
+imagesc(posVar, phi,distroSliceChop)
 axis square
 colorbar
 xlabel(posVarLab); ylabel('$$\phi$$');
@@ -197,6 +196,7 @@ title('Distribution with high ampiltude sliced out')
 Ax = gca;
 Ax.YDir = 'normal';
 shading interp;
+
 if maxVar < varCutoff
   if aveC == 0
    Ax.CLim = [ 0 0.1]; 
@@ -204,7 +204,6 @@ if maxVar < varCutoff
   Ax.CLim =  [ aveDistro-deltaDistro aveDistro+deltaDistro]; 
   end
 end
-
 % Save it
 if saveFlag
   tempTag = '_DistroSurf';
@@ -231,7 +230,6 @@ for ii = 1:length( plotInd )
     legend( deltaStr, 'C max' );
   end
 end
-
 % Save it
 if saveFlag
   tempTag = '_DistroSlices';
