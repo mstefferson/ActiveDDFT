@@ -121,8 +121,7 @@ nemTempY = nemTempY .* OP.NOP_rec(SubIndX,SubIndY,:) ./ maxNem;
 % keyboard
 % loop over frames
 try
- vec2loop = nFrames;
-%  vec2loop = 1:nFrames;
+vec2loop = 1:nFrames;
   for ii = vec2loop
     % Concentration
     subplot(axh1);
