@@ -13,8 +13,8 @@ if ~exist('runOPfiles', 'dir'); mkdir('./runOPfiles'); end;
 if ~exist('analyzedfiles', 'dir'); mkdir('./analyzedfiles'); end;
 
 % Grab initial parameters
-if exist('Params.mat','file') == 0;
-  if exist('initParams.m','file') == 0;
+if exist('Params.mat','file') == 0
+  if exist('initParams.m','file') == 0
     cpParams();
   end;
   initParams();
@@ -33,7 +33,7 @@ anisoDiffFlag = flags.AnisoDiff;
 trial = runObj.trialID;
 
 % Print what you are doing
-if anisoDiffFlag  == 1;
+if anisoDiffFlag  == 1
   fprintf('Anisotropic Hard Rod \n')
 else
   fprintf('Isotropic Hard Rod \n')
