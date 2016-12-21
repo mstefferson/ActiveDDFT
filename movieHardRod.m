@@ -54,7 +54,6 @@ try
       OPMovieMakerTgtherDirAvi(movStr,...
         gridObj.x,gridObj.y,gridObj.phi,OPobj,...
         OPobj.distSlice_rec,OPobj.OpTimeRecVec);
-      keyboard
       % Make amplitude plot
       kx0 = systemObj.Nx / 2 + 1;
       ky0 = systemObj.Ny / 2 + 1;
