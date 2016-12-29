@@ -55,12 +55,11 @@ else
   error('Error not written');
   rho = 0;
 end
-
 % Renormalize out here
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(gridObj.y,...
-  trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+CurrentNorm = trapz_periodic(gridObj.x,...
+  trapz_periodic(gridObj.y,trapz_periodic(gridObj.phi,rho,3),2),1);
 rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end
