@@ -51,7 +51,7 @@ end
 fprintf('Making time obj\n');
 [timeObj]= ...
   TimeStepRecMaker(timeMaster.dt,timeMaster.t_tot,...
-    timeMaster.t_rec,timeMaster.t_write);
+  timeMaster.t_rec,timeMaster.t_write);
 timeObj.ss_epsilon = timeMaster.ss_epsilon;
 timeObj.ss_epsilon_dt = timeMaster.ss_epsilon_dt;
 
@@ -95,7 +95,7 @@ if numRuns > 1
     
     fprintf('\nStarting %s \n', filename);
     [denRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
-       runObj, timeObj, rhoInit, flags );
+      runObj, timeObj, rhoInit, flags );
     fprintf('Finished %s \n', filename);
   end
 else
@@ -126,3 +126,19 @@ runSec = floor(runTime);
 fprintf('RunTime: %.2d:%.2d:%.2d (hr:min:sec)\n', runHr, runMin,runSec);
 fprintf('Finished RunHardRod: %s\n', dateTime);
 
+% check for log file
+logFile = dir('*.out');
+if ~isempty(logFile)
+  if length(logFile) == 1
+    fprintf('One log file found. Copying it to save dir.\n')
+  else
+    fprintf('Too many files. Copying all to save dir.\n')
+  end
+  for ii = 1:length(logFile)
+    newLog = [ filename(1:end-4) '_l' num2str(ii,'%.2d') '.out' ];
+    movefile(logFile(ii).name, newLog );
+    movefile( newLog, denRecObj.dirName );
+  end
+else
+  fprintf('No log file found\n')
+end

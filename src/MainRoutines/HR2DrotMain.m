@@ -33,31 +33,27 @@ try
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];
+    saveNameParams = ['params_' filename];
+    dirName  = filename(1:end-4) ;
     if flags.MakeOP == 0
-      dirName    =  './runfiles';
+      dirName  = ['./runfiles/' dirName ];
     else
       saveNameOP   = ['op_' filename];
-      saveNameParams = ['params_' filename];
-      dirName  = filename(1:end-4) ;
       if flags.MakeMovies == 1
-        dirPath  = ['./analyzedfiles/' dirName ];
-        if exist(dirPath,'dir') == 0
-          mkdir('./analyzedfiles', dirName);
-        end
-        dirName = dirPath;
+        dirName  = ['./analyzedfiles/' dirName ];
       else
-        dirPath  = ['./runOPfiles/' dirName ];
-        if exist(dirPath,'dir') == 0
-          mkdir('./runOPfiles', dirName);
-        end
-        dirName = dirPath;
+        dirName  = ['./runOPfiles/' dirName ];
       end
       opSave = matfile(saveNameOP,'Writable',true);
-      paramSave = matfile(saveNameParams,'Writable',true);
     end
+    if exist(dirName,'dir') == 0
+      mkdir(dirName);
+    end
+    paramSave = matfile(saveNameParams,'Writable',true);
     runSave = matfile(saveNameRun,'Writable',true);
+    denRecObj.dirName = dirName; % Just in case
   end
-  
+
   if flags.Verbose
     if flags.AnisoDiff
       fprintf('Running Anisotropic Diffusion\n');
@@ -171,7 +167,7 @@ try
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
   end
   evolvedSucess = 1;
-  
+  denRecObj.dirName = dirName;
   % Save it
   if flags.SaveMe
     runSave.denRecObj = denRecObj;
@@ -418,18 +414,14 @@ try
   end
   fprintf(lfid,'Total Run time = %f\n', totRunTime);
   runTime.tot = totRunTime;
-  
   % Move saved things
-  
   if flags.SaveMe
     paramSave.runTime = runTime;
     movefile(saveNameRun,dirName);
-    
+    movefile( saveNameParams,dirName);
     if flags.MakeOP == 1
       movefile( saveNameOP,dirName);
-      movefile( saveNameParams,dirName);
     end
-    
   end
   
 catch err %Catch errors
@@ -441,31 +433,20 @@ catch err %Catch errors
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
-  if evolvedSucess == 1
-    
-    if flags.SaveMe
-      if flags.MakeMovies == 1
-        if movieSuccess == 0
-          fprintf('Movies failed\n');
-          if exist(movStr,'file'); delete(movStr); end
-          rmdir(dirName);
-          dirName =  './runOPfiles';
-        end
-      end
-      if flags.MakeOP == 1 && flags.SaveMe
-        dirName  = filename(1:end-4) ;
-        dirPath  = ['./runOPfiles/' dirName ];
-        if exist(dirPath,'dir') == 0
-          mkdir('./runOPfiles', dirName);
-        end
-        dirName = dirPath;
-        movefile( saveNameOP,dirName);
-        movefile( saveNameParams,dirName);
-      end
-      movefile(saveNameRun,dirName);
+  if evolvedSucess == 1 && flags.SaveMe == 1
+    if flags.MakeMovies == 1 && movieSuccess == 0
+      fprintf('Movies failed\n');
+      if exist(movStr,'file'); delete(movStr); end
+      rmdir(dirName);
+      dirName = [ './runOPfiles' filename(1:end-4) ];
+      denRecObj.dirName = dirName;
+    end
+    movefile(saveNameRun,dirName);
+    movefile( saveNameParams,dirName);
+    if flags.MakeOP == 1
+      movefile( saveNameOP,dirName);
     end
   end
-  
 end %End try and catch
 
 fclose(lfid);

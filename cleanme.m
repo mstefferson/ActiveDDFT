@@ -4,3 +4,4 @@ delete('*.fig');
 delete('*.mat');
 delete('*.jpg');
 delete('*.avi');
+delete('*.out');
