@@ -146,6 +146,10 @@ end
 % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
 % steady state instead of d rho
 timeMaster.ss_epsilon_dt = timeMaster.ss_epsilon .* timeMaster.dt;
+% Make sure step method 6 isn't on ani = 0
+if flagMaster.AnisoDiff == 0 && flagMaster.StepMeth == 6
+  flagMaster.StepMeth = 0;
+end
 % Fix Ls if we want the box to be square
 if flagMaster.SquareBox == 1
   systemMaster.L_box = unique( [systemMaster.Lx systemMaster.Ly] );
