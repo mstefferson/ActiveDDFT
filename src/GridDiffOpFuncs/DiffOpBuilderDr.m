@@ -26,7 +26,7 @@ if diffObj.dr == 1
   %Periodic terms
   %m = N coupling to m = 1
   Mplus1Mtx =  Mplus1Mtx  + ...
-    spdiags( [ CpMplus1Vec( (N2*(Nm-1)+1):N3 ) zeros( 1, N2*(Nm-2) ) ]' , -(N2*(Nm-1)), N3, N3 );
+    spdiags( [ CpMplus1Vec( (N2*(Nm-1)+1):N3 ) zeros( 1, N2*(Nm-1) ) ]' , -(N2*(Nm-1)), N3, N3 );
   %m = 1 coupling to m = N
   Mminus1Mtx = Mminus1Mtx + ...
     spdiags( [ zeros( 1, N2*(Nm-1) ) CpMminus1Vec( 1:N2 ) ]', N2*(Nm-1), N3, N3 ) ;
