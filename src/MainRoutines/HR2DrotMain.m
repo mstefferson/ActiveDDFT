@@ -52,6 +52,8 @@ try
     paramSave = matfile(saveNameParams,'Writable',true);
     runSave = matfile(saveNameRun,'Writable',true);
     denRecObj.dirName = dirName; % Just in case
+  else
+    dirName = pwd;
   end
 
   if flags.Verbose

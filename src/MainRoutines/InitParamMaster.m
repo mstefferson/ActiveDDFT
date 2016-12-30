@@ -168,6 +168,11 @@ particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded v
 particleMaster.mobPos = particleMaster.mob;
 % Make OP if making movies 
 if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
+%Currently, you must save
+if flagMaster.MakeOP && flagMaster.SaveMe == 0
+  fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
+  flagMaster.SaveMe = 1;
+end
 if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
 % Give time warnings
 if timeMaster.dt > timeMaster.t_rec
