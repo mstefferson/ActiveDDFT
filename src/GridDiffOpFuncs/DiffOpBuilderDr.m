@@ -29,7 +29,7 @@ if diffObj.dr == 1
     spdiags( [ CpMplus1Vec( (N2*(Nm-1)+1):N3 ) zeros( 1, N2*(Nm-1) ) ]' , -(N2*(Nm-1)), N3, N3 );
   %m = 1 coupling to m = N
   Mminus1Mtx = Mminus1Mtx + ...
-    spdiags( [ zeros( 1, N2*(Nm-1) ) CpMminus1Vec( 1:N2 ) ]', N2*(Nm-1), N3, N3 ) ;
+    spdiags( [ zeros( 1, N2*(Nm-1) ) CpMminus1Vec( (N2*(Nm-1)+1):N3 ) ]', N2*(Nm-1), N3, N3 ) ;
   Lop = Lop + Mplus1Mtx + Mminus1Mtx;
 end
 
@@ -48,7 +48,7 @@ if diffObj.Ani == 1
     spdiags( [ CpMplus2Vec( (N2*(Nm-2)+1):N3 ) zeros( 1, N2*(Nm-2) ) ]' , -(N2*(Nm-2)), N3, N3 );
   %m = 1,2 coupling to m = N-1,N
   Mminus2Mtx = Mminus2Mtx + ...
-    spdiags( [ zeros( 1, N2*(Nm-2) ) CpMminus2Vec( 1:2*N2 ) ]', N2*(Nm-2), N3, N3 ) ;
+    spdiags( [ zeros( 1, N2*(Nm-2) ) CpMminus2Vec( (N2*(Nm-2)+1):N3 ) ]', N2*(Nm-2), N3, N3 ) ;
   Lop = Lop + Mplus2Mtx + Mminus2Mtx;
 end
 
