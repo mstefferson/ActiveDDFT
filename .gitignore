@@ -24,6 +24,7 @@ analyzedfiles/
 data/
 data/*
 eo/*
+sandbox/*
 
 # Certain files
 Runner.m
