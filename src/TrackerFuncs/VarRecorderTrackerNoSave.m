@@ -1,5 +1,5 @@
 function [SteadyState,ShitIsFucked] = ...
-VarRecorderTrackerNoSave(lfid,timeObj,t,Nx,Ny,Nm,rhoVec_FT,rhoVec_FT_prev,TotalDensity)
+VarRecorderTrackerNoSave(lfid,timeObj,t,n1,n2,n3,rhoVec_FT,rhoVec_FT_prev,TotalDensity)
 % Track how mucht the wieghted density has changed.
 %Check to see if steady state has been reached. If so, break the
 %loop'
@@ -7,10 +7,10 @@ VarRecorderTrackerNoSave(lfid,timeObj,t,Nx,Ny,Nm,rhoVec_FT,rhoVec_FT_prev,TotalD
 % keyboard
 fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
 % fclose(tfid);
-rho         = real(ifftn(ifftshift(reshape( rhoVec_FT,Nx,Ny,Nm ))));
-rho_prev    = real(ifftn(ifftshift(reshape( rhoVec_FT_prev,Nx,Ny,Nm ))));
-%         rho_prop    = real(ifftn(ifftshift(reshape( rhoVec_prop_FT,Nx,Ny,Nm ))));
-rho_cube_FT = reshape( rhoVec_FT,Nx,Ny,Nm );
+rho         = real(ifftn(ifftshift(reshape( rhoVec_FT,n1,n2,n3 ))));
+rho_prev    = real(ifftn(ifftshift(reshape( rhoVec_FT_prev,n1,n2,n3 ))));
+%         rho_prop    = real(ifftn(ifftshift(reshape( rhoVec_prop_FT,n1,n2,n3 ))));
+rho_cube_FT = reshape( rhoVec_FT,n1,n2,n3 );
 
 % See if things are broken
 [SteadyState,ShitIsFucked] = BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj);

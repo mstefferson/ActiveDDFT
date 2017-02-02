@@ -38,21 +38,21 @@ end
 
 % Multiply by derivatives in k space repeatedily,
 % they are large, but shouild be worth allocating
-[ diffObj.iky3, diffObj.ikx3, diffObj.ikm3 ] = ...
+[ diffObj.ik2rep3, diffObj.ik1rep3, diffObj.ik3rep3 ] = ...
   meshgrid(ky,kx,km);
 
-diffObj.ikx3 = sqrt(-1) .* diffObj.ikx3;
-diffObj.iky3 = sqrt(-1) .* diffObj.iky3;
-diffObj.ikm3 = sqrt(-1) .* diffObj.ikm3;
+diffObj.ik1rep3 = sqrt(-1) .* diffObj.ik1rep3;
+diffObj.ik2rep3 = sqrt(-1) .* diffObj.ik2rep3;
+diffObj.ik3rep3 = sqrt(-1) .* diffObj.ik3rep3;
 
 % NL couplings
 % key: jxMm2f = jx m -2 coupling factor
 
 % jx
-Nm = length(km);
+n3 = length(km);
 jxf    = - ( diffObj.D_par + diffObj.D_perp ) .* ...
   ( sqrt(-1) * kx2D ) / 2;
-diffObj.jxf_reps = repmat( jxf, [1,1,Nm]);
+diffObj.jxf_reps = repmat( jxf, [1,1,n3]);
 if diffObj.Ani == 0 || diffObj.D_perp == diffObj.D_par
   diffObj.jxMm2f_reps = 0;
   diffObj.jxMp2f_reps = 0;
@@ -61,14 +61,14 @@ else
     ( sqrt(-1) * kx2D + ky2D ) / 4;
   jxMp2f = - ( diffObj.D_par - diffObj.D_perp ) .* ...
     ( sqrt(-1) * kx2D - ky2D ) / 4;
-  diffObj.jxMm2f_reps = repmat( jxMm2f, [1,1,Nm]);
-  diffObj.jxMp2f_reps = repmat( jxMp2f, [1,1,Nm]);
+  diffObj.jxMm2f_reps = repmat( jxMm2f, [1,1,n3]);
+  diffObj.jxMp2f_reps = repmat( jxMp2f, [1,1,n3]);
 end
 
 % jy
 jyf    = - ( diffObj.D_perp + diffObj.D_par ) .* ...
   ( sqrt(-1) * ky2D ) / 2;
-diffObj.jyf_reps = repmat( jyf, [1,1,Nm]);
+diffObj.jyf_reps = repmat( jyf, [1,1,n3]);
 if diffObj.Ani == 0 || diffObj.D_perp == diffObj.D_par
   diffObj.jyMm2f_reps = 0;
   diffObj.jyMp2f_reps = 0;
@@ -77,8 +77,8 @@ else
     ( sqrt(-1) * ky2D - kx2D ) / 4;
   jyMp2f = - ( diffObj.D_perp - diffObj.D_par ) .* ...
     ( sqrt(-1) * ky2D + kx2D ) / 4;
-  diffObj.jyMm2f_reps = repmat( jyMm2f, [1,1,Nm]);
-  diffObj.jyMp2f_reps = repmat( jyMp2f, [1,1,Nm]);
+  diffObj.jyMm2f_reps = repmat( jyMm2f, [1,1,n3]);
+  diffObj.jyMp2f_reps = repmat( jyMp2f, [1,1,n3]);
 end
 
 end

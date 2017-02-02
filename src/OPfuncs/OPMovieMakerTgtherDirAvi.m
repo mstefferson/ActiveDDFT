@@ -1,20 +1,20 @@
 
 function OPMovieMakerTgtherDirAvi(MovStr,x,y,phi,OP,DistRec,TimeRec)
 nFrames = length(TimeRec);
-Nx = length(x);
-Ny = length(y);
-Lx = x(end) + x(2);
-Ly = y(end) + y(2);
+n1 = length(x);
+n2 = length(y);
+l1 = x(end) + x(2);
+l2 = y(end) + y(2);
 % Find ticks
-xTick = [0 Lx/2 Lx];
-yTick = [0 Ly/2 Ly];
+xTick = [0 l1/2 l1];
+yTick = [0 l2/2 l2];
 % Set up a index vector so quiver is too crowded
 DivNumX = 8;
 DivNumY = 8;
-DeltaX  = ceil(Nx / DivNumX );
-DeltaY  = ceil(Ny / DivNumY);
-SubIndX = 1:DeltaX:(Nx + 1 - DeltaX);
-SubIndY = 1:DeltaY:(Ny + 1 - DeltaY);
+DeltaX  = ceil(n1 / DivNumX );
+DeltaY  = ceil(n2 / DivNumY);
+SubIndX = 1:DeltaX:(n1 + 1 - DeltaX);
+SubIndY = 1:DeltaY:(n2 + 1 - DeltaY);
 % Set up figure, make it a square 0.8 of
 % smallest screen dimension
 ScreenSize = get(0,'screensize');
@@ -46,8 +46,8 @@ if minC >= maxC
   maxC = 0.1;
 end
 axh1.CLim = 1 /pi * [minC maxC];
-axh1.XLim = [0 Lx]; %row and columns are flipped
-axh1.YLim = [0 Ly]; %row and columns are flipped
+axh1.XLim = [0 l1]; %row and columns are flipped
+axh1.YLim = [0 l2]; %row and columns are flipped
 axh1.YDir = 'rev';
 % axh1.YDir = 'normal';
 axh1.XTick = xTick;
@@ -65,8 +65,8 @@ h = colorbar('peer',axh2);
 h.TickLabelInterpreter = 'latex';
 axh2.NextPlot = 'replaceChildren';
 axh2.CLim = [0 1];
-axh2.XLim = [0 Lx]; %row and columns are flipped
-axh2.YLim = [0 Ly]; %row and columns are flipped
+axh2.XLim = [0 l1]; %row and columns are flipped
+axh2.YLim = [0 l2]; %row and columns are flipped
 axh2.YDir = 'rev';
 % axh2.YDir = 'normal';
 axh2.XTick = xTick;
@@ -97,8 +97,8 @@ h = colorbar('peer',axh4);
 h.TickLabelInterpreter = 'latex';
 axh4.NextPlot = 'replaceChildren';
 axh4.CLim = [0 1];
-axh4.XLim = [0 Lx]; %row and columns are flipped
-axh4.YLim = [0 Ly]; %row and columns are flipped
+axh4.XLim = [0 l1]; %row and columns are flipped
+axh4.YLim = [0 l2]; %row and columns are flipped
 % axh4.YDir = 'normal';
 axh4.YDir = 'rev';
 axh4.XTick = xTick;

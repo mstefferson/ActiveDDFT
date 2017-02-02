@@ -13,7 +13,7 @@
 % Density matrix is set up as rho(x,y,phi)-----> RHO(kx,ky,km)
 %
 % The Lopagator now includes all the terms. The all the cubes are turned
-% into: a (Nx*Ny*Nm) x (Nx*Ny*Nm) linear operator and N^3 density vector
+% into: a (n1*n2*n3) x (n1*n2*n3) linear operator and N^3 density vector
 %
 % Everything is sparsified
 %
@@ -33,11 +33,11 @@ fprintf(lfid,'In body of code\n');
 % finished
 
 %Set N since it used so frequently
-Nx  = systemObj.Nx;
-Ny  = systemObj.Ny;
-Nm  = systemObj.Nm;
-N3 = Nx*Ny*Nm;
-N2 = Nx*Ny;
+n1  = systemObj.n1;
+n2  = systemObj.n2;
+n3  = systemObj.n3;
+N3 = n1*n2*n3;
+N2 = n1*n2;
 
 % Declare dt since it's used so much
 dt = timeObj.dt;
@@ -45,16 +45,16 @@ dt = timeObj.dt;
 % FT initial density and max density
 rho_FT = fftshift(fftn(rho));
 rhoVec_FT = reshape(rho_FT,N3,1);
-if Nm == 1
-  constConc = rho_FT( Nx/2 + 1, Ny/2 + 1);
+if n3 == 1
+  constConc = rho_FT( n1/2 + 1, n2/2 + 1);
 else
-  constConc = rho_FT( Nx/2 + 1, Ny/2 + 1, Nm/2 + 1);
+  constConc = rho_FT( n1/2 + 1, n2/2 + 1, n3/2 + 1);
 end
 
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
-  Density_rec       = zeros( Nx, Ny, Nm, timeObj.N_recChunk );    % Store density amplitudes
-  DensityFT_rec      = zeros( Nx, Ny, Nm, timeObj.N_recChunk );   % Store k-space amplitdues
+  Density_rec       = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
+  DensityFT_rec      = zeros( n1, n2, n3, timeObj.N_recChunk );   % Store k-space amplitdues
 else
   Density_rec = 0;
   DensityFT_rec = 0;
@@ -66,11 +66,11 @@ jrec     = 2; % Actual index for runSave
 jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space Lopagator, and interaction
-[Lop] = DiffOpBuilderDr(diffObj,gridObj,Nx,Ny,Nm,N2,N3);
+[Lop] = DiffOpBuilderDr(diffObj,gridObj,n1,n2,n3,N2,N3);
 
 % Mayer function stuff %
 Fm_FT = fftshift(fftn( mayerFncHr(...
-  Nx, Ny, Nm, systemObj.Lx, systemObj.Ly, particleObj.lMaj) ));
+  n1, n2, n3, systemObj.l1, systemObj.l2, particleObj.lMaj) ));
 
 %Hard rod interactions
 if flags.Interactions
@@ -136,7 +136,7 @@ for t = 1:timeObj.N_time-1
   
   % Calculate rho if there is driving or interactions
   if flags.Interactions || flags.Drive
-    rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
+    rho_FT = reshape(rhoVec_FT,n1,n2,n3);
     rho    = real(ifftn(ifftshift(rho_FT)));
   end
   
@@ -179,10 +179,10 @@ for t = 1:timeObj.N_time-1
   if ( mod(t,timeObj.N_dtRec) == 0 )
     % Turn it to a cube if it hasn't been yet
     if flags.Interactions == 0 && flags.Drive == 0
-      rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
+      rho_FT = reshape(rhoVec_FT,n1,n2,n3);
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    rho_FTnext = reshape(rhoVec_FTnext,Nx,Ny,Nm);
+    rho_FTnext = reshape(rhoVec_FTnext,n1,n2,n3);
     [SteadyState,ShitIsFucked,MaxReldRho] = ...
       BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
     if flags.SaveMe
@@ -193,7 +193,7 @@ for t = 1:timeObj.N_time-1
     
     %Make sure things are taking too long. This is a sign density---> inf
     [TooLong] = ExpTooLongChecker(...
-      ticExptemp,ticExpInt,rhoVec_FT,Nx,Ny,Nm,jrec);
+      ticExptemp,ticExpInt,rhoVec_FT,n1,n2,n3,jrec);
     if TooLong; ShitIsFucked = 1; end
     
     % Write a chunk to disk
@@ -235,7 +235,7 @@ end %end time loop
 % Update last rho
 t =  t + 1;
 rhoVec_FT  = rhoVec_FTnext;
-rho_FT     = reshape(rhoVec_FT,Nx,Ny,Nm);
+rho_FT     = reshape(rhoVec_FT,n1,n2,n3);
 rho        = real(ifftn(ifftshift(rho_FT)));
 
 %Save everything
@@ -245,7 +245,7 @@ if flags.SaveMe
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       % Turn it to a cube if it hasn't been yet
       if flags.Interactions == 0 && flags.Drive == 0
-        rho_FT = reshape(rhoVec_FT,Nx,Ny,Nm);
+        rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;

@@ -1,6 +1,6 @@
 
 function [] = ...
-    SpecAnlys2DwRotPlotter(gridObj,ParamObj,DensityFT_record, D_rot, D_pos, Nx,Ny,Nm, bc, ...
+    SpecAnlys2DwRotPlotter(gridObj,ParamObj,DensityFT_record, D_rot, D_pos, n1,n2,n3, bc, ...
                            kx,ky,km,TimeRecVec,dt,xDispersion,yDispersion,angDispersion )
 %Subroutine analyzes the decaying modes of the system and plots the
 %dispersion relation for the system.
@@ -18,11 +18,11 @@ function [] = ...
 if xDispersion == 1
     min_amp = 0.001;         % Minimum the amplitude value  needs to be to track
     NumModesMax = 5;       % Find which ks you want to track.
-    kyholder = Ny/2 + 2;    % Place holder of kx  = 0;
-    kmholder = Nm/2 + 5;    % Place holder of ky = 0;
+    kyholder = n2/2 + 2;    % Place holder of kx  = 0;
+    kmholder = n3/2 + 5;    % Place holder of ky = 0;
     [ampl_record_x,fitParam_x] = SpecAnaly2DwRotSubRoutX(NumModesMax,DensityFT_record,...
                                  TimeRecVec, dt,kyholder,kmholder,...
-                                 min_amp,kx,ky,km,D_rot, D_pos,Nx,Ny,Nm,bc);
+                                 min_amp,kx,ky,km,D_rot, D_pos,n1,n2,n3,bc);
 
 end %end if kx dispersion
 
@@ -31,11 +31,11 @@ end %end if kx dispersion
 if yDispersion == 1
     min_amp = 0.001;         % Minimum the amplitude value  needs to be to track
     NumModesMax = 5;       % Find which ks you want to track.
-    kxholder = Nx/2 + 1;    % Place holder of kx  = 0;
-    kmholder = Nm/2 + 1;    % Place holder of ky = 0;
+    kxholder = n1/2 + 1;    % Place holder of kx  = 0;
+    kmholder = n3/2 + 1;    % Place holder of ky = 0;
     [ampl_record_y,fitParam_y] = SpecAnaly2DwRotSubRoutY(NumModesMax,DensityFT_record, ...
                                  TimeRecVec, dt,kxholder,kmholder,...
-                                 min_amp,kx,ky,km,D_rot, D_pos,Nx,Ny,Nm,bc);
+                                 min_amp,kx,ky,km,D_rot, D_pos,n1,n2,n3,bc);
 
 end %end if ky dispersion
 
@@ -44,11 +44,11 @@ end %end if ky dispersion
 if angDispersion == 1
     min_amp = 0.0001;         % Minimum the amplitude value  needs to be to track
     NumModesMax = 15;       % Find which ks you want to track. Must be odd
-    kxholder = Nx/2 + 1 ;    % Place holder of kx  = 0;
-    kyholder = Ny/2 + 1;    % Place holder of ky = 0;
+    kxholder = n1/2 + 1 ;    % Place holder of kx  = 0;
+    kyholder = n2/2 + 1;    % Place holder of ky = 0;
     [ampl_record_m] = SpecAnaly2DwRotSubRoutPhi(gridObj,ParamObj,NumModesMax,DensityFT_record,...
                                  TimeRecVec,dt ,kxholder,kyholder, min_amp,kx,ky,km,...
-                                 D_rot, D_pos,Nx,Ny,Nm,bc);
+                                 D_rot, D_pos,n1,n2,n3,bc);
 %     keyboard
 end %end if ang dispersion
 % keyboard

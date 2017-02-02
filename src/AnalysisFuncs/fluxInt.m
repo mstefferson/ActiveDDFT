@@ -3,16 +3,16 @@ function [JxInt, JyInt, JphiInt] =  ...
 
 % Mayer function stuff %
 Fm_FT = fftshift(fftn( mayerFncHr(...
-  systemObj.Nx, systemObj.Ny, systemObj.Nm, ...
-  systemObj.Lx, systemObj.Ly, particleObj.lMaj) ));
+  systemObj.n1, systemObj.n2, systemObj.n3, ...
+  systemObj.l1, systemObj.l2, particleObj.lMaj) ));
 
 % Calc chemical potential
 MuEx_FT = muExCalcVc2Ft(rho_FT, Fm_FT,systemObj);
 
 %Takes its derivative in k-space
-dMuEx_dx_FT   = diffObj.ikx3 .*  MuEx_FT;
-dMuEx_dy_FT   = diffObj.iky3 .*  MuEx_FT;
-dMuEx_dphi_FT = diffObj.ikm3 .*  MuEx_FT;
+dMuEx_dx_FT   = diffObj.ik1rep3 .*  MuEx_FT;
+dMuEx_dy_FT   = diffObj.ik2rep3 .*  MuEx_FT;
+dMuEx_dphi_FT = diffObj.ik3rep3 .*  MuEx_FT;
 
 %Excess chemical potential derivative in real space
 %Mayer function derivative in real-space

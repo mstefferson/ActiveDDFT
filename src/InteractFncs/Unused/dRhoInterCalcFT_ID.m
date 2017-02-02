@@ -14,7 +14,7 @@ function [NegDivFluxExcess_FT] = dRhoInterCalcFT_ID(rho,rho_FT,Fm_FT,ParamObj,Gr
 %the density profile
 % keyboard
 %Now includes the correct scale
-MuEx_FT = -(2 * pi * ParamObj.Lx * ParamObj.Ly) / (ParamObj.Nx * ParamObj.Ny * ParamObj.Nm) ...
+MuEx_FT = -(2 * pi * ParamObj.l1 * ParamObj.l2) / (ParamObj.n1 * ParamObj.n2 * ParamObj.n3) ...
     .* ParamObj.Tmp .* Fm_FT .* rho_FT;
 %     MuEx    = real(ifftn(ifftshift(MuEx_FT)));
 

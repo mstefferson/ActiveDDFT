@@ -24,17 +24,17 @@ addpath('C:\Users\MWS\Documents\MATLAB\Research\BG\INtransEq')
 % Distribution stuff
 Nc    = 20;            % Number of Coefficients
 
-[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,gridObj.phi,systemObj.bc); % Calculate coeff
-f = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
+[Coeff_best, CoeffMat] = CoeffCalcExpCos2D(Nc,gridObj.x3,systemObj.bc); % Calculate coeff
+f = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
 % Get a new dist with peaks shifted by pi/2
-f_circ = circshift(f',systemObj.Nm/4)';
+f_circ = circshift(f',systemObj.n3/4)';
 
 % Initialize rho
-rho =    ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
+rho =    ones(systemObj.n1,systemObj.n2,systemObj.n3);
 
 % Map distribution to a homogeneous system
-for i = 1:systemObj.Nx
-    for j = 1:systemObj.Ny
+for i = 1:systemObj.n1
+    for j = 1:systemObj.n2
         if mod( (i+j), 2 ) == 0
             rho(i,j,:) = f;
         else
@@ -46,7 +46,7 @@ end
 % Normalize it
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+CurrentNorm = trapz_periodic(gridObj.x2,trapz_periodic(gridObj.x1,trapz_periodic(gridObj.x3,rho,3),2),1);
 rho = rho .* systemObj.numPart ./ CurrentNorm;
 % Perturb it
 

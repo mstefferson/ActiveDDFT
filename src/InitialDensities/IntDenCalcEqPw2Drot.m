@@ -22,10 +22,10 @@ function [rho] = IntDenCalcEqPw2Drot(systemObj, rhoInit)
 % Build rho from equilibrium
 % Initialize rho
 rho = systemObj.c .* ...
-    ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
+    ones(systemObj.n1,systemObj.n2,systemObj.n3);
 
 % Map distribution to a homogeneous system
-for i = 1:systemObj.Nm
+for i = 1:systemObj.n3
     rho(:,:,i) = rho(:,:,i) .* rhoInit.feq(i);
 end
 

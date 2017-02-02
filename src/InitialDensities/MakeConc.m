@@ -24,7 +24,7 @@ elseif rhoInit.IntCond == 1
   end
 elseif rhoInit.IntCond == 2
   % Initial distribution
-  [rho] = IntDenCalcNemPw2rot(systemObj,gridObj.phi,rhoInit.shiftAngle);
+  [rho] = IntDenCalcNemPw2rot(systemObj,gridObj.x3,rhoInit.shiftAngle);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 3
@@ -58,13 +58,13 @@ end
 % Renormalize out here
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-if systemObj.Nm > 1
-  int1 = trapz_periodic(gridObj.phi,rho,3);
+if systemObj.n3 > 1
+  int1 = trapz_periodic(gridObj.x3,rho,3);
 else
   int1 = rho;
 end
-CurrentNorm = trapz_periodic(gridObj.x,...
-  trapz_periodic(gridObj.y,int1,2),1);
+CurrentNorm = trapz_periodic(gridObj.x1,...
+  trapz_periodic(gridObj.x2,int1,2),1);
 rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end

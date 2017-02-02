@@ -8,17 +8,17 @@ colVar = std( F( 1, : ) );
 % Take slices
 if rowVar >= colVar
   maxVar = rowVar;
-  rows = 1:systemObj.Nx;
+  rows = 1:systemObj.n1;
   cols = 1;
   posVarLab = 'x';
-  NposVar = systemObj.Nx;
-  Lvar = systemObj.Lx;
+  NposVar = systemObj.n1;
+  Lvar = systemObj.l1;
 else
   maxVar = colVar;
   rows = 1;
-  cols = 1:systemObj.Ny;
+  cols = 1:systemObj.n2;
   posVarLab = 'y';
-  NposVar = systemObj.Ny;
-  Lvar = systemObj.Ly;
+  NposVar = systemObj.n2;
+  Lvar = systemObj.l2;
 end
 

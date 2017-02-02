@@ -22,8 +22,8 @@ function [rho] = IntDenCalcIsoSepPw2Drot(gridObj,ParamObj,rhoInit)
 % 1                        = int( f(phi) dphi)
 
 %Initialize rho
-rho = systemObj.numPart / (2 .* pi .* systemObj.Lx .* systemObj.Lx) .* ...
-  ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
+rho = systemObj.numPart / (2 .* pi .* systemObj.l1 .* systemObj.l1) .* ...
+  ones(systemObj.n1,systemObj.n2,systemObj.n3);
 
 % Perturb it
 [rho] = SepPwDenPerturber2Drot(rho,ParamObj,gridObj,rhoInit);

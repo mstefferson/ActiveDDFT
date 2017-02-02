@@ -6,12 +6,12 @@ PlotEq = 0;
 nFrames = OrderParamObj.nFrames;
 
 %Initialize the movie structure array
-M_All(nFrames)  = struct('cdata',zeros(systemObj.Nx,systemObj.Ny,3,'int8'),...
+M_All(nFrames)  = struct('cdata',zeros(systemObj.n1,systemObj.n2,3,'int8'),...
     'colormap',[]);
 
 % keyboard
-xPos  = systemObj.Nx/2 + 1;
-yPos  = systemObj.Ny/2 + 1;
+xPos  = systemObj.n1/2 + 1;
+yPos  = systemObj.n2/2 + 1;
 eps = 0.000001;
 
 % Set up figure
@@ -60,20 +60,20 @@ xlabel('x'); ylabel('y')
 for ii = 1:nFrames
     
     %     set(axh1,'position',axpos1,'NextPlot','replaceChildren'); % Manually setting this holds the position with colorbar
-    pcolor(axh1,gridObj.x,gridObj.y,OrderParamObj.C_rec(:,:,ii)' ./ pi)
+    pcolor(axh1,gridObj.x1,gridObj.x2,OrderParamObj.C_rec(:,:,ii)' ./ pi)
     shading(axh1,'interp');
     TitlStr = sprintf('Scaled Concentration (bc) t = %.2f', OrderParamObj.TimeRec(ii));
     title(axh1,TitlStr)
     
     % Polar order
-    pcolor(axh2,gridObj.x,gridObj.y,OrderParamObj.POP_rec(:,:,ii)');
+    pcolor(axh2,gridObj.x1,gridObj.x2,OrderParamObj.POP_rec(:,:,ii)');
     shading(axh2,'interp'); colorbar('peer',axh2);
     set(axh2,'NextPlot','replaceChildren',...
         'CLim',[0 max(max(max(OrderParamObj.POP_rec)))],'YDir','normal');
     %     colorbar;
     %     set(gcf,'renderer','zbuffer')
     hold(axh2,'on')
-    quiver(axh2,gridObj.x,gridObj.y,OrderParamObj.nx_POP_rec(:,:,ii)',...
+    quiver(axh2,gridObj.x1,gridObj.x2,OrderParamObj.nx_POP_rec(:,:,ii)',...
         OrderParamObj.ny_POP_rec(:,:,ii)','color',[1,1,1]);
     hold(axh2,'off')
     TitlStr = sprintf('Polar Order t = %.2f', OrderParamObj.TimeRec(ii));
@@ -81,13 +81,13 @@ for ii = 1:nFrames
     
     % Distribution
     if PlotEq
-        plot( axh3, gridObj.phi, ...
-            reshape( Density_rec(xPos,yPos,:,ii), 1, systemObj.Nm ),...
-            gridObj.phi,systemObj.c*feq );
+        plot( axh3, gridObj.x3, ...
+            reshape( Density_rec(xPos,yPos,:,ii), 1, systemObj.n3 ),...
+            gridObj.x3,systemObj.c*feq );
         legend(axh3,'Distrib','equil','location','best');
     else
-        plot( axh3, gridObj.phi, ...
-            reshape( Density_rec(xPos,yPos,:,ii), 1, systemObj.Nm ) );
+        plot( axh3, gridObj.x3, ...
+            reshape( Density_rec(xPos,yPos,:,ii), 1, systemObj.n3 ) );
     end
     
     TtlStr = sprintf('Distribution (x = 0 , y= 0) t = %.2f',...
@@ -98,10 +98,10 @@ for ii = 1:nFrames
     % Nematic order
     set(axh4,'NextPlot','replaceChildren',...
         'CLim',[0 1],'YDir','normal');
-    pcolor(axh4,gridObj.x,gridObj.y,OrderParamObj.NOP_rec(:,:,ii)');
+    pcolor(axh4,gridObj.x1,gridObj.x2,OrderParamObj.NOP_rec(:,:,ii)');
     shading(axh4,'interp'); colorbar('peer',axh4)
     hold(axh4,'on')
-    quiver(axh4,gridObj.x,gridObj.y,...
+    quiver(axh4,gridObj.x1,gridObj.x2,...
         OrderParamObj.NADx_rec(:,:,ii)',OrderParamObj.NADy_rec(:,:,ii)',...
         'color',[1,1,1],'ShowArrowHead','off');
     hold(axh4,'off')

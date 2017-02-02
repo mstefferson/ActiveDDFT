@@ -8,11 +8,11 @@
 function [rho] = PwPerturbFT(rho,systemObj,rhoInit)
 
 % N3 can be commonly used. Declare it
-N3 = systemObj.Nx * systemObj.Ny * systemObj.Nm;
+N3 = systemObj.n1 * systemObj.n2 * systemObj.n3;
 % Perturb coeff is the weight times equilbrium
 % concentration. Make sure it isn't too large
 % Find isotropic density
-isoDen = systemObj.c / ( systemObj.Lphi);
+isoDen = systemObj.c / ( systemObj.l3);
 
 maxPerturb = isoDen * rhoInit.WeightPert * ...
   (2*rhoInit.NumModesX) * (2*rhoInit.NumModesY) * (2*rhoInit.NumModesM);
@@ -33,18 +33,18 @@ end
 rhoFT = fftshift( fftn( rho ) );
 
 % Give index of k = 0
-if systemObj.Nx ~= 1
-  kx0   = systemObj.Nx / 2 + 1;
+if systemObj.n1 ~= 1
+  kx0   = systemObj.n1 / 2 + 1;
 else
   kx0 = 1;
 end
-if systemObj.Ny ~= 1
-  ky0   = systemObj.Ny / 2 + 1;
+if systemObj.n2 ~= 1
+  ky0   = systemObj.n2 / 2 + 1;
 else
   ky0 = 1;
 end
-if systemObj.Nm ~= 1
-  km0   = systemObj.Nm / 2 + 1;
+if systemObj.n3 ~= 1
+  km0   = systemObj.n3 / 2 + 1;
 else
   km0 = 1;
 end

@@ -1,5 +1,5 @@
-function IsoDispPlotterBody(k2plotInd,ampl_record,Nmodes,TimeRecVec, dt,kxholder,kyholder,...
-    kx,ky,km,D_rot, D_pos,Nx,Ny,Nm,bc)
+function IsoDispPlotterBody(k2plotInd,ampl_record,n3odes,TimeRecVec, dt,kxholder,kyholder,...
+    kx,ky,km,D_rot, D_pos,n1,n2,n3,bc)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -21,12 +21,12 @@ lambda_dis  = ...
 %define the fitting function and the parameters to save
 
 expfit = @(a,TimeRecVec) a(1)*exp(a(2)*TimeRecVec);  %Exponential fit function
-fitParam_Re = zeros(2,Nmodes);               %Parameter array
+fitParam_Re = zeros(2,n3odes);               %Parameter array
 options = optimset('Display','off'); %Don't display anything in fnc lsqcurvefit
 figure(7)
 subplot(2,1,1)
 
-for j=1:Nmodes
+for j=1:n3odes
     % Make a vector of single mode amplitude throughout time.
     %Make them all positive so they all look similiar. Sign doesn't matter anyway
     %
@@ -46,13 +46,13 @@ for j=1:Nmodes
     Coeff_fit_crnt_mode_Re = lsqcurvefit(expfit,Re_a0,TimeRecVec,Re_yvec,[],[],options);
     fitParam_Re(:,j) = Coeff_fit_crnt_mode_Re;  %Save the fit parameters
     
-    if k2plotInd(j) ~= Nm/2 + 1
+    if k2plotInd(j) ~= n3/2 + 1
         plot(TimeRecVec,Re_yvec,'o-');
         hold all;
         plot(TimeRecVec,Coeff_fit_crnt_mode_Re(1)*exp(Coeff_fit_crnt_mode_Re(2)*TimeRecVec),'-','LineWidth',2);
         hold off
     end
-    %         k2plot(j) - (Nm/2 + 1)
+    %         k2plot(j) - (n3/2 + 1)
     %         Coeff_fit_crnt_mode_Re(2)
     %         Re_a0
     %         keyboard
@@ -64,7 +64,7 @@ hold off
 
 %     keyboard
 % Plot an individual mode
-kmp2_holder = Nm/2+3;
+kmp2_holder = n3/2+3;
 subplot(2,1,2)
 %     keyboard
 plot(TimeRecVec, abs(real( ampl_record(kmp2_holder ,:) )),'o', ...
@@ -74,7 +74,7 @@ plot(TimeRecVec, abs(real( ampl_record(kmp2_holder ,:) )),'o', ...
     exp(lambda_dis(k2plotInd == kmp2_holder) .* TimeRecVec)                 );
 legend('Measured','Predicted Contin LSA','Predicted Discrete LSA',...
     'Location','Best');
-titstr = sprintf('km = %i mode vs time', kx( kmp2_holder ) - (Nm /2 + 1) );
+titstr = sprintf('km = %i mode vs time', kx( kmp2_holder ) - (n3 /2 + 1) );
 title(titstr)
 title('km = 2 mode vs time')
 xlabel('time')
@@ -86,7 +86,7 @@ figure(8)
 plot(km(k2plotInd),fitParam_Re(2,:),'o',km(k2plotInd), lambda_c,'-', ...
     km(k2plotInd), lambda_dis,'-',km(k2plotInd), lambda_diff,'-') ;
 titstr = sprintf('k_m dispersion relation e^{lambda t}(k_x mode = %i, k_y mode = %i)',...
-    kxholder - (Nx/2+1),kyholder - (Ny/2+1) );
+    kxholder - (n1/2+1),kyholder - (n2/2+1) );
 title(titstr)
 legend('Measured Disp Real','Predicted Continuous Linear Stab',...
     'Predicted Discrete Linear Stab','Just Diffustion Linear Stab',...

@@ -2,14 +2,14 @@
 % nematic order. Returns the matlab movie files
 
 function [MovieObj] = ...
-    OPMatMovieMaker(Nx,Ny,Nm,x,y,phi,OrderParamObj,Density_rec)
+    OPMatMovieMaker(n1,n2,n3,x,y,phi,OrderParamObj,Density_rec)
 
 %%%% Concentration %%%%%
 
 nFrames = OrderParamObj.nFrames;
 
 %Initialize the movie structure array
-M_C(nFrames) = struct('cdata',zeros(Nx,Ny,3,'int8'), 'colormap',[]); %initialize movie stucture
+M_C(nFrames) = struct('cdata',zeros(n1,n2,3,'int8'), 'colormap',[]); %initialize movie stucture
 % Set up figure
 
 set(gca,'NextPlot','replaceChildren','CLim',[min(min(min(OrderParamObj.C_rec))) max(max(max(OrderParamObj.C_rec)))],'YDir','normal');
@@ -33,7 +33,7 @@ close all
 %%%%Polar order%%%%%%
 
 % Initialize movie stucture array
-M_P(nFrames) = struct('cdata',zeros(Nx,Ny,3,'int8'), 'colormap',[]);
+M_P(nFrames) = struct('cdata',zeros(n1,n2,3,'int8'), 'colormap',[]);
 
 %Set up figure
 figure()
@@ -61,7 +61,7 @@ close all
 %%%% Nematic order%%%%%%
 
 % Initialize movie stucture array
-M_N(nFrames) = struct('cdata',zeros(Nx,Ny,3,'int8'), 'colormap',[]);
+M_N(nFrames) = struct('cdata',zeros(n1,n2,3,'int8'), 'colormap',[]);
 
 % Set up figure
 xlabel('x')
@@ -84,8 +84,8 @@ for ii = 1:nFrames
 end
 
 %%%%%Distribution at fized position%%%%%%%%
-xPos  = Nx/2;
-yPos  = Ny/2;
+xPos  = n1/2;
+yPos  = n2/2;
 %
 % Frames2RunEnd  = 170;
 % Frames2RunStrt = 140;
@@ -102,7 +102,7 @@ M_BT(1:nFrames ) = ...
 for ii = 1  : nFrames
     
     TtlStr = sprintf('t = %f xind = %d yind = %d ', OrderParamObj.TimeRec(ii), xPos,yPos);
-    plot( phi, reshape( Density_rec(xPos,yPos,:,ii), 1, Nm ) );
+    plot( phi, reshape( Density_rec(xPos,yPos,:,ii), 1, n3 ) );
     title(TtlStr);
     M_BT(ii) = getframe(gcf);
     

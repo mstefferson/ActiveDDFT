@@ -29,8 +29,8 @@ shiftAngle = mod(shiftAngle , 2*pi);
 f = circshift( f, shiftInd - 1 );
 % Initialize rho
 rho = systemObj.c .* ...
-    ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
+    ones(systemObj.n1,systemObj.n2,systemObj.n3);
 % Map distribution to a homogeneous system
-for i = 1:systemObj.Nm
+for i = 1:systemObj.n3
     rho(:,:,i) = rho(:,:,i) .* f(i);
 end

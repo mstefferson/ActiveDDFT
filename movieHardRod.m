@@ -52,12 +52,12 @@ try
         systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
       % Call movie routine
       OPMovieMakerTgtherDirAvi(movStr,...
-        gridObj.x,gridObj.y,gridObj.phi,OPobj,...
+        gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
         OPobj.distSlice_rec,OPobj.OpTimeRecVec);
       % Make amplitude plot
-      kx0 = systemObj.Nx / 2 + 1;
-      ky0 = systemObj.Ny / 2 + 1;
-      km0 = systemObj.Nm / 2 + 1;
+      kx0 = systemObj.n1 / 2 + 1;
+      ky0 = systemObj.n2 / 2 + 1;
+      km0 = systemObj.n3 / 2 + 1;
       nRec = length( denRecObj.TimeRecVec);
       
       totModes   = 12;
@@ -79,7 +79,7 @@ try
       
       % Scale by N so it's N independent
       for i = 1:totModes 
-        FTmat2plot(i,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
+        FTmat2plot(i,:) =  1 / (systemObj.n1 * systemObj.n2 * systemObj.n3) .* ...
           reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
           [ 1, nRec ]  );
       end

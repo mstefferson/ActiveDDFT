@@ -30,9 +30,9 @@ if 0
     % Save the name. get rid of blanks
     MovMatStr = strtrim(MovList(6,:));
     % Trim off the .mat
-    MovNmStr = MovMatStr(1:end-4);
+    Movn3Str = MovMatStr(1:end-4);
     load(MovList(6,:));
-    aviStr = sprintf('%s.avi',MovNmStr);
+    aviStr = sprintf('%s.avi',Movn3Str);
     CurrMov = who('-file', MovMatStr);
     movie2avi(MovM_C,aviStr,'Compression','None','FPS', fps)
     for ii = 4:NumVar

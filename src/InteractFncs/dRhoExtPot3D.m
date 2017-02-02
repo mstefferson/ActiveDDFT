@@ -16,10 +16,10 @@ Jm_FT = fftshift(fftn(jm));
 
 %Calculate the -diverance of the flux in Fourier space. ;
 % Do it all with indexing
-if Nm > 1
-  Ind    = [ 1:Nm ];
-  Ind_m2 = [ Nm-1, Nm,  1:(Nm-2) ]; %m-2 coupling
-  Ind_p2 = [ 3:Nm, 1, 2 ]; %m+2 coupling
+if n3 > 1
+  Ind    = [ 1:n3 ];
+  Ind_m2 = [ n3-1, n3,  1:(n3-2) ]; %m-2 coupling
+  Ind_p2 = [ 3:n3, 1, 2 ]; %m+2 coupling
 else
   Ind = 1;
   Ind_m2 = 1;
@@ -27,7 +27,7 @@ else
 end
 
 % Calc -grad j
-NegDivFluxPot_FT = zeros( systemObj.Nx, systemObj.Ny, systemObj.Nm );
+NegDivFluxPot_FT = zeros( systemObj.n1, systemObj.n2, systemObj.n3 );
 NegDivFluxPot_FT(:,:,Ind) = ...
   diffObj.jxf_reps .* Jx_FT(:,:,Ind) + ...
   diffObj.jxMm2f_reps .* Jx_FT(:,:,Ind_m2) + ...
@@ -38,5 +38,5 @@ NegDivFluxPot_FT(:,:,Ind) = ...
 
 %Add the C(k) term last
 NegDivFluxPot_FT = NegDivFluxPot_FT ...
-  - diffObj.ikm3 .* diffObj.Mob_rot .* Jm_FT;
+  - diffObj.ik3rep3 .* diffObj.Mob_rot .* Jm_FT;
 

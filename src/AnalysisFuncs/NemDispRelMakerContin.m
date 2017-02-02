@@ -1,12 +1,12 @@
-function [lambda] = NemDispRelMakerContin(gridObj,ParamObj,ampl_record,kx,ky,km,kmOrig,NmOrig,D_pos,D_rot,bc)
+function [lambda] = NemDispRelMakerContin(gridObj,ParamObj,ampl_record,kx,ky,km,kmOrig,n3Orig,D_pos,D_rot,bc)
 
-FT_orig = reshape(ampl_record(:,1),1,NmOrig);
+FT_orig = reshape(ampl_record(:,1),1,n3Orig);
 
 % epsilon = FT_orig - FT_eq
 
 % Find find equilibrium distribution and corresponding fourier coefficients
 addpath C:\Users\MWS\Documents\MATLAB\Research\BG\INtransEq
-[~, feql] = EqDistMakerMain2D(bc, 10,NmOrig,0);
+[~, feql] = EqDistMakerMain2D(bc, 10,n3Orig,0);
 feql_FT = fftshift(fft(feql));
 %Get rid of 0 imaginary part
 feql_FT = real(feql_FT);
@@ -31,26 +31,26 @@ for mi = 1:length(km)
     miOrig = find(km(mi) == kmOrig);              % the indice of m in original k vector
     if abs( real( epsilon(miOrig) ) ) > eps_cond  % Need to skip modes with zero amplitude
         
-        for li = 1:2:NmOrig-1         
+        for li = 1:2:n3Orig-1         
             kn = km(mi) - kmOrig(li);
             %         keyboard
             if kn < min(kmOrig)
-                kn = kn + NmOrig;
+                kn = kn + n3Orig;
             elseif kn > max(kmOrig)
-                kn = kn - NmOrig;
+                kn = kn - n3Orig;
             end
             %Indice
             ni = find(kn == kmOrig);
             if mod(kmOrig(li),2) == 0
                 lambda(mi) = lambda(mi) + epsilon(ni)/epsilon(miOrig) .*...
-                    4 * pi * bc * feql_FT(li) / NmOrig .* (...
+                    4 * pi * bc * feql_FT(li) / n3Orig .* (...
                     D_rot .* ( kmOrig(li) .* km(mi) ) ./ ( kmOrig(li)^2 - 1 ) );
                 %             keyboard
             end
             
             if mod( kn , 2 ) == 0 % n even
                 lambda(mi) = lambda(mi) + epsilon(ni)/epsilon(miOrig) .*...
-                    4 .* pi .* bc .* feql_FT(li) / NmOrig .* (...
+                    4 .* pi .* bc .* feql_FT(li) / n3Orig .* (...
                     ( D_pos .* ( kx .^ 2 + ky .^ 2 ) + D_rot .* km(mi) .* kn ) ...
                     ./ ( kn .^ 2 - 1 ) );
             end

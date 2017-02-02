@@ -14,14 +14,14 @@ for i = -rhoInit.NumModesX:rhoInit.NumModesX
   
   
   rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-    .* exp( sqrt(-1) .* gridObj.kx(systemObj.Nx/2+1+i) .* gridObj.x3D ) ; ...
+    .* exp( sqrt(-1) .* gridObj.k1(systemObj.n1/2+1+i) .* gridObj.x13D ) ; ...
 end
 
 %Change in y
 for i = -rhoInit.NumModesY:rhoInit.NumModesY
   
   rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-    .* exp( sqrt(-1) .* gridObj.ky(systemObj.Ny/2+1+i) .* gridObj.y3D ) ; ...
+    .* exp( sqrt(-1) .* gridObj.k2(systemObj.n2/2+1+i) .* gridObj.x23D ) ; ...
 end
 
 Coeff = rhoInit.WeightAng;
@@ -29,7 +29,7 @@ Coeff = rhoInit.WeightAng;
 for i = -rhoInit.NumModesM:rhoInit.NumModesM
   
   rho = rho + (Coeff + sqrt(-1) .* Coeff) ...
-    .* exp( sqrt(-1) .* gridObj.km(systemObj.Nm/2+1+i) .* gridObj.phi3D ) ; ...
+    .* exp( sqrt(-1) .* gridObj.km(systemObj.n3/2+1+i) .* gridObj.x33D ) ; ...
 end
 
 % Take real part
@@ -40,7 +40,7 @@ rho = real(rho);
 
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+CurrentNorm = trapz_periodic(gridObj.x2,trapz_periodic(gridObj.x1,trapz_periodic(gridObj.x3,rho,3),2),1);
 rho = real(rho .* systemObj.numPart ./ CurrentNorm);
 
 end

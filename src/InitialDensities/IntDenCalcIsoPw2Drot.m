@@ -20,8 +20,8 @@ function [rho] = IntDenCalcIsoPw2Drot(systemObj)
 % 1                        = int( f(phi) dphi)
 
 % Initial rho
-rho = systemObj.numPart / (systemObj.Lphi .* systemObj.Lx .* systemObj.Lx) .* ...
-          ones(systemObj.Nx,systemObj.Ny,systemObj.Nm); % k = 0
+rho = systemObj.numPart / (systemObj.l3 .* systemObj.l1 .* systemObj.l1) .* ...
+          ones(systemObj.n1,systemObj.n2,systemObj.n3); % k = 0
 %Recall that the k=0 mode is located at points N/2 + 1
 
 

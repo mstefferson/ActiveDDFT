@@ -16,19 +16,19 @@ try
   % Set up denRecObj just in case code doesn't finish
   denRecObj.didIrun = 0;
   % Move parameter vector to obj
-  systemObj.Nx = paramVec(1);
-  systemObj.Ny = paramVec(2);
-  systemObj.Nm = paramVec(3);
-  systemObj.Lx = paramVec(4);
-  systemObj.Ly = paramVec(5);
+  systemObj.n1 = paramVec(1);
+  systemObj.n2 = paramVec(2);
+  systemObj.n3 = paramVec(3);
+  systemObj.l1 = paramVec(4);
+  systemObj.l2 = paramVec(5);
   particleObj.vD = paramVec(6);
   systemObj.bc = paramVec(7);
   rhoInit.IntCond = paramVec(8);
   flags.StepMeth = paramVec(9);
   runObj.runID = paramVec(10);
   systemObj.c = systemObj.bc ./ particleObj.b;
-  systemObj.numPart  = systemObj.c * systemObj.Lx * systemObj.Ly; % number of particles
-  systemObj.lBox = [systemObj.Lx systemObj.Ly];
+  systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
+  systemObj.lBox = [systemObj.l1 systemObj.l2];
   
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
@@ -75,8 +75,8 @@ try
   % Make remaining objects
   % Make all the grid stuff %
   tGridID = tic;
-  [gridObj] = GridMakerPBCxk(systemObj.Nx,systemObj.Ny,systemObj.Nm,...
-    systemObj.Lx,systemObj.Ly,systemObj.Lphi);
+  [gridObj] = GridMakerPBCxk(systemObj.n1,systemObj.n2,systemObj.n3,...
+    systemObj.l1,systemObj.l2,systemObj.l3);
   gridrunTime = toc(tGridID);
   if flags.Verbose
     fprintf('Made grid t%d_%d: %.3g \n', ...
@@ -90,12 +90,12 @@ try
   if flags.AnisoDiff == 1
     [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
       particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
-      gridObj.kx, gridObj.ky, gridObj.km, ...
-      gridObj.kx2D, gridObj.ky2D,particleObj.vD);
+      gridObj.k1, gridObj.k2, gridObj.km, ...
+      gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
   else
     [diffObj] = DiffMobCoupCoeffCalcIsoDiff(...
       systemObj.Tmp,particleObj.mobPos,particleObj.mobRot, ...
-      gridObj.kx, gridObj.ky, gridObj.km);
+      gridObj.k1, gridObj.k2, gridObj.km);
   end
   
   diffRunTime = toc(tDiffID);
@@ -117,14 +117,14 @@ try
     rhoInit.bc = systemObj.bc;
   end
   
-  if systemObj.Nm == 1
+  if systemObj.n3 == 1
     rhoInit.feq = [];
   else
-    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.phi,rhoInit.bc); % Calculate coeff
-    rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
+    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
+    rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
     % shift it
     rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
-    [~,shiftInd] = min( abs( gridObj.phi - rhoInit.shiftAngle ) );
+    [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
     rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
   end
   % Build initial density
@@ -148,12 +148,12 @@ try
     runSave.timeObj  = timeObj;
     runSave.rhoInit  = rhoInit;
     % Clean up gridobj before saving
-    fields2del = {'kx2D','ky2D'};
+    fields2del = {'k1rep2','k2rep2'};
     gridTemp = rmfield(gridObj,fields2del);
     runSave.gridObj  = gridTemp;
-    runSave.Den_rec = zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2);
+    runSave.Den_rec = zeros(systemObj.n1,systemObj.n2,systemObj.n3,2);
     runSave.DenFT_rec = complex( ...
-      zeros(systemObj.Nx,systemObj.Ny,systemObj.Nm,2), 0 );
+      zeros(systemObj.n1,systemObj.n2,systemObj.n3,2), 0 );
     runSave.Den_rec(:,:,:,1) = rho;
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
@@ -197,7 +197,7 @@ try
     paramSave.timeObj = timeObj;
     paramSave.denRecObj = runSave.denRecObj;
     
-    [~,~,phi3D] = meshgrid(gridObj.y,gridObj.x,gridObj.phi);
+    [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
@@ -216,27 +216,27 @@ try
     
     % Set up saving
     % Distribution slice
-    holdX = systemObj.Nx /2 + 1; % spatial pos placeholders
-    holdY = systemObj.Ny /2 + 1; % spatial pos placeholders
+    holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
+    holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
     opSave.distSlice_rec = reshape( ...
       runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
-      [systemObj.Nm length(opTimeRecVec)] );
-    opSave.C_rec    = zeros(systemObj.Nx, systemObj.Ny, 2);
-    opSave.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
-    opSave.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    opSave.POPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    opSave.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, 2);
-    opSave.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-    opSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
+      [systemObj.n3 length(opTimeRecVec)] );
+    opSave.C_rec    = zeros(systemObj.n1, systemObj.n2, 2);
+    opSave.POP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
+    opSave.POPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
+    opSave.POPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
+    opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
+    opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
+    opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
     
     if flags.MakeMovies
-      OPobj.C_rec    = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.POP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.POPx_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.POPy_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.NOP_rec  = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.NOPx_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
-      OPobj.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, totRec);
+      OPobj.C_rec    = zeros(systemObj.n1, systemObj.n2, totRec);
+      OPobj.POP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
+      OPobj.POPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+      OPobj.POPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+      OPobj.NOP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
+      OPobj.NOPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+      OPobj.NOPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
       OPobj.distSlice_rec = opSave.distSlice_rec;
       OPobj.OpTimeRecVec = opTimeRecVec;
     end
@@ -261,9 +261,9 @@ try
         end
       end
       
-      [OPObjTemp] = CPNrecMaker(systemObj.Nx,systemObj.Ny,...
+      [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
         opTimeRecVec(Ind), runSave.Den_rec(:,:,:,Ind) ,...
-        gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
+        gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       
       % Save it
       opSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
@@ -287,7 +287,7 @@ try
     end % loop over chunks
     
     % Now do it for steady state sol
-    [~,~,phi3D] = meshgrid(1,1,gridObj.phi);
+    [~,~,phi3D] = meshgrid(1,1,gridObj.x3);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
@@ -295,8 +295,8 @@ try
     cossinPhi3d = cosPhi3d .* sinPhi3d;
     
     [~,~,~,~,opSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.Nm] ), ...
-      gridObj.phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
+      OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
+      gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
     
     if flags.MakeMovies
       OPobj.OpTimeRecVec = opTimeRecVec;
@@ -321,7 +321,7 @@ try
         systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
       % Run function
       OPMovieMakerTgtherDirAvi(movStr,...
-        gridObj.x,gridObj.y,gridObj.phi,OPobj,...
+        gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
         OPobj.distSlice_rec,OPobj.OpTimeRecVec);
       
       movieSuccess = 1;
@@ -337,9 +337,9 @@ try
       runTime.mov = movRunTime;
       
       % Make amplitude plot
-      kx0 = systemObj.Nx / 2 + 1;
-      ky0 = systemObj.Ny / 2 + 1;
-      km0 = systemObj.Nm / 2 + 1;
+      kx0 = systemObj.n1 / 2 + 1;
+      ky0 = systemObj.n2 / 2 + 1;
+      km0 = systemObj.n3 / 2 + 1;
       nRec = length( denRecObj.TimeRecVec);
       
       totModes   = 12;
@@ -361,7 +361,7 @@ try
       
       % Scale by N so it's N independent
       for i = 1:totModes
-        FTmat2plot(i,:) =  1 / (systemObj.Nx * systemObj.Ny * systemObj.Nm) .* ...
+        FTmat2plot(i,:) =  1 / (systemObj.n1 * systemObj.n2 * systemObj.n3) .* ...
           reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
           [ 1, nRec ]  );
       end

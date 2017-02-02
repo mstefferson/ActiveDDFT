@@ -31,9 +31,9 @@ function [NegDivFluxExcess_FT] = ...
 
 % MuEx_FT    = MuEx2_FT+MuEx3_FT;
 %Takes its derivative in k-space
-dMuEx_dx_FT   = diffObj.ikx3 .*  MuEx_FT;
-dMuEx_dy_FT   = diffObj.iky3 .*  MuEx_FT;
-dMuEx_dphi_FT = diffObj.ikm3 .*  MuEx_FT;
+dMuEx_dx_FT   = diffObj.ik1rep3 .*  MuEx_FT;
+dMuEx_dy_FT   = diffObj.ik2rep3 .*  MuEx_FT;
+dMuEx_dphi_FT = diffObj.ik3rep3 .*  MuEx_FT;
 
 %Excess chemical potential derivative in real space
 %Mayer function derivative in real-space
@@ -58,6 +58,6 @@ Jy_FT = fftshift(fftn(jy));
 Jm_FT = fftshift(fftn(jm));
 
 % Calculate the - divergence of the interaction flux
-NegDivFluxExcess_FT = - ( diffObj.ikx3 .* Jx_FT + ...
-    diffObj.iky3 .* Jy_FT + diffObj.ikm3 .* Jm_FT );
+NegDivFluxExcess_FT = - ( diffObj.ik1rep3 .* Jx_FT + ...
+    diffObj.ik2rep3 .* Jy_FT + diffObj.ik3rep3 .* Jm_FT );
 

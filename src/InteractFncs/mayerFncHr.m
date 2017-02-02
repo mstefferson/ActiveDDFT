@@ -4,42 +4,42 @@
 % origin with its orientation angle being zero. Using the COM trapezoid intersection
 % method (as seen in HardRod---cpp--project.)
 
-function [MayerFnc] = mayerFncHr(Nx, Ny, Nm, Lx, Ly, Lrod)
+function [MayerFnc] = mayerFncHr(n1, n2, n3, l1, l2, Lrod)
 % allocate
-MayerFnc = zeros(Nx,Ny,Nm);
-dx    = Lx/Nx;
-dy    = Ly/Ny;
-dphi  = 2*pi / Nm;
+MayerFnc = zeros(n1,n2,n3);
+dx    = l1/n1;
+dy    = l2/n2;
+dphi  = 2*pi / n3;
 epsilon = 0.00001;
 TooFar = Lrod * Lrod + epsilon;
 LrodHSq = TooFar  / 4;
 % Loop over x
-for i = 1:Nx
+for i = 1:n1
   % periodic
-  if i <= Nx/2  + 1
+  if i <= n1/2  + 1
     xTemp = (i-1) * dx;
   else
-    xTemp = ( - Nx + (i-1) ) * dx;
+    xTemp = ( - n1 + (i-1) ) * dx;
   end
   xTempSq = xTemp * xTemp;
   % loop over y
-  for j = 1:Ny
+  for j = 1:n2
     % periodic
-    if j <= (Ny/2+1)
+    if j <= (n2/2+1)
       yTemp = (j-1) * dy;
     else
-      yTemp = ( - Ny + (j-1) ) * dy;
+      yTemp = ( - n2 + (j-1) ) * dy;
     end
     % total distance
     yTempSq = yTemp * yTemp;
     DistSq = yTempSq + xTempSq;
-    for k = 1:Nm
+    for k = 1:n3
       % check if it's close enough
       if( DistSq <= TooFar )
         % calculate phi and handle cases seperately
         phiTemp = (k-1) * dphi;
         % phi = 0,pi
-        if( k == 1 || k == Nm / 2 + 1 )
+        if( k == 1 || k == n3 / 2 + 1 )
           if (xTempSq <= TooFar) && (yTemp == 0)
             MayerFnc(i,j,k) = -1;
           else
@@ -47,7 +47,7 @@ for i = 1:Nx
           end
         end
         % phi = pi/2, 3pi/2
-        if( k == Nm / 4 + 1 || k == 3 * Nm / 4 +1 )
+        if( k == n3 / 4 + 1 || k == 3 * n3 / 4 +1 )
           if( (yTempSq <= LrodHSq) && xTempSq <= LrodHSq)
             MayerFnc(i,j,k) = -1;
           else
@@ -55,7 +55,7 @@ for i = 1:Nx
           end
         end
         % 0 < phi < pi/2
-        if( k < floor( Nm / 4) + 1 )
+        if( k < floor( n3 / 4) + 1 )
           yuL = tan( phiTemp ) * ( xTemp + Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp - Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp );
@@ -66,7 +66,7 @@ for i = 1:Nx
           end
         end
         % pi/2  < phi < pi
-        if( k > floor( Nm / 4) + 1 && k < floor(Nm/2) + 1 )
+        if( k > floor( n3 / 4) + 1 && k < floor(n3/2) + 1 )
           yuL = tan( phiTemp ) * ( xTemp - Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp + Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq *  sin( phiTemp ) * sin( phiTemp );
@@ -77,7 +77,7 @@ for i = 1:Nx
           end
         end
         % pi < phi < 3pi/2
-        if( k > floor(Nm/2) + 1 && k < floor(3*Nm / 4) + 1 )
+        if( k > floor(n3/2) + 1 && k < floor(3*n3 / 4) + 1 )
           yuL = tan( phiTemp ) * ( xTemp + Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp - Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp);
@@ -88,7 +88,7 @@ for i = 1:Nx
           end
         end
         % 3pi/2 < phi < 2pi
-        if(  k > floor(3*Nm / 4) + 1 )
+        if(  k > floor(3*n3 / 4) + 1 )
           yuL = tan( phiTemp ) * ( xTemp - Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp + Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp );

@@ -26,8 +26,8 @@ if rho < 0
 end
 
 %Not conserving density check.
-if systemObj.Nm ~= 1
-  constConcNow = rho_FT(systemObj.Nx/2+1, systemObj.Ny/2+1,systemObj.Nm/2+1 );
+if systemObj.n3 ~= 1
+  constConcNow = rho_FT(systemObj.n1/2+1, systemObj.n2/2+1,systemObj.n3/2+1 );
   if ( abs( constConcNow - constConc ) / constConc ) >  1e-10
     fprintf('Forgive me, your grace. Density is not being conserved\n');
     ShitIsFucked  = 1;

@@ -9,7 +9,7 @@ dirlist = dir([dirpath '/Hr*']);
 % Allocate for what we want
 numFiles = length( dirlist );
 % params and such
-output.p1name = 'Ly';
+output.p1name = 'l2';
 output.p1 = zeros( 1, numFiles );
 output.p2name = 'vD';
 output.p2 = zeros( 1, numFiles );
@@ -52,7 +52,7 @@ for ii = 1 : numFiles
   [~, rows, cols, ~, NposVar, Lvar] = ...
     sliceInhomoVar( systemObj, C );
   % record parameters and steady state
-  output.p1(ii) = systemObj.Ly;
+  output.p1(ii) = systemObj.l2;
   output.p2(ii) = particleObj.vD;
   output.p3(ii) = systemObj.bc;
   output.steady(ii) = denRecObj.SteadyState;

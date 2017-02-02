@@ -3,7 +3,7 @@
 % with an orientation
 
 function [C,POP,nx_POP,ny_POP,NOP,NOPx,NOPy] = ...
-  OpCPNCalc(Nx,Ny,rho,phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d)
+  OpCPNCalc(n1,n2,rho,phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d)
 
 % Director is chosen to be in the +y direction for all gridpoints
 
@@ -36,16 +36,16 @@ POP = sqrt(nx_POP.^2 + ny_POP.^2);
 
 %%%%%%%%%%%%%%Q matrix%%%%%%%%%%%%%%%%%
 % Nematic Order parameter Q.
-eigMaxQ_NOP = zeros(Nx,Ny);    % Eigenvalue of nemativ order parameter matrix
-NOPx = zeros(Nx,Ny);           % Nematic alignment x-direction
-NOPy = zeros(Nx,Ny);           % Nematic alignment y-direction
+eigMaxQ_NOP = zeros(n1,n2);    % Eigenvalue of nemativ order parameter matrix
+NOPx = zeros(n1,n2);           % Nematic alignment x-direction
+NOPy = zeros(n1,n2);           % Nematic alignment y-direction
 Q_NOPxx_temp = trapz_periodic(phi,rho .* (cos2Phi3d - 1/2),3) ./ C;
 Q_NOPxy_temp = trapz_periodic(phi,rho .* (cossinPhi3d),3) ./ C;
 Q_NOPyy_temp = trapz_periodic(phi,rho .* (sin2Phi3d - 1/2),3) ./ C;
 
 
-for i = 1:Nx
-    for j = 1:Ny
+for i = 1:n1
+    for j = 1:n2
         Q_temp = [Q_NOPxx_temp(i,j) Q_NOPxy_temp(i,j); Q_NOPxy_temp(i,j) Q_NOPyy_temp(i,j)];
         [EigVec,EigS] = eigs(Q_temp);
         eigMaxQ_NOP(i,j) = max(max(EigS));

@@ -11,7 +11,7 @@
 function [MuEx_FT] = muExCalcMfFt(rhoFt,vFt,systemObj,scaleFact)
 % Calc scale factor if need be
 if nargin == 3
-  scaleFact = (systemObj.Lphi * systemObj.Lx * systemObj.Ly) / (systemObj.Nx * systemObj.Ny * systemObj.Nm);
+  scaleFact = (systemObj.l3 * systemObj.l1 * systemObj.l2) / (systemObj.n1 * systemObj.n2 * systemObj.n3);
 end
 MuEx_FT = scaleFact .* vFt .* rhoFt;
 end

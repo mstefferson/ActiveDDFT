@@ -24,26 +24,26 @@ global runSave
 fprintf(lfid,'In body of code\n');
 
 %Set N since it used so frequently
-Nx  = systemObj.Nx;
-Ny  = systemObj.Ny;
-Nm  = systemObj.Nm;
-N3 = Nx*Ny*Nm;
+n1  = systemObj.n1;
+n2  = systemObj.n2;
+n3  = systemObj.n3;
+N3 = n1*n2*n3;
 
 % Declare dt since it's used so much
 dt = timeObj.dt;
 
 % FT initial density and max density
 rho_FT = fftshift(fftn(rho));
-if Nm == 1
-  constConc = rho_FT( Nx/2 + 1, Nx/2 + 1);
+if n3 == 1
+  constConc = rho_FT( n1/2 + 1, n1/2 + 1);
 else
-  constConc = rho_FT( Nx/2 + 1, Nx/2 + 1, Nm/2 + 1);
+  constConc = rho_FT( n1/2 + 1, n1/2 + 1, n3/2 + 1);
 end
 
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
-  Density_rec       = zeros( Nx, Ny, Nm, timeObj.N_recChunk );    % Store density amplitudes
-  DensityFT_rec      = zeros( Nx, Ny, Nm, timeObj.N_recChunk );   % Store k-space amplitdues
+  Density_rec       = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
+  DensityFT_rec      = zeros( n1, n2, n3, timeObj.N_recChunk );   % Store k-space amplitdues
 else
   Density_rec = 0;
   DensityFT_rec = 0;
@@ -56,12 +56,12 @@ jchunk   = 1; % Write chunk index
 
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 %Set up Diffusion operator in cube form
-[Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,Nx,Ny,Nm);
+[Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 Prop = exp(Lop .* dt);   % Exponentiate the elements
 
 %%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
 Fm_FT = fftshift(fftn( mayerFncHr(...
-  Nx, Ny, Nm, systemObj.Lx, systemObj.Ly, particleObj.lMaj) ) );
+  n1, n2, n3, systemObj.l1, systemObj.l2, particleObj.lMaj) ) );
 
 %Hard rod interactions
 if flags.Interactions
@@ -73,14 +73,14 @@ end
 %Driven Term
 if flags.Drive
   % Build the sin and cos phi once
-  phi = zeros( 1, 1, Nm );
-  phi(1,1,:) = gridObj.phi;
-  cosPhi3 = cos( repmat( phi, [Nx, Ny, 1] ) );
-  sinPhi3 = sin( repmat( phi, [Nx, Ny, 1] ) );
+  phi = zeros( 1, 1, n3 );
+  phi(1,1,:) = gridObj.x3;
+  cosPhi3 = cos( repmat( phi, [n1, n2, 1] ) );
+  sinPhi3 = sin( repmat( phi, [n1, n2, 1] ) );
   
   GammaDrCube_FT  = ...
     dRhoDriveCalcFtId(rho,particleObj.vD,...
-    cosPhi3, sinPhi3,diffObj.ikx3,diffObj.iky3);
+    cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
 else
   GammaDrCube_FT = 0;
 end
@@ -149,7 +149,7 @@ for t = 1:timeObj.N_time-1
   if flags.Drive
     GammaDrCube_FT  = ...
       dRhoDriveCalcFtId(rho,particleObj.vD,...
-      cosPhi3, sinPhi3,diffObj.ikx3,diffObj.iky3);
+      cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
   end
   
   GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;

@@ -7,12 +7,12 @@ for ii = 1:length(files2convert);
   vars = whos('-file',filename );
   if ismember('ParamObj', {vars.name})
     ParamObj = matSave.ParamObj;
-    systemObj.Nx = ParamObj.Nx;
-    systemObj.Ny = ParamObj.Ny;
-    systemObj.Nm = ParamObj.Nm;
-    systemObj.Lx = ParamObj.Lx;
-    systemObj.Ly = ParamObj.Ly;
-    systemObj.Lphi = 2 * pi;
+    systemObj.n1 = ParamObj.n1;
+    systemObj.n2 = ParamObj.n2;
+    systemObj.n3 = ParamObj.n3;
+    systemObj.l1 = ParamObj.l1;
+    systemObj.l2 = ParamObj.l2;
+    systemObj.l3 = 2 * pi;
     systemObj.bc = ParamObj.bc;
     
     particleObj.lMaj = ParamObj.L_rod;

@@ -1,12 +1,12 @@
-function NemDispPlotterBody(gridObj,ParamObj,k2plotInd,ampl_record,Nmodes,TimeRecVec, kxholder,kyholder,...
-    kx,ky,km,D_rot, D_pos,Nx,Ny,Nm,bc)
+function NemDispPlotterBody(gridObj,ParamObj,k2plotInd,ampl_record,n3odes,TimeRecVec, kxholder,kyholder,...
+    kx,ky,km,D_rot, D_pos,n1,n2,n3,bc)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %     keyboard
 [lambda_c] = ...
     NemDispRelMakerContin(gridObj,ParamObj,ampl_record,kx(kxholder),ky(kyholder),km(k2plotInd),...
-    km,Nm,D_pos,D_rot,bc);
+    km,n3,D_pos,D_rot,bc);
 [lambda_diff] = IsoDispRelMakerDiffus(kx(kxholder),ky(kyholder),km(k2plotInd),D_pos,D_rot);
 
 % Next figure is going to plot certain modes (same as
@@ -23,7 +23,7 @@ Im_expfit = @(a,TimeRecVec) ...
     exp(a(3).*TimeRecVec) .* ( a(2).*cos( a(4) .* TimeRecVec )  ...
     + a(1).*sin( a(4) .* TimeRecVec ) ) ;
 
-fitParam_Re = zeros(4,Nmodes);               %Parameter array
+fitParam_Re = zeros(4,n3odes);               %Parameter array
 options = optimset('Display','off'); %Don't display anything in fnc lsqcurvefit
 figure(7)
 
@@ -39,7 +39,7 @@ FT_rho_eqVec = reshape(  FT_rho_eq(kx_holder,ky_holder,:), 1, 32 );
 
 subplot(1,1,1)
 
-for j=1:Nmodes
+for j=1:n3odes
     % Make a vector of single mode amplitude throughout time.
     %Make them all positive so they all look similiar. Sign doesn't matter anyway
     %
@@ -70,7 +70,7 @@ for j=1:Nmodes
     fitParam_Re(:,j) = Coeff_fit_crnt_mode_Re;  %Save the fit parameters
     
 %     keyboard
-    if k2plotInd(j) ~= Nm/2 + 1
+    if k2plotInd(j) ~= n3/2 + 1
         plot(TimeRecVec,real(eps_vec_t),'o-',TimeRecVec,real(yvec_t),'x-');
         hold all;
         plot(TimeRecVec, ...
@@ -83,7 +83,7 @@ for j=1:Nmodes
         hold off
 %         keyboard
     end
-    %         k2plot(j) - (Nm/2 + 1)
+    %         k2plot(j) - (n3/2 + 1)
     %         Coeff_fit_crnt_mode_Re(2)
     %         Re_a0
     %         keyboard
@@ -95,7 +95,7 @@ hold off
 
 %     keyboard
 % Plot an individual mode
-% kmp2_holder = Nm/2+3;
+% kmp2_holder = n3/2+3;
 % subplot(2,1,2)
 % %     keyboard
 % plot(TimeRecVec, abs(real( ampl_record(kmp2_holder ,:) )),'o', ...
@@ -105,7 +105,7 @@ hold off
 %     exp(lambda_dis(k2plotInd == kmp2_holder) .* TimeRecVec)                 );
 % legend('Measured','Predicted Contin LSA','Predicted Discrete LSA',...
 %     'Location','Best');
-% titstr = sprintf('km = %i mode vs time', kx( kmp2_holder ) - (Nm /2 + 1) );
+% titstr = sprintf('km = %i mode vs time', kx( kmp2_holder ) - (n3 /2 + 1) );
 % title(titstr)
 % title('km = 2 mode vs time')
 % xlabel('time')
@@ -118,7 +118,7 @@ subplot(2,1,1)
 plot(km(k2plotInd),fitParam_Re(3,:),'o',km(k2plotInd), real(lambda_c),'-', ...
     km(k2plotInd), lambda_diff,'-') ;
 titstr = sprintf('Real lambda k_m dispersion relation e^{lambda t}(k_x mode = %i, k_y mode = %i)',...
-    kxholder - (Nx/2+1),kyholder - (Ny/2+1) );
+    kxholder - (n1/2+1),kyholder - (n2/2+1) );
 title(titstr)
 legend('Real: Measured Disp','Real: Predicted Con. Linear Stab',...
     'Diffusion','Location','Best');
@@ -127,7 +127,7 @@ xlabel('k_m'); ylabel('Decay constant \lambda');
 subplot(2,1,2)
 plot(km(k2plotInd),fitParam_Re(4,:),'o',km(k2plotInd), imag(lambda_c),'-');
 titstr = sprintf('Imag lambda k_m dispersion relation e^{lambda t}(k_x mode = %i, k_y mode = %i)',...
-    kxholder - (Nx/2+1),kyholder - (Ny/2+1) );
+    kxholder - (n1/2+1),kyholder - (n2/2+1) );
 title(titstr)
 legend('Imag: Measured Disp','Imag: Predicted Con. Linear Stab',...
       'Location','Best');

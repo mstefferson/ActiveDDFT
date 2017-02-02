@@ -11,7 +11,7 @@
 
 function [NegDivFluxEx_FT] = ...
   dRhoIntCalcVcFt(rho,rho_FT,Fm_FT,systemObj,diffObj)
-Nm = systemObj.Nm;
+n3 = systemObj.n3;
 %%%%%%%%%%%%%%%%%%%Hard rod interactions%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Excess chemical potential in position space is a convolution. In k-space, it is a
@@ -22,9 +22,9 @@ Nm = systemObj.Nm;
 MuEx_FT = muExCalcVc2Ft(rho_FT, Fm_FT,systemObj);
 
 %Takes its derivative in k-space
-dMuEx_dx_FT   = diffObj.ikx3 .*  MuEx_FT;
-dMuEx_dy_FT   = diffObj.iky3 .*  MuEx_FT;
-dMuEx_dphi_FT = diffObj.ikm3 .*  MuEx_FT;
+dMuEx_dx_FT   = diffObj.ik1rep3 .*  MuEx_FT;
+dMuEx_dy_FT   = diffObj.ik2rep3 .*  MuEx_FT;
+dMuEx_dphi_FT = diffObj.ik3rep3 .*  MuEx_FT;
 
 %Excess chemical potential derivative in real space
 %Mayer function derivative in real-space
@@ -50,16 +50,16 @@ Jm_FT = fftshift(fftn(jm));
 
 %Calculate the -diverance of the flux in Fourier space. ;
 % Do it all with indexing
-if Nm > 1
-  Ind    = [ 1:Nm ];
-  Ind_m2 = [ Nm-1, Nm,  1:(Nm-2) ]; %m-2 coupling
-  Ind_p2 = [ 3:Nm, 1, 2 ]; %m+2 coupling
+if n3 > 1
+  Ind    = [ 1:n3 ];
+  Ind_m2 = [ n3-1, n3,  1:(n3-2) ]; %m-2 coupling
+  Ind_p2 = [ 3:n3, 1, 2 ]; %m+2 coupling
 else
   Ind = 1;
   Ind_m2 = 1;
   Ind_p2 = 1;
 end
-NegDivFluxEx_FT = zeros( systemObj.Nx, systemObj.Ny, Nm );
+NegDivFluxEx_FT = zeros( systemObj.n1, systemObj.n2, n3 );
 NegDivFluxEx_FT(:,:,Ind) = ...
   diffObj.jxf_reps .* Jx_FT(:,:,Ind) + ...
   diffObj.jxMm2f_reps .* Jx_FT(:,:,Ind_m2) + ...
@@ -70,5 +70,5 @@ NegDivFluxEx_FT(:,:,Ind) = ...
 
 %Add the C(k) term last
 NegDivFluxEx_FT = NegDivFluxEx_FT ...
-  - diffObj.ikm3 .* diffObj.Mob_rot .* Jm_FT;
+  - diffObj.ik3rep3 .* diffObj.Mob_rot .* Jm_FT;
 

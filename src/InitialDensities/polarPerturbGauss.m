@@ -11,9 +11,9 @@
 function [rho] = polarPerturbGauss( rho, systemObj, rhoInit, gridObj )
 
 % Commonly used variables
-Nx = systemObj.Nx;
-Ny = systemObj.Ny;
-Nm = systemObj.Nm;
+n1 = systemObj.n1;
+n2 = systemObj.n2;
+n3 = systemObj.n3;
 
 % Amplitudes
 aX   = rhoInit.aXf .* systemObj.c;
@@ -21,25 +21,25 @@ aY   = rhoInit.aYf .* systemObj.c;
 aPhi = rhoInit.aPhif .* systemObj.c;
 
 % Build angular gaussian perturbation
-centerPhi = gridObj.phi( rho(1,1,:) == max(rho(1,1,:) ) );
+centerPhi = gridObj.x3( rho(1,1,:) == max(rho(1,1,:) ) );
 if length(centerPhi) > 1; centerPhi = centerPhi(1); end;
-pPhi = gaussShift( gridObj.phi, systemObj.Lphi, aPhi, rhoInit.varPhi, centerPhi ); 
-pPhi3 = repmat( reshape( pPhi, [1, 1, Nm] ), [Nx, Ny, 1] );
+pPhi = gaussShift( gridObj.x3, systemObj.l3, aPhi, rhoInit.varPhi, centerPhi ); 
+pPhi3 = repmat( reshape( pPhi, [1, 1, n3] ), [n1, n2, 1] );
 
 % Build spatial gaussian perturbation (x)
 if aX == 0
   pX3 = 1;
 else
-  pX = gaussShift( gridObj.x, systemObj.Lx, aX, rhoInit.varX , rhoInit.centerX); 
-  pX3 = repmat( pX', [1, Ny, Nm] );
+  pX = gaussShift( gridObj.x1, systemObj.l1, aX, rhoInit.varX , rhoInit.centerX); 
+  pX3 = repmat( pX', [1, n2, n3] );
 end
 
 % Build spatial gaussian perturbation (y)
 if aY == 0
   pY3 = 1;
 else
-  pY = gaussShift( gridObj.y, systemObj.Ly, aY, rhoInit.varY , rhoInit.centerY); 
-  pY3 = repmat( pY, [Nx, 1, Nm] );
+  pY = gaussShift( gridObj.x2, systemObj.l2, aY, rhoInit.varY , rhoInit.centerY); 
+  pY3 = repmat( pY, [n1, 1, n3] );
 end
 
 % Total perturbation
@@ -53,12 +53,12 @@ end
 
 % Normalize base on homogenous or not
 if rhoInit.IntCond == 4; % Homo
-  normSqr = trapz_periodic( gridObj.phi, rho, 3 );
-  normTemp = repmat( normSqr, [1, 1, Nm ] );
+  normSqr = trapz_periodic( gridObj.x3, rho, 3 );
+  normTemp = repmat( normSqr, [1, 1, n3 ] );
   rho = systemObj.numPart ./ normTemp .* rho;
 else % Inhomogenous
-  normTemp = trapz_periodic( gridObj.x , ...
-    trapz_periodic( gridObj.y, trapz_periodic( gridObj.phi, rho, 3 ), 2 ), 1 );
+  normTemp = trapz_periodic( gridObj.x1 , ...
+    trapz_periodic( gridObj.x2, trapz_periodic( gridObj.x3, rho, 3 ), 2 ), 1 );
   rho = systemObj.numPart ./ normTemp .* rho;
 end
 

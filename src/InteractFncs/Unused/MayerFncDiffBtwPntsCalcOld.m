@@ -8,21 +8,21 @@
 % a line intersection method.  Mayer function is calculated for a hard rod at the origin
 % with its orientation angle being zero---rod at origin, lying along x-axis.
 
-function [FmDistBtwnPts] = MayerFncDiffBtwPntsCalc(Nx, Ny, Nm, Lx, Ly, dx, dy, dphi, L_rod)
+function [FmDistBtwnPts] = MayerFncDiffBtwPntsCalc(n1, n2, n3, l1, l2, dx, dy, dphi, L_rod)
 
 % Vector of position/ang differences
 % Handle even and odd rods differently
-if mod(Nx,2) == 0 %even    
-    xv = [ (0 : dx: Lx / 2) ,  (( -Lx/2 + dx ) : dx : -dx)  ]; 
+if mod(n1,2) == 0 %even    
+    xv = [ (0 : dx: l1 / 2) ,  (( -l1/2 + dx ) : dx : -dx)  ]; 
 else
-    xv = [ (0 : dx: L_box/2 - dx/2) , (-Lx / 2 + dx/2) : dx : -dx ];
+    xv = [ (0 : dx: L_box/2 - dx/2) , (-l1 / 2 + dx/2) : dx : -dx ];
 end
-if mod(Ny,2) == 0 %even    
-    yv = [ (0 : dy: Ly / 2) ,  (( -Ly/2 + dy ) : dy : -dy)  ]; 
+if mod(n2,2) == 0 %even    
+    yv = [ (0 : dy: l2 / 2) ,  (( -l2/2 + dy ) : dy : -dy)  ]; 
 else
-    yv = [ (0 : dy: Ly/2 - dy/2) , (-Ly / 2 + dy/2) : dy : -dy ];
+    yv = [ (0 : dy: l2/2 - dy/2) , (-l2 / 2 + dy/2) : dy : -dy ];
 end
-if mod(Nm,2) == 0 %even    
+if mod(n3,2) == 0 %even    
     phiv = [ (0 : dphi: pi) ,  (( -pi + dphi ) : dphi : -dphi)  ];
 else
     phiv = [ (0 : dphi: pi - dphi/2) , (-pi + dphi/2) : dphi : -dphi ];
@@ -37,9 +37,9 @@ Xmin = x3d - L_rod / 2 .* abs(cos(phi3d)) ;
 
 % keyboard
 %Initialze matrices
-FmSubSet_Int = zeros(Nx,Ny,Nm);  %All points of different angles that intersect in the right range
+FmSubSet_Int = zeros(n1,n2,n3);  %All points of different angles that intersect in the right range
 % FmSubSet_Int2 = zeros(N,N,N);
-FmSubSet_Par = zeros(Nx,Ny,Nm);  %All parallel points that intersect in the right range
+FmSubSet_Par = zeros(n1,n2,n3);  %All parallel points that intersect in the right range
 
 epsilon = 0.000000001;  %Prevent things from blowing up
 

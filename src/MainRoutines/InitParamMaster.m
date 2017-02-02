@@ -26,13 +26,13 @@ particleMaster.lMin = 0;  % Length along the minor axis
 particleMaster.vD   = [0]; % Driving velocity (vec)
 particleMaster.mob  = 1; % mobility
 
-systemMaster.Nx = [64]; % Gridpoints in x dir (vec)
-systemMaster.Ny = [64]; % Gridpoints in y dir (vec) 
-systemMaster.Nm = [64]; % Gridpoints in angle (vec)
+systemMaster.n1 = [64]; % Gridpoints in x dir (vec)
+systemMaster.n2 = [64]; % Gridpoints in y dir (vec) 
+systemMaster.n3 = [64]; % Gridpoints in angle (vec)
 systemMaster.bc = [1.45]; % Scaled concentration (vec)
-systemMaster.Lx = [10];  % Box length (vec)
-systemMaster.Ly = [10];  % Box length (vec)
-systemMaster.Lphi = 2 * pi;
+systemMaster.l1 = [10];  % Box length (vec)
+systemMaster.l2 = [10];  % Box length (vec)
+systemMaster.l3 = 2 * pi;
 systemMaster.Tmp = 1;   % Temperature
 
 if flagMaster.AnisoDiff
@@ -87,27 +87,27 @@ rhoInitMaster.centerY = 0; % Center of gaussian in x
 % Calculated stuff- fix times, etc.
 % Change odd gridspacings to even unless it's one. 
 % L=1 for N=1 is for integrations
-if systemMaster.Nx == 1 
-  systemMaster.Lx = 1;
+if systemMaster.n1 == 1 
+  systemMaster.l1 = 1;
   rhoInitMaster.NumModesX = 0;
 else
-  systemMaster.Nx = systemMaster.Nx + mod( systemMaster.Nx, 2 );
+  systemMaster.n1 = systemMaster.n1 + mod( systemMaster.n1, 2 );
 end
-if systemMaster.Ny == 1 
-  systemMaster.Ly = 1;
+if systemMaster.n2 == 1 
+  systemMaster.l2 = 1;
   rhoInitMaster.NumModesY = 0;
 else
-  systemMaster.Ny = systemMaster.Ny + mod( systemMaster.Ny, 2 );
+  systemMaster.n2 = systemMaster.n2 + mod( systemMaster.n2, 2 );
 end
-if systemMaster.Nm == 1 
-  systemMaster.Lphi = 1;
+if systemMaster.n3 == 1 
+  systemMaster.l3 = 1;
   rhoInitMaster.NumModesM = 0;
 else
-  systemMaster.Nm = systemMaster.Nm + mod( systemMaster.Nm, 2 );
+  systemMaster.n3 = systemMaster.n3 + mod( systemMaster.n3, 2 );
 end
 
-% For now, fix flags and turn off traditional analysis if Nm = 1
-if systemMaster.Nm == 1
+% For now, fix flags and turn off traditional analysis if n3 = 1
+if systemMaster.n3 == 1
   flagMaster.MakeOP = 0;
   flagMaster.MakeMovies = 0;
   particleMaster.mobRot = 0;
@@ -117,30 +117,30 @@ if systemMaster.Nm == 1
 end
 
 % Don't perturb more more than you are allowed to
-if( rhoInitMaster.NumModesX >= systemMaster.Nx / 2 )
-  rhoInitMaster.NumModesX = floor(systemMaster.Nx / 2) - 1; 
+if( rhoInitMaster.NumModesX >= systemMaster.n1 / 2 )
+  rhoInitMaster.NumModesX = floor(systemMaster.n1 / 2) - 1; 
 end
-if( rhoInitMaster.NumModesY >= systemMaster.Ny / 2 )
-  rhoInitMaster.NumModesY = floor(systemMaster.Ny / 2) - 1;
+if( rhoInitMaster.NumModesY >= systemMaster.n2 / 2 )
+  rhoInitMaster.NumModesY = floor(systemMaster.n2 / 2) - 1;
 end
-if( rhoInitMaster.NumModesM >= systemMaster.Nm / 2 )
-  rhoInitMaster.NumModesM = floor(systemMaster.Nm / 2) - 1; 
+if( rhoInitMaster.NumModesM >= systemMaster.n3 / 2 )
+  rhoInitMaster.NumModesM = floor(systemMaster.n3 / 2) - 1; 
 end
 
 %  Make sure variance isn't zero if doing polar
 if rhoInitMaster.varX ~= 0
   if varX == 0
-    rhoInitMaster.varX = systemMaster.Lx/2; 
+    rhoInitMaster.varX = systemMaster.l1/2; 
   end
 end
 if rhoInitMaster.varY ~= 0
   if varY == 0
-    rhoInitMaster.varY = systemMaster.Ly/2; 
+    rhoInitMaster.varY = systemMaster.l2/2; 
   end
 end
 if rhoInitMaster.varPhi ~= 0
   if varPhi == 0
-    rhoInitMaster.varPhi = systemMaster.Lphi/2; 
+    rhoInitMaster.varPhi = systemMaster.l3/2; 
   end
 end
 % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
@@ -152,16 +152,16 @@ if flagMaster.AnisoDiff == 0 && flagMaster.StepMeth == 6
 end
 % Fix Ls if we want the box to be square
 if flagMaster.SquareBox == 1
-  systemMaster.L_box = unique( [systemMaster.Lx systemMaster.Ly] );
-  systemMaster.Lx = systemMaster.L_box; 
-  systemMaster.Ly = systemMaster.L_box; 
+  systemMaster.L_box = unique( [systemMaster.l1 systemMaster.l2] );
+  systemMaster.l1 = systemMaster.L_box; 
+  systemMaster.l2 = systemMaster.L_box; 
 end
-% Fix Lx is we want all Ns to be the same
+% Fix l1 is we want all Ns to be the same
 if flagMaster.AllNsSame == 1
-  Nvec = unique( [systemMaster.Nx systemMaster.Ny systemMaster.Nm] );
-  systemMaster.Nx = Nvec;
-  systemMaster.Ny = Nvec; 
-  systemMaster.Nm = Nvec;
+  Nvec = unique( [systemMaster.n1 systemMaster.n2 systemMaster.n3] );
+  systemMaster.n1 = Nvec;
+  systemMaster.n2 = Nvec; 
+  systemMaster.n3 = Nvec;
 end
 % Concentration and rod stuff
 particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded volume per particle

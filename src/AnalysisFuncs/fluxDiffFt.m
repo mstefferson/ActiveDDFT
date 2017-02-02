@@ -2,9 +2,9 @@ function [JxDiff, JyDiff, JphiDiff] = ...
   fluxDiffFt( rhoFT, D, diffObj)
 
 % Derivatives in k-space
-drho_dxFt = diffObj.ikx3 .*  rhoFT;
-drho_dyFt = diffObj.iky3 .*  rhoFT;
-drho_dphiFt = diffObj.ikm3 .* rhoFT;
+drho_dxFt = diffObj.ik1rep3 .*  rhoFT;
+drho_dyFt = diffObj.ik2rep3 .*  rhoFT;
+drho_dphiFt = diffObj.ik3rep3 .* rhoFT;
 % Back to real
 drho_dx = real( ifftn(ifftshift( drho_dxFt ) ) );
 drho_dy = real( ifftn(ifftshift( drho_dyFt ) ) );

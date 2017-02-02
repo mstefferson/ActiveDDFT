@@ -1,7 +1,7 @@
 % k2plotInd: The indices of the k modes you want to plot in relation to the
 % original k vector
 
-function [k2plotInd,Nmodes] = Ks2TrackFinderSpec(NumModesMax,ampl_record,TimeRecVec,min_amp)
+function [k2plotInd,n3odes] = Ks2TrackFinderSpec(NumModesMax,ampl_record,TimeRecVec,min_amp)
 
 [N, ~] =  size( ampl_record );
 
@@ -60,9 +60,9 @@ VecLength = length(k2plotInd);
 if mod( VecLength , 2) == 0
 k2plotInd = k2plotInd(2:end); 
 end
-Nmodes = length(k2plotInd);      %Number of modes to study
+n3odes = length(k2plotInd);      %Number of modes to study
 % keyboard
-if Nmodes < 1
+if n3odes < 1
    error('You are tracking zero modes. not very interesting') 
 end
 

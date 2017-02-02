@@ -13,7 +13,7 @@ function [MuEx_FT] = MuExCalcVc2Ft(rho_FT,Fm_FT,systemObj)
 %the density profile
 % keyboard
 %Now includes the correct scale
-MuEx_FT = -(systemObj.Lphi * systemObj.Lx * systemObj.Ly) / (systemObj.Nx * systemObj.Ny * systemObj.Nm) ...
+MuEx_FT = -(systemObj.l3 * systemObj.l1 * systemObj.l2) / (systemObj.n1 * systemObj.n2 * systemObj.n3) ...
     .* systemObj.Tmp .* Fm_FT .* rho_FT;
 
 end

@@ -26,7 +26,7 @@ rho = real( ifftn(ifftshift( rho_FT ) ) );
 Kern_FT  = fftshift( fft( abs( sin( GridObj.phi3D) ),[], 3) );
 
 %Now includes the correct scale
-MuEx_FT = (2 * pi ) / ParamObj.Nm .* ParamObj.Tmp .* ParamObj.L_rod ^ 2 ...
+MuEx_FT = (2 * pi ) / ParamObj.n3 .* ParamObj.Tmp .* ParamObj.L_rod ^ 2 ...
     .* Kern_FT .* rho_FT;
 
 %     MuEx    = real(ifftn(ifftshift(MuEx_FT)));

@@ -12,12 +12,12 @@ end
 varCutoff = 1e-6; % If variance is below this, edits axis;
 axisFactor =  1e3;
 ampFract  = 0.05; % for pos, phi plot
-Nx = systemObj.Nx;
-Ny = systemObj.Ny;
-Nm = systemObj.Nm;
-x  = gridObj.x;
-y  = gridObj.y;
-phi = gridObj.phi;
+n1 = systemObj.n1;
+n2 = systemObj.n2;
+n3 = systemObj.n3;
+x  = gridObj.x1;
+y  = gridObj.x2;
+phi = gridObj.x3;
 
 rowVar = std( cFinal( :, 1 ) );
 colVar = std( cFinal( 1, : ) );
@@ -25,24 +25,24 @@ colVar = std( cFinal( 1, : ) );
 % Take slices
 if rowVar >= colVar
   maxVar = rowVar;
-  rows = 1:Nx;
+  rows = 1:n1;
   cols = 1;
-  height = 1:Nm;
-  NposVar = Nx;
+  height = 1:n3;
+  NposVar = n1;
   posVar = x;
   posVarLab = 'x';
   shiftDim = 1;
-  centerPos = Nx / 2;
+  centerPos = n1 / 2;
 else
   maxVar = colVar;
   rows = 1;
-  cols = 1:Ny;
-  height = 1:Nm;
-  NposVar = Ny;
+  cols = 1:n2;
+  height = 1:n3;
+  NposVar = n2;
   posVar = y;
   posVarLab = 'y';
   shiftDim = 2;
-  centerPos = Ny / 2;
+  centerPos = n2 / 2;
 end
 
 if maxVar < varCutoff
@@ -61,7 +61,7 @@ noFinal = circshift( noFinal, centerPos - maxCind, shiftDim  );
 
 % distro slice
 distroSlice = ...
-  reshape( rhoFinal( rows, cols, height ), [NposVar Nm] );
+  reshape( rhoFinal( rows, cols, height ), [NposVar n3] );
 % Shift it
 distroSlice = circshift( distroSlice, centerPos - maxCind, 1);
 maxDist = max(max( distroSlice ) );

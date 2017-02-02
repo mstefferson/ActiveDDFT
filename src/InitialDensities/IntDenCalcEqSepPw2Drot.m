@@ -23,23 +23,23 @@ function [rho] = IntDenCalcEqSepPw2Drot(gridObj,ParamObj,rhoInit)
 % Distribution stuff
 Nc    = 10;            % Number of Coefficients
 
-[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,gridObj.phi,systemObj.bc); % Calculate coeff
-f = DistBuilderExpCos2Dsing(Nc,gridObj.phi,Coeff_best);        % Build equil distribution
-% plot(gridObj.phi,f)
+[Coeff_best, ~] = CoeffCalcExpCos2D(Nc,gridObj.x3,systemObj.bc); % Calculate coeff
+f = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
+% plot(gridObj.x3,f)
 
 % Initialize rho
-rho = systemObj.numPart / (2 .* pi .* systemObj.Lx .* systemObj.Lx) .* ...
-  ones(systemObj.Nx,systemObj.Ny,systemObj.Nm);
+rho = systemObj.numPart / (2 .* pi .* systemObj.l1 .* systemObj.l1) .* ...
+  ones(systemObj.n1,systemObj.n2,systemObj.n3);
 
 % Map distribution to a homogeneous system
-for i = 1:systemObj.Nm
+for i = 1:systemObj.n3
   rho(:,:,i) = rho(:,:,i) .* f(i);
 end
 
 
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
-CurrentNorm = trapz_periodic(gridObj.y,trapz_periodic(gridObj.x,trapz_periodic(gridObj.phi,rho,3),2),1);
+CurrentNorm = trapz_periodic(gridObj.x2,trapz_periodic(gridObj.x1,trapz_periodic(gridObj.x3,rho,3),2),1);
 rho = rho .* systemObj.numPart ./ CurrentNorm;
 % Perturb it
 [rho] = SepPwDenPerturber2Drot(rho,ParamObj,gridObj,rhoInit);

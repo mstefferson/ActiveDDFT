@@ -1,5 +1,5 @@
 function [SteadyState,ShitIsFucked,MaxReldRho] = ...
-VarRecorderTracker(lfid,timeObj,t,Nx,Ny,Nm,rhoVec_FT,rhoVec_FT_prev,TotalDensity ,j_record)
+VarRecorderTracker(lfid,timeObj,t,n1,n2,n3,rhoVec_FT,rhoVec_FT_prev,TotalDensity ,j_record)
 % Track how mucht the wieghted density has changed.
 %Check to see if steady state has been reached. If so, break the
 %loop'
@@ -10,13 +10,13 @@ global DensityFT_rec
 % keyboard
 fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
 % fclose(tfid);
-rho         = real(ifftn(ifftshift(reshape( rhoVec_FT,Nx,Ny,Nm ))));
-rho_prev    = real(ifftn(ifftshift(reshape( rhoVec_FT_prev,Nx,Ny,Nm ))));
+rho         = real(ifftn(ifftshift(reshape( rhoVec_FT,n1,n2,n3 ))));
+rho_prev    = real(ifftn(ifftshift(reshape( rhoVec_FT_prev,n1,n2,n3 ))));
 
 % See if things are broken
 [SteadyState,ShitIsFucked,MaxReldRho] = BrokenSteadyDenTracker(rho,rho_prev,TotalDensity ,timeObj);
 
-rho_cube_FT = reshape( rhoVec_FT,Nx,Ny,Nm );
+rho_cube_FT = reshape( rhoVec_FT,n1,n2,n3 );
 DensityFT_rec(:,:,:,j_record)   = rho_cube_FT;
 Density_rec(:,:,:,j_record)     = rho;
 %         keyboard

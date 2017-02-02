@@ -7,10 +7,10 @@ function fluxPlotSpt( x,y, systemObj, C, ...
 
 divNumX = 8;
 divNumY = 8;
-deltaX  = ceil(systemObj.Nx / divNumX );
-deltaY  = ceil(systemObj.Ny / divNumY);
-subIndX = 1:deltaX:(systemObj.Nx + 1 - deltaX);
-subIndY = 1:deltaY:(systemObj.Ny + 1 - deltaY);
+deltaX  = ceil(systemObj.n1 / divNumX );
+deltaY  = ceil(systemObj.n2 / divNumY);
+subIndX = 1:deltaX:(systemObj.n1 + 1 - deltaX);
+subIndY = 1:deltaY:(systemObj.n2 + 1 - deltaY);
 xSub = x(subIndX);
 ySub = y(subIndY);
 

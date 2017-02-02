@@ -43,15 +43,15 @@ try
       rhoInit  = runSave.rhoInit;
       gridObj  = runSave.gridObj;
       runObj  = runSave.runObj;
-      Nx = systemObj.Nx; Ny = systemObj.Ny; Nm = systemObj.Nm;
+      n1 = systemObj.n1; n2 = systemObj.n2; n3 = systemObj.n3;
       % Build phi3D once
-      [~,~,phi3D] = meshgrid(gridObj.y,gridObj.x,gridObj.phi);
+      [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
       cosPhi3d = cos(phi3D);
       sinPhi3d = sin(phi3D);
       cos2Phi3d = cosPhi3d .^ 2;
       sin2Phi3d = sinPhi3d .^ 2;
       cossinPhi3d = cosPhi3d .* sinPhi3d;
-      phi = gridObj.phi;
+      phi = gridObj.x3;
       % new directory name
       dirName = saveNameRun(5:end-4);
       dirName  = ['./runOPfiles/' dirName ];
@@ -113,26 +113,26 @@ try
       paramSave.denRecObj = runSave.denRecObj;
       paramSave.runObj = runObj;
       % initialize
-      OpSave.C_rec    = zeros(Nx, Ny, 2);
-      OpSave.POP_rec  = zeros(Nx, Ny, 2);
-      OpSave.POPx_rec = zeros(Nx, Ny, 2);
-      OpSave.POPy_rec = zeros(Nx, Ny, 2);
-      OpSave.NOP_rec  = zeros(Nx, Ny, 2);
-      OpSave.NOPx_rec = zeros(Nx, Ny, 2);
-      OpSave.NOPy_rec = zeros(Nx, Ny, 2); 
+      OpSave.C_rec    = zeros(n1, n2, 2);
+      OpSave.POP_rec  = zeros(n1, n2, 2);
+      OpSave.POPx_rec = zeros(n1, n2, 2);
+      OpSave.POPy_rec = zeros(n1, n2, 2);
+      OpSave.NOP_rec  = zeros(n1, n2, 2);
+      OpSave.NOPx_rec = zeros(n1, n2, 2);
+      OpSave.NOPy_rec = zeros(n1, n2, 2); 
       % Analyze chucks in parallel
       % Break it into chunks
       NumChunks = timeObj.N_chunks;
       SizeChunk = max( floor( totRec/ NumChunks ), 1 );
       NumChunks = ceil( totRec/ SizeChunk); 
-      %OpSave.NOPy_rec = zeros(systemObj.Nx, systemObj.Ny, 2);
-      C_rec    = zeros(Nx, Ny,  SizeChunk);
-      POP_rec  = zeros(Nx, Ny,  SizeChunk);
-      POPx_rec = zeros(Nx, Ny,  SizeChunk);
-      POPy_rec = zeros(Nx, Ny,  SizeChunk);
-      NOP_rec  = zeros(Nx, Ny,  SizeChunk);
-      NOPx_rec = zeros(Nx, Ny,  SizeChunk);
-      NOPy_rec = zeros(Nx, Ny,  SizeChunk);
+      %OpSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
+      C_rec    = zeros(n1, n2,  SizeChunk);
+      POP_rec  = zeros(n1, n2,  SizeChunk);
+      POPx_rec = zeros(n1, n2,  SizeChunk);
+      POPy_rec = zeros(n1, n2,  SizeChunk);
+      NOP_rec  = zeros(n1, n2,  SizeChunk);
+      NOPx_rec = zeros(n1, n2,  SizeChunk);
+      NOPy_rec = zeros(n1, n2,  SizeChunk);
       
       for jj = 1:NumChunks
         if jj ~= NumChunks
@@ -144,13 +144,13 @@ try
         DenRecTemp = runSave.Den_rec(:,:,:,ind);
         TimeRecVecTemp = OpTimeRecVec(ind);
         if length(ind) ~= SizeChunk
-          C_rec    = zeros(Nx, Ny,  length(ind) );
-          POP_rec  = zeros(Nx, Ny,  length(ind) );
-          POPx_rec = zeros(Nx, Ny,  length(ind) );
-          POPy_rec = zeros(Nx, Ny,  length(ind) );
-          NOP_rec  = zeros(Nx, Ny,  length(ind) );
-          NOPx_rec = zeros(Nx, Ny,  length(ind) );
-          NOPy_rec = zeros(Nx, Ny,  length(ind));
+          C_rec    = zeros(n1, n2,  length(ind) );
+          POP_rec  = zeros(n1, n2,  length(ind) );
+          POPx_rec = zeros(n1, n2,  length(ind) );
+          POPy_rec = zeros(n1, n2,  length(ind) );
+          NOP_rec  = zeros(n1, n2,  length(ind) );
+          NOPx_rec = zeros(n1, n2,  length(ind) );
+          NOPy_rec = zeros(n1, n2,  length(ind));
         end
         % Make sure it isn't zero of infinite
         if isfinite(DenRecTemp); notInf = 1; else; notInf = 0; end
@@ -158,7 +158,7 @@ try
         if notInf && notZero
           parfor kk = 1:length(ind)
             %Calculate
-            [OPObjTemp] = CPNrecMaker(Nx,Ny,...
+            [OPObjTemp] = CPNrecMaker(n1,n2,...
               TimeRecVecTemp(kk), DenRecTemp(:,:,:,kk),...
               phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
             % Store
@@ -183,11 +183,11 @@ try
         OpSave.NOPy_rec(:,:,ind) = NOPy_rec;
       end %loop over chunks    
       % Distribution slice
-      holdX = systemObj.Nx /2 + 1; % spatial pos placeholders
-      holdY = systemObj.Ny /2 + 1; % spatial pos placeholders
+      holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
+      holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
       OpSave.distSlice_rec = reshape( ...
         runSave.Den_rec(holdX, holdY, : , 1:length(OpTimeRecVec)),...
-        [systemObj.Nm length(OpTimeRecVec)] );  
+        [systemObj.n3 length(OpTimeRecVec)] );  
       % Now do it for steady state sol
       [~,~,phi3D] = meshgrid(1,1,phi);
       cosPhi3d = cos(phi3D);
@@ -196,7 +196,7 @@ try
       sin2Phi3d = sinPhi3d .^ 2;
       cossinPhi3d = cosPhi3d .* sinPhi3d;
       [~,~,~,~,OpSave.NOPeq,~,~] = ...
-        OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,Nm] ), ...
+        OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,n3] ), ...
         phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);  
       [~, ~, o] = size(OpSave.C_rec);
       % Move it
