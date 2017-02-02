@@ -58,8 +58,13 @@ end
 % Renormalize out here
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y
+if systemObj.Nm > 1
+  int1 = trapz_periodic(gridObj.phi,rho,3);
+else
+  int1 = rho;
+end
 CurrentNorm = trapz_periodic(gridObj.x,...
-  trapz_periodic(gridObj.y,trapz_periodic(gridObj.phi,rho,3),2),1);
+  trapz_periodic(gridObj.y,int1,2),1);
 rho = rho .* systemObj.numPart ./ CurrentNorm;
 
 end
