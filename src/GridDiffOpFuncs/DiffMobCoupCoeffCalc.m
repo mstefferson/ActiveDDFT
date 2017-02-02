@@ -52,33 +52,33 @@ diffObj.ik3rep3 = sqrt(-1) .* diffObj.ik3rep3;
 n3 = length(km);
 jxf    = - ( diffObj.D_par + diffObj.D_perp ) .* ...
   ( sqrt(-1) * kx2D ) / 2;
-diffObj.jxf_reps = repmat( jxf, [1,1,n3]);
+diffObj.j1f_reps = repmat( jxf, [1,1,n3]);
 if diffObj.Ani == 0 || diffObj.D_perp == diffObj.D_par
-  diffObj.jxMm2f_reps = 0;
-  diffObj.jxMp2f_reps = 0;
+  diffObj.j1Mm2f_reps = 0;
+  diffObj.j1Mp2f_reps = 0;
 else
   jxMm2f = - ( diffObj.D_par - diffObj.D_perp ) .* ...
     ( sqrt(-1) * kx2D + ky2D ) / 4;
   jxMp2f = - ( diffObj.D_par - diffObj.D_perp ) .* ...
     ( sqrt(-1) * kx2D - ky2D ) / 4;
-  diffObj.jxMm2f_reps = repmat( jxMm2f, [1,1,n3]);
-  diffObj.jxMp2f_reps = repmat( jxMp2f, [1,1,n3]);
+  diffObj.j1Mm2f_reps = repmat( jxMm2f, [1,1,n3]);
+  diffObj.j1Mp2f_reps = repmat( jxMp2f, [1,1,n3]);
 end
 
 % jy
 jyf    = - ( diffObj.D_perp + diffObj.D_par ) .* ...
   ( sqrt(-1) * ky2D ) / 2;
-diffObj.jyf_reps = repmat( jyf, [1,1,n3]);
+diffObj.j2f_reps = repmat( jyf, [1,1,n3]);
 if diffObj.Ani == 0 || diffObj.D_perp == diffObj.D_par
-  diffObj.jyMm2f_reps = 0;
-  diffObj.jyMp2f_reps = 0;
+  diffObj.j2Mm2f_reps = 0;
+  diffObj.j2Mp2f_reps = 0;
 else
   jyMm2f = - ( diffObj.D_perp - diffObj.D_par ) .* ...
     ( sqrt(-1) * ky2D - kx2D ) / 4;
   jyMp2f = - ( diffObj.D_perp - diffObj.D_par ) .* ...
     ( sqrt(-1) * ky2D + kx2D ) / 4;
-  diffObj.jyMm2f_reps = repmat( jyMm2f, [1,1,n3]);
-  diffObj.jyMp2f_reps = repmat( jyMp2f, [1,1,n3]);
+  diffObj.j2Mm2f_reps = repmat( jyMm2f, [1,1,n3]);
+  diffObj.j2Mp2f_reps = repmat( jyMp2f, [1,1,n3]);
 end
 
 end
