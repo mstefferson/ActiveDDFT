@@ -16,8 +16,8 @@
 %
 
 function [denRecObj]  = ...
-  HR2DrotDenEvolverFTBodyIdC(rho,systemObj,particleObj,...
-  timeObj,gridObj,diffObj,flags, lfid)
+  DenEvolverFTDiagOp(rho,systemObj,particleObj,...
+  timeObj,gridObj,diffObj,interObj,flags,lfid)
 
 global runSave
 

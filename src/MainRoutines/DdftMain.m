@@ -3,7 +3,7 @@
 % orientation. Program handles interactions using DDFT
 
 function  [ denRecObj ] = ...
-  HR2DrotMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
+  DdftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 
@@ -29,7 +29,6 @@ try
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
-  
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];
@@ -55,7 +54,7 @@ try
   else
     dirName = pwd;
   end
-
+  % verbose
   if flags.Verbose
     if flags.AnisoDiff
       fprintf('Running Anisotropic Diffusion\n');
@@ -63,15 +62,12 @@ try
       fprintf('Running Isotropic Diffusion\n');
     end
   end
-  
   % Record how long things take
   tMainID  = tic;
-  
   % Create a file that holds warning print statements
   locString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(locString,'a+');    % a+ allows to append data
   fprintf(lfid,'Starting main, current code\n');
-  
   % Make remaining objects
   % Make all the grid stuff %
   tGridID = tic;
@@ -84,62 +80,54 @@ try
   end
   fprintf(lfid,'Made Grid: %.3g \n', gridrunTime);
   runTime.grid = gridrunTime;
-  
   %Make diffusion coeff
   tDiffID = tic;
-  if flags.AnisoDiff == 1
-    [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
-      particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
-      gridObj.k1, gridObj.k2, gridObj.km, ...
-      gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
-  else
-    [diffObj] = DiffMobCoupCoeffCalcIsoDiff(...
-      systemObj.Tmp,particleObj.mobPos,particleObj.mobRot, ...
-      gridObj.k1, gridObj.k2, gridObj.km);
-  end
-  
-  diffRunTime = toc(tDiffID);
+  [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
+    particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
+    gridObj.k1, gridObj.k2, gridObj.km, ...
+    gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
+    diffRunTime = toc(tDiffID);
   if flags.Verbose
     fprintf('Made diffusion object t%d_%d: %.3g\n', ...
       runObj.trialID, runObj.runID, diffRunTime);
   end
   fprintf(lfid,'Made diffusion object: %.3g\n', diffRunTime);
   runTime.diff = diffRunTime;
-  
   %Initialze density
   tIntDenID = tic;
   % Find non-driving steady state
-  Nc    = 20;
-  % Equilib distribution. Don't let bc = 1.5
-  if 1.499 < systemObj.bc && systemObj.bc < 1.501
-    rhoInit.bc = 1.502;
-  else
-    rhoInit.bc = systemObj.bc;
-  end
-  
-  if systemObj.n3 == 1
-    rhoInit.feq = [];
-  else
-    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
-    rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
-    % shift it
-    rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
-    [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
-    rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
+  if strcmp( particleObj.type, 'rods')
+    % Number of coefficients
+    Nc    = 20;
+    % Equilib distribution. Don't let bc = 1.5
+    if 1.499 < systemObj.bc && systemObj.bc < 1.501
+      rhoInit.bc = 1.502;
+    else
+      rhoInit.bc = systemObj.bc;
+    end
+    if systemObj.n3 == 1
+      rhoInit.feq = [];
+    else
+      [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
+      rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
+      % shift it
+      rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
+      [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
+      rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
+    end
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);
   intDenRunTime = toc(tIntDenID);
-  
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
       runObj.trialID, runObj.runID, intDenRunTime);
   end
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
-  
+  % Set-up interactions and external potentials
+  [interObj] =  InterObjMaker( particleObj, systemObj );
   % Save everything before running body of code
-  
   if flags.SaveMe
     runSave.flags    = flags;
     runSave.runObj    = runObj;
@@ -158,23 +146,23 @@ try
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
   end
-  
+  keyboard
   % Run the main code
   tBodyID      = tic;
-  if flags.AnisoDiff == 1
-    [denRecObj]  = HR2DrotDenEvolverFTBody(...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
+  if flags.DiagLop == 1
+    [denRecObj]  = DenEvolverFTDiagOp(...
+      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   else
-    [denRecObj]  = HR2DrotDenEvolverFTBodyIdC(...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, flags, lfid);
+    [denRecObj]  = DenEvolverFT(...
+      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
+  keyboard
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
   % Save it
   if flags.SaveMe
     runSave.denRecObj = denRecObj;
   end
-  
   bodyRunTime  = toc(tBodyID);
   if flags.Verbose
     fprintf('Ran Main Body t%d_%d: %.3g \n', ...
@@ -182,8 +170,6 @@ try
   end
   fprintf(lfid,'Body Run Time = %f\n\n', bodyRunTime);
   runTime.body = bodyRunTime;
-  
-  
   % Run movies if you want
   if flags.MakeOP  == 1
     tOpID           = tic ;
@@ -196,14 +182,14 @@ try
     paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
     paramSave.denRecObj = runSave.denRecObj;
-    
+    % Commonly used trig functions
     [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
     cosPhi3d = cos(phi3D);
     sinPhi3d = sin(phi3D);
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
-    
+    % Build time rec vector
     if  denRecObj.DidIBreak == 0
       totRec = length( denRecObj.TimeRecVec );
       opTimeRecVec = denRecObj.TimeRecVec ;
@@ -213,7 +199,6 @@ try
       opTimeRecVec = denRecObj.TimeRecVec(1:end-1) ;
       opSave.OpTimeRecVec = opTimeRecVec;
     end
-    
     % Set up saving
     % Distribution slice
     holdX = systemObj.n1 /2 + 1; % spatial pos placeholders

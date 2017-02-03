@@ -112,7 +112,7 @@ else
     '_t' num2str( trial,'%.2d' ) '.' num2str( paramrun(1),'%.2d' ) '.mat' ];
   
   fprintf('\nStarting %s \n', filename);
-  [denRecObj] = HR2DrotMain( filename, paramvec, systemObj, particleObj,...
+  [denRecObj] = DdftMain( filename, paramvec, systemObj, particleObj,...
     runObj, timeObj, rhoInit, flags );
   fprintf('Finished %s \n', filename);
 end

@@ -1,11 +1,9 @@
 % InitParamMaster
-%
-% Parameter inializer for RunHardRod
-
+% Parameter inializer for runHardRod
 % Main flagMaster
 flagMaster.SaveMe       = 1; % Saving
 flagMaster.Verbose      = 0; % Prints run times
-flagMaster.AnisoDiff    = 1; % Aniso = 1. Iso = 0
+flagMaster.DiagLop      = 0; % Diag operator = 1. off diag = 0
 flagMaster.Interactions = 1; % Int = 1. No Int = 0
 flagMaster.MakeMovies   = 0; % No movies if save is zero
 flagMaster.MakeOP       = 1; % No OPs if save is zero
@@ -14,18 +12,23 @@ flagMaster.SquareBox    = 0; % Forces box to be square
 flagMaster.StepMeth     = [6]; % Stepping (integrating) method (vec)
 flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
-
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
 % Can be vector if (vec) is in comment
 runMaster.num_trial =  1; % number of trials
 runMaster.trialID = 1; % Trial Indicator
 runMaster.runID   = 1; % Starting Run indicator *_trial.runID
-
+%%%%%%%%%% Particles %%%%%%%%%%
+particleMaster.numTypes = 1; % number of types
+particleMaster.type = 'rods'; % rods, disks, spheres 
+particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt, fmt
+particleMaster.interLr = []; %  Long range interaction type in MF.
+particleMaster.interLrEnSc = []; %  Long range interaction energy scale in MF.
+particleMaster.externalPot = []; % External potential 
 particleMaster.lMaj = 1;  % Length along the major axis
 particleMaster.lMin = 0;  % Length along the minor axis
 particleMaster.vD   = [0]; % Driving velocity (vec)
 particleMaster.mob  = 1; % mobility
-
+%%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)
 systemMaster.n2 = [64]; % Gridpoints in y dir (vec) 
 systemMaster.n3 = [64]; % Gridpoints in angle (vec)
@@ -34,22 +37,12 @@ systemMaster.l1 = [10];  % Box length (vec)
 systemMaster.l2 = [10];  % Box length (vec)
 systemMaster.l3 = 2 * pi;
 systemMaster.Tmp = 1;   % Temperature
-
-if flagMaster.AnisoDiff
-  particleMaster.mobPar  = 2*particleMaster.mob; 
-else
-  particleMaster.mobPar = particleMaster.mob; 
-end
-particleMaster.mobPerp   = particleMaster.mob;
-particleMaster.mobRot   = 6 * particleMaster.mob / particleMaster.lMaj^2;
-
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
 timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording
 timeMaster.t_write    = 0.2;  % time elapsed before writing to file
 timeMaster.t_tot      = 1.0;  % total run time
 timeMaster.ss_epsilon = 1 * 10^(-5); % steady state condition dRho
-
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 % Key
 % The number of k-modes above and below k = 0 added as a perturbation
@@ -73,17 +66,8 @@ rhoInitMaster.NumModesM = 8; % Perturb # modes m
 rhoInitMaster.WeightPert = 1e-3; % Weight of perturbations
 rhoInitMaster.shiftAngle = 0; % If perturbing about nematic, shift distribution by this much
 % Gaussian perturbation 
-%phi
-rhoInitMaster.aPhif = 0; % Gauss amp in phi fraction of concentration
-rhoInitMaster.varPhi = 0; % Variance of gaussian in phi
-%x
-rhoInitMaster.aXf = 0; % Gauss amp in x as fraction of concentration
-rhoInitMaster.varX  = 0; % Variance of gaussian in x
-rhoInitMaster.centerX = 0; % Center of gaussian in x
-%y
-rhoInitMaster.aYf = 0; % Gauss amp in x as fraction of concentration
-rhoInitMaster.varY  = 0; % Variance of gaussian in x
-rhoInitMaster.centerY = 0; % Center of gaussian in x
+% rhoInitMaster.gP = [ aYf, varY, centerY, aYf, varY, centerY, aPhif, varPhi, centerPhi ]
+rhoInitMaster.gP = [0, systemMaster.l1/2, 0, 0, systemMaster.l1/2, 0, 0, systemMaster.l3/2, 0]; 
 % Calculated stuff- fix times, etc.
 % Change odd gridspacings to even unless it's one. 
 % L=1 for N=1 is for integrations
@@ -105,7 +89,8 @@ if systemMaster.n3 == 1
 else
   systemMaster.n3 = systemMaster.n3 + mod( systemMaster.n3, 2 );
 end
-
+% Get particle mobility
+particleMaster = particleMobInit( particleMaster, flagMaster.DiagLop);
 % For now, fix flags and turn off traditional analysis if n3 = 1
 if systemMaster.n3 == 1
   flagMaster.MakeOP = 0;
@@ -115,7 +100,6 @@ if systemMaster.n3 == 1
   particleMaster.mobPerp = particleMaster.mob;
   rhoInitMaster.IntCond = 0;
 end
-
 % Don't perturb more more than you are allowed to
 if( rhoInitMaster.NumModesX >= systemMaster.n1 / 2 )
   rhoInitMaster.NumModesX = floor(systemMaster.n1 / 2) - 1; 
@@ -126,22 +110,15 @@ end
 if( rhoInitMaster.NumModesM >= systemMaster.n3 / 2 )
   rhoInitMaster.NumModesM = floor(systemMaster.n3 / 2) - 1; 
 end
-
 %  Make sure variance isn't zero if doing polar
-if rhoInitMaster.varX ~= 0
-  if varX == 0
-    rhoInitMaster.varX = systemMaster.l1/2; 
-  end
+if rhoInitMaster.gP(2) == 0
+  rhoInitMaster.gP(2) = systemMaster.l1/2; 
 end
-if rhoInitMaster.varY ~= 0
-  if varY == 0
-    rhoInitMaster.varY = systemMaster.l2/2; 
-  end
+if rhoInitMaster.gP(5) == 0
+  rhoInitMaster.gP(2) = systemMaster.l1/2; 
 end
-if rhoInitMaster.varPhi ~= 0
-  if varPhi == 0
-    rhoInitMaster.varPhi = systemMaster.l3/2; 
-  end
+if rhoInitMaster.gP(8) == 0
+  rhoInitMaster.gP(8) = systemMaster.l1/2; 
 end
 % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
 % steady state instead of d rho
@@ -159,9 +136,6 @@ if flagMaster.AllNsSame == 1
   systemMaster.n2 = Nvec; 
   systemMaster.n3 = Nvec;
 end
-% Concentration and rod stuff
-particleMaster.b  = particleMaster.lMaj^2/pi;               % Average excluded volume per particle
-particleMaster.mobPos = particleMaster.mob;
 % Make OP if making movies 
 if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
 %Currently, you must save

@@ -24,7 +24,7 @@
 
 
 function [denRecObj] = HR2DrotDenEvolverFTBody(...
-  rho,systemObj,particleObj,timeObj,gridObj,diffObj, flags,lfid)
+  rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid)
 
 global runSave
 
