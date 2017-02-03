@@ -119,6 +119,7 @@ elseif( flags.StepMeth == 5 ) % BHAB2
   GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 6 ) % Exponential Euler
   GamProp = ( Prop - 1 ) ./ Lop;
+  GamProp(Nx/2+1, Ny/2+1,Nm/2+1) = 0;
   [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
 else
   error('No stepping method selected');
