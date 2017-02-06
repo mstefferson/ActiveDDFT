@@ -3,15 +3,14 @@
 % orientation. Program handles interactions using DDFT
 
 function  [ denRecObj ] = ...
-  DdftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
+  ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
-
+% globals and init
 global runSave
 movieSuccess = 0;
 evolvedSucess = 0;
 movStr = '';
-
 try
   % Set up denRecObj just in case code doesn't finish
   denRecObj.didIrun = 0;
@@ -86,7 +85,7 @@ try
     particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
     gridObj.k1, gridObj.k2, gridObj.km, ...
     gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
-    diffRunTime = toc(tDiffID);
+  diffRunTime = toc(tDiffID);
   if flags.Verbose
     fprintf('Made diffusion object t%d_%d: %.3g\n', ...
       runObj.trialID, runObj.runID, diffRunTime);
@@ -126,7 +125,7 @@ try
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
   % Set-up interactions and external potentials
-  [interObj] =  InterObjMaker( particleObj, systemObj );
+  [interObj] =  interObjMaker( particleObj, systemObj );
   % Save everything before running body of code
   if flags.SaveMe
     runSave.flags    = flags;
@@ -146,17 +145,15 @@ try
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
   end
-  keyboard
   % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
-    [denRecObj]  = DenEvolverFTDiagOp(...
+    [denRecObj]  = denEvolverFTDiagOp(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   else
-    [denRecObj]  = DenEvolverFT(...
+    [denRecObj]  = denEvolverFT(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
-  keyboard
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
   % Save it
@@ -213,7 +210,7 @@ try
     opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
     opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
     opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-    
+    % Make movies
     if flags.MakeMovies
       OPobj.C_rec    = zeros(systemObj.n1, systemObj.n2, totRec);
       OPobj.POP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
@@ -225,7 +222,6 @@ try
       OPobj.distSlice_rec = opSave.distSlice_rec;
       OPobj.OpTimeRecVec = opTimeRecVec;
     end
-    
     % Break it into chunks
     numChunks = timeObj.N_chunks;
     sizeChunk = floor( totRec/ numChunks );
@@ -234,7 +230,6 @@ try
     else
       numChunks = 1;
     end
-    
     for i = 1:numChunks
       if i ~= numChunks
         Ind =  (i-1) * sizeChunk + 1: i * sizeChunk;
@@ -245,11 +240,10 @@ try
           Ind = (i-1) * sizeChunk:totRec;
         end
       end
-      
+      % Make the records
       [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
         opTimeRecVec(Ind), runSave.Den_rec(:,:,:,Ind) ,...
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
-      
       % Save it
       opSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
       opSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
@@ -258,7 +252,7 @@ try
       opSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
       opSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
       opSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
-      
+      % Save records
       if flags.MakeMovies
         OPobj.C_rec(:,:,Ind)    = OPObjTemp.C_rec;
         OPobj.POP_rec(:,:,Ind)  = OPObjTemp.POP_rec;
@@ -268,9 +262,7 @@ try
         OPobj.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
         OPobj.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
       end
-      
     end % loop over chunks
-    
     % Now do it for steady state sol
     [~,~,phi3D] = meshgrid(1,1,gridObj.x3);
     cosPhi3d = cos(phi3D);
@@ -278,16 +270,15 @@ try
     cos2Phi3d = cosPhi3d .^ 2;
     sin2Phi3d = sinPhi3d .^ 2;
     cossinPhi3d = cosPhi3d .* sinPhi3d;
-    
+    % Calc CPN
     [~,~,~,~,opSave.NOPeq,~,~] = ...
       OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
       gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
-    
+    % Save if movies
     if flags.MakeMovies
       OPobj.OpTimeRecVec = opTimeRecVec;
       OPobj.NOPeq = opSave.NOPeq;
     end
-    
     opRunTime = toc(tOpID);
     if flags.Verbose
       fprintf('Made OP object t%d_%d: %.3g \n', ...
@@ -295,10 +286,9 @@ try
     end
     fprintf(lfid,'OrderParam Run time = %f\n', opRunTime);
     runTime.op = opRunTime;
-    
+    % Make movies
     if flags.MakeMovies == 1
       movieSuccess = 0;
-      
       % Make matlab movies
       tMovID       = tic;
       % Save Name
@@ -308,11 +298,8 @@ try
       OPMovieMakerTgtherDirAvi(movStr,...
         gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
         OPobj.distSlice_rec,OPobj.OpTimeRecVec);
-      
       movieSuccess = 1;
-      
       % Move it
-      
       movRunTime   = toc(tMovID);
       if flags.Verbose
         fprintf('Made movies t%d_%d: %.3g \n', ...
@@ -320,17 +307,15 @@ try
       end
       fprintf(lfid,'Make Mov Run Time = %f\n',  movRunTime);
       runTime.mov = movRunTime;
-      
       % Make amplitude plot
       kx0 = systemObj.n1 / 2 + 1;
       ky0 = systemObj.n2 / 2 + 1;
       km0 = systemObj.n3 / 2 + 1;
       nRec = length( denRecObj.TimeRecVec);
-      
+      % Ft amps
       totModes   = 12;
       FTind2plot = zeros( totModes , 3 );
       FTmat2plot = zeros( totModes , nRec );
-      
       FTind2plot(1,:) = [kx0     ky0     km0 ];
       FTind2plot(2,:) = [kx0 + 1 ky0     km0 ];
       FTind2plot(3,:) = [kx0     ky0 + 1 km0 ];
@@ -343,7 +328,6 @@ try
       FTind2plot(10,:) = [kx0 + 1 ky0     km0 + 2];
       FTind2plot(11,:) = [kx0     ky0 + 1 km0 + 2];
       FTind2plot(12,:) = [kx0 + 1 ky0 + 1 km0 + 2];
-      
       % Scale by N so it's N independent
       for i = 1:totModes
         FTmat2plot(i,:) =  1 / (systemObj.n1 * systemObj.n2 * systemObj.n3) .* ...
@@ -353,8 +337,6 @@ try
       % Plot Amplitudes
       ampPlotterFT(FTmat2plot, FTind2plot, ...
         denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0, timeObj.t_tot);
-      
-      % Save it
       % Save it
       figtl = sprintf('AmpFT.fig');
       % savefig doesn't like decimals so save it and rename it.
@@ -363,11 +345,9 @@ try
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
       movefile(figtl,[figtl2 '.fig'])
       saveas(gcf, [figtl2 '.jpg'],'jpg')
-      
       % Plot final slices of final order parameters
       sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-      
       if denRecObj.DidIBreak == 0
         sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
           OPobj.NOP_rec(:,:,end), systemObj, ...
@@ -388,11 +368,8 @@ try
       movefile([movStr '*'], dirName);
       movefile([sliceSaveTag '*'], dirName);
       movefile([maxSaveTag '*'], dirName);
-      
     end % End if movies
-    
   end % if OP
-  
   % Save how long everything took
   totRunTime = toc(tMainID);
   if flags.Verbose
@@ -410,13 +387,10 @@ try
       movefile( saveNameOP,dirName);
     end
   end
-  
 catch err %Catch errors
-  
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
   runSave.err = err;
-  
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
@@ -435,13 +409,11 @@ catch err %Catch errors
     end
   end
 end %End try and catch
-
+% close files
 fclose(lfid);
 delete(locString);
-
 if flags.Verbose
   fprintf('Leaving Main for t%d.%d\n', ...
     runObj.trialID, runObj.runID);
 end
-
 end % End HR2DrotVgrExeMain.m

@@ -1,4 +1,4 @@
-% HR2DrotDenEvolverFTBodyIdC.M
+% HR2DrotDenEvolverFTBody.m
 %
 % Description:
 % Code is the main body  for the code that
@@ -8,38 +8,40 @@
 % Includes hard rod interactions, assuming in the interaction that the rods
 % are infinitely thin.
 %
-%
-%
+% Anisotropic diffusion
+
 % Density matrix is set up as rho(x,y,phi)-----> RHO(kx,ky,km)
 %
-% Isotropic diffusion. The propagaotr is a cube.
+% The Lopagator now includes all the terms. The all the cubes are turned
+% into: a (n1*n2*n3) x (n1*n2*n3) linear operator and N^3 density vector
 %
-
-function [denRecObj]  = ...
-  DenEvolverFTDiagOp(rho,systemObj,particleObj,...
-  timeObj,gridObj,diffObj,interObj,flags,lfid)
-
+% Everything is sparsified
+%
+% Program never actually calculates the Lopagator, but uses expv from
+% ExpoKit. Way Faster.
+%
+% Interactions handled using Mayer function.
+%
+function [denRecObj] = denEvolverFT(...
+  rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
 global runSave
-
 fprintf(lfid,'In body of code\n');
-
 %Set N since it used so frequently
 n1  = systemObj.n1;
 n2  = systemObj.n2;
 n3  = systemObj.n3;
 N3 = n1*n2*n3;
-
+N2 = n1*n2;
 % Declare dt since it's used so much
 dt = timeObj.dt;
-
 % FT initial density and max density
 rho_FT = fftshift(fftn(rho));
+rhoVec_FT = reshape(rho_FT,N3,1);
 if n3 == 1
-  constConc = rho_FT( n1/2 + 1, n1/2 + 1);
+  constConc = rho_FT( n1/2 + 1, n2/2 + 1);
 else
-  constConc = rho_FT( n1/2 + 1, n1/2 + 1, n3/2 + 1);
+  constConc = rho_FT( n1/2 + 1, n2/2 + 1, n3/2 + 1);
 end
-
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
   Density_rec       = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
@@ -48,140 +50,118 @@ else
   Density_rec = 0;
   DensityFT_rec = 0;
 end
-
 % Recording indecies
 jrectemp = 1; % Temporary holder for Density_rec
 jrec     = 2; % Actual index for runSave
 jchunk   = 1; % Write chunk index
-
-%Set up Diffusion operator, discrete k-space propagator, and interaction
-%Set up Diffusion operator in cube form
-[Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
-Prop = exp(Lop .* dt);   % Exponentiate the elements
-
-%%%%%%%%%%%%%%%%%%%Mayer function stuff%%%%%%%%%%%%%%%%%%%%%%%%%%
-Fm_FT = fftshift(fftn( mayerFncHr(...
-  n1, n2, n3, systemObj.l1, systemObj.l2, particleObj.lMaj) ) );
-
-%Hard rod interactions
-if flags.Interactions
-  GammaExCube_FT = dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,systemObj,diffObj);
+%Set up Diffusion operator, discrete k-space Lopagator, and interaction
+[Lop] = DiffOpBuilderDr(diffObj,gridObj,n1,n2,n3,N2,N3);
+%Interactions
+if interObj.anyInter
+  GammaExVec_FT  = reshape( ...
+    dRhoMaster( rho, rho_FT, flags,...
+    interObj, systemObj, diffObj, particleObj ), ...
+    N3,1) ;
 else
-  GammaExCube_FT = 0;
+  GammaExVec_FT = zeros(N3,1);
 end
-
-%Driven Term
-if flags.Drive
-  % Build the sin and cos phi once
-  phi = zeros( 1, 1, n3 );
-  phi(1,1,:) = gridObj.x3;
-  cosPhi3 = cos( repmat( phi, [n1, n2, 1] ) );
-  sinPhi3 = sin( repmat( phi, [n1, n2, 1] ) );
-  
-  GammaDrCube_FT  = ...
-    dRhoDriveCalcFtId(rho,particleObj.vD,...
-    cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
-else
-  GammaDrCube_FT = 0;
-end
-
-%Total
-GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
-
-% Take the first step- Euler. Element by element mulitplication
+% Take first step- Euler
 if( flags.StepMeth == 0 ) % AB 1
   NlPf =  dt;
-  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+  [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf(...
+    Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
 elseif( flags.StepMeth == 1 ) % AB 2
   NlPf = 3 * dt / 2;
   NlPrevPf = dt / 2;
-  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,dt);
+  [rhoVec_FTnext, ticExpInt] = DenStepperAB1Pf( ...
+    Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
   % Save prev Gamma if need be
-  GammaCube_FTprev = GammaCube_FT;
-elseif( flags.StepMeth == 2 ) % HAB1
-  NlPf = dt .* Prop;
-  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
-elseif( flags.StepMeth == 3 ) % HAB2
-  NlPf = 3 * dt / 2 .* Prop;
-  NlPrevPf = dt / 2 .* Prop .* Prop;
-  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, dt .* Prop );
+  GammaExVec_FTprev = GammaExVec_FT;
+elseif( flags.StepMeth == 2 )  % HAB 1
+  NlPf = dt;
+  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
+    Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
+elseif( flags.StepMeth == 3 ) % HAB 2
+  NlPf = 3 * dt / 2 ;
+  NlPrevPf = dt / 2 ;
+  [rhoVec_FTnext, ticExpInt] = DenStepperHAB1Pf( ...
+    Lop, rhoVec_FT, GammaExVec_FT, dt, dt  );
   % Save prev Gamma if need be
-  GammaCube_FTprev = GammaCube_FT;
-elseif( flags.StepMeth == 4 ) % BHAB1
-  NlPf = dt / 2 .* ( 1 + Prop);
-  [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
-elseif( flags.StepMeth == 5 ) % BHAB2
-  NlPf = dt / 2 * ( 2 + Prop );
+  GammaExVec_FTprev = GammaExVec_FT;
+elseif( flags.StepMeth == 4 ) % BHAB 1
+  NlPf = dt / 2;
+  [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
+    Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
+elseif( flags.StepMeth == 5 ) % BHAB 2
+  NlPf = dt ;
   NlPrevPf = dt / 2;
-  [rho_FTnext] = DenStepperBHAB1cPf( ...
-    Prop, rho_FT, GammaCube_FT, dt / 2 .* ( 1 + Prop) );
+  NlExpPf =  dt / 2;
+  [rhoVec_FTnext, ticExpInt] = DenStepperBHAB1Pf( ...
+    Lop, rhoVec_FT, GammaExVec_FT, dt / 2, dt );
   % Save prev Gamma if need be
-  GammaCube_FTprev = GammaCube_FT;
-elseif( flags.StepMeth == 6 ) % Exponential Euler
-  GamProp = ( Prop - 1 ) ./ Lop;
-  GamProp(n1/2+1,n2/2+1,n3/2+1) = 0;
-  [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
+  GammaExVec_FTprev = GammaExVec_FT;
+elseif( flags.StepMeth == 6 ) % phiV
+  [rhoVec_FTnext, ticExpInt] = DenStepperPhiV( ...
+    Lop, rhoVec_FT, GammaExVec_FT, dt );
 else
   error('No stepping method selected');
 end
-
+% Initialize some things and start time loop
 tic
 ShitIsFucked = 0;
 SteadyState  = 0;
 MaxReldRho   = 0; % Initialize this so things don't get messed up
-
 fprintf(lfid,'Starting master time loop\n');
 for t = 1:timeObj.N_time-1
- %Need to update rho!!!
-  rho_FT = rho_FTnext;
+  %Need to update rho!!!
+  rhoVec_FT      = rhoVec_FTnext;
   rhoPrev = rho;
-  
   % Calculate rho if there is driving or interactions
-  if flags.Interactions || flags.Drive
+  if interObj.anyInter || flags.Drive
+    rho_FT = reshape(rhoVec_FT,n1,n2,n3);
     rho    = real(ifftn(ifftshift(rho_FT)));
   end
-  
-  %Hard rod interactions
-  if flags.Interactions
-    GammaExCube_FT = dRhoIntCalcVcFtId(rho,rho_FT,Fm_FT,systemObj,diffObj);
+  %Interactions
+  if interObj.anyInter
+    GammaExVec_FT  = reshape( ...
+      dRhoMaster( rho, rho_FT, flags,...
+      interObj, systemObj, diffObj, particleObj ),...
+    N3,1);
   end
-  
-  %Driven Term
-  if flags.Drive
-    GammaDrCube_FT  = ...
-      dRhoDriveCalcFtId(rho,particleObj.vD,...
-      cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
-  end
-  
-  GammaCube_FT = GammaDrCube_FT + GammaExCube_FT ;
-  % Take a step
+  % Take step
   if( flags.StepMeth == 0 )
-    [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+    [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
   elseif( flags.StepMeth == 1 )
-    [rho_FTnext] = DenStepperAB2cPf( ...
-      Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,NlPf, NlPrevPf );
-    GammaCube_FTprev = GammaCube_FT;
+    [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
+    GammaExVec_FTprev = GammaExVec_FT;
   elseif( flags.StepMeth == 2 )
-    [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
+    [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
   elseif( flags.StepMeth == 3 )
-    [rho_FTnext] = DenStepperHAB2cPf( ...
-      Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
-    GammaCube_FTprev = GammaCube_FT;
+    [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
+    GammaExVec_FTprev = GammaExVec_FT;
   elseif( flags.StepMeth == 4 )
-    [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+    [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
   elseif( flags.StepMeth == 5 )
-    [rho_FTnext] = DenStepperBHAB2cPf( ...
-      Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
-    GammaCube_FTprev = GammaCube_FT;
+    [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
+      Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
+    GammaExVec_FTprev = GammaExVec_FT;
   elseif( flags.StepMeth == 6 )
-    [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
+    [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
+      Lop, rhoVec_FT, GammaExVec_FT, dt );
   end
-  
   %Save everything
   if ( mod(t,timeObj.N_dtRec) == 0 )
+    % Turn it to a cube if it hasn't been yet
     if flags.Interactions == 0 && flags.Drive == 0
+      rho_FT = reshape(rhoVec_FT,n1,n2,n3);
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
+    rho_FTnext = reshape(rhoVec_FTnext,n1,n2,n3);
     [SteadyState,ShitIsFucked,MaxReldRho] = ...
       BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
     if flags.SaveMe
@@ -189,6 +169,10 @@ for t = 1:timeObj.N_time-1
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
       Density_rec(:,:,:,jrectemp)     = rho;
     end
+    %Make sure things are taking too long. This is a sign density---> inf
+    [TooLong] = ExpTooLongChecker(...
+      ticExptemp,ticExpInt,rhoVec_FT,n1,n2,n3,jrec);
+    if TooLong; ShitIsFucked = 1; end
     % Write a chunk to disk
     if flags.SaveMe
       if ( mod(t, timeObj.N_dtChunk ) == 0 )
@@ -205,7 +189,6 @@ for t = 1:timeObj.N_time-1
     end
     jrectemp = jrectemp + 1;
     jrec = jrec + 1;
-    
     % Break out if shit is fucked or done. Write first though
     if ShitIsFucked == 1 || SteadyState == 1;
       if flags.SaveMe
@@ -224,24 +207,25 @@ for t = 1:timeObj.N_time-1
     end
   end %end recording
 end %end time loop
-fprintf(lfid,'Finished master time loop\n');
-
 % Update last rho
 t =  t + 1;
-rho_FT    = rho_FTnext;
+rhoVec_FT  = rhoVec_FTnext;
+rho_FT     = reshape(rhoVec_FT,n1,n2,n3);
 rho        = real(ifftn(ifftshift(rho_FT)));
-
+trun = toc;
 %Save everything
 if flags.SaveMe
-  if ( mod(t,timeObj.N_dtRec)== 0 )
-    fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-    % Turn it to a cube if it hasn't been yet
-    if flags.Interactions == 0 && flags.Drive == 0
-      rho    = real(ifftn(ifftshift(rho_FT)));
+  if ShitIsFucked == 0 && SteadyState == 0;
+    if ( mod(t,timeObj.N_dtRec)== 0 )
+      fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
+      % Turn it to a cube if it hasn't been yet
+      if flags.Interactions == 0 && flags.Drive == 0
+        rho_FT = reshape(rhoVec_FT,n1,n2,n3);
+        rho    = real(ifftn(ifftshift(rho_FT)));
+      end
+      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+      Density_rec(:,:,:,jrectemp)     = rho;
     end
-    DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
-    Density_rec(:,:,:,jrectemp)     = rho;
-    
     if ( mod(t, timeObj.N_dtChunk ) == 0 )
       % Record Density_recs to file
       RecIndTemp = ...
@@ -252,27 +236,24 @@ if flags.SaveMe
       runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
     end
     jrec = jrec + 1; % Still +1. Programs assumes this always happens
-  end
-end %end recording
-
+  end %end recording
+end % end nothing is broken
+% Say you're done
+fprintf(lfid,'Finished master time loop\n');
 %If something broke, return zeros. Else, return the goods
 if ShitIsFucked
   fprintf('Density is either negative or not conserved.\n');
   fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
-  
-elseif SteadyState
+end
+if SteadyState
   fprintf('Things are going steady if you know what I mean.\n');
   fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
 else
   fprintf('Ran for the full time %.1f\n',timeObj.t_tot);
 end
-
 % Create vector of recorded times
 jrec = jrec - 1;
 TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
-
-trun = toc;
-
 % Save useful info
 denRecObj.didIrun      = 1;
 denRecObj.DidIBreak    = ShitIsFucked;
@@ -282,5 +263,4 @@ denRecObj.TimeRecVec   = TimeRecVec;
 denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
 denRecObj.simTime      = TimeRecVec(end);
-
 end %function
