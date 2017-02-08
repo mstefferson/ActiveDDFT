@@ -125,7 +125,7 @@ try
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;
   % Set-up interactions and external potentials
-  [interObj] =  interObjMaker( particleObj, systemObj );
+  [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
   % Save everything before running body of code
   if flags.SaveMe
     runSave.flags    = flags;

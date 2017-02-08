@@ -3,11 +3,10 @@
 % Description: Calculates the excess chemical potential for hard disks from scaled particle theory
 
 
-function [MuEx_FT] = MuExDisksSPT(rho)
-
+function [muExFt] = muExDisksSPT(nu)
 % Scaled particle theory
-MuEx = - log( 1 - rho ) + ( 3 * rho - 2 * rho .^ 2 ) ./ ( 1 - rho ) ;
+muEx = - log( 1 - nu ) + ( 3 * nu - 2 * nu .^ 2 ) ./ ( 1 - nu ) .^ 2 ;
 % Fourier
-MuEx_FT = fftshift( fftn ( MuEx ) );
+muExFt = fftshift( fftn ( muEx ) );
 
 end

@@ -2,7 +2,10 @@
 % Creates an interaction object that is used by interaction functions.
 % Includes interaction types and calculates necessary functions.
 %
-function [interObj] = interObjMaker( particleObj, systemObj )
+% Id key:
+% hardId = 1, 2, 3 mayer, spt, fmt
+% typeId = 1, 2, 3 rods, disks, spheres
+function [interObj] = interObjMaker( particleObj, systemObj, gridObj )
 % Store interactions in interobj
   interObj.anyInter = 0;
 % Short range interactions
@@ -14,9 +17,13 @@ else
   interObj.hardFlag = 1;
   interObj.hard = particleObj.interHb;
   interObj.anyInter = 1;
-  if  particleObj.type == 'rods' 
-    if interObj.hard == 'mayer'
+  % rods
+  if  strcmp( particleObj.type, 'rods' ) 
+    interObj.typeId = 1;
+    % mayer
+    if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'rodsMayer';
+      interObj.hardId = 1;
       [~,interObj.FmFt] = mayerFncHr(...
         systemObj.n1, systemObj.n2, systemObj.n3, ...
         systemObj.l1, systemObj.l2, particleObj.lMaj) ;
@@ -26,24 +33,37 @@ else
     else
       fprintf('Cannot find hard rod interactions\n')
     end
-  elseif particleObj.type == 'disks' 
-    if interObj.hard == 'mayer'
+  % disks
+  elseif strcmp( particleObj.type, 'disks' ) 
+    interObj.typeId = 2;
+    % mayer
+    if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'disksMayer';
+      interObj.hardId = 1;
       [~,interObj.FmFt] = mayerFncHd(...
         systemObj.n1, systemObj.n2, systemObj.n3,  ...
         systemObj.l1, systemObj.l2, particleObj.lMaj) ;
       interObj.muExScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
         (systemObj.n1 * systemObj.n2 * systemObj.n3);
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
-    elseif interObj.hard == 'spt'
+    % scaled particle theory
+    elseif strcmp( interObj.hard, 'spt' )
       interObj.hardSpec = 'disksSpt';
+      interObj.hardId = 2;
+      % packing fraction factor mulitplied by FT factors (for concentration)
+      interObj.b = systemObj.l3 ./ systemObj.n3 .* particleObj.b;
+      interObj.k30 = gridObj.k3ind0;
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
     else
       fprintf('Cannot find hard disk interactions\n')
     end
-  elseif particleObj.type == 'spheres' 
-    if interObj.hard == 'mayer'
+  % spheres
+  elseif strcmp( particleObj.type, 'spheres' )
+    interObj.typeId = 3;
+    % mayer
+    if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'spheresMayer';
+      interObj.hardId = 1;
       [~,interObj.FmFt] = mayerFncHs(...
         systemObj.n1, systemObj.n2, systemObj.n3,...
         systemObj.l1, systemObj.l2, systemObj.l3, particleObj.lMaj) ;
