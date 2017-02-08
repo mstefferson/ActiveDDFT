@@ -1,4 +1,8 @@
-function [interObj] = interObjMaker( particleObj, systemObj)
+% [interObj] = interObjMaker( particleObj, systemObj )
+% Creates an interaction object that is used by interaction functions.
+% Includes interaction types and calculates necessary functions.
+%
+function [interObj] = interObjMaker( particleObj, systemObj )
 % Store interactions in interobj
   interObj.anyInter = 0;
 % Short range interactions
@@ -13,17 +17,42 @@ else
   if  particleObj.type == 'rods' 
     if interObj.hard == 'mayer'
       interObj.hardSpec = 'rodsMayer';
-      interObj.FmFt = fftshift(fftn( mayerFncHr(...
-        systemObj.n1, systemObj.n2, systemObj.n3, systemObj.l1, ...
-        systemObj.l2, particleObj.lMaj) ));
+      [~,interObj.FmFt] = mayerFncHr(...
+        systemObj.n1, systemObj.n2, systemObj.n3, ...
+        systemObj.l1, systemObj.l2, particleObj.lMaj) ;
+      interObj.muExScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
+        (systemObj.n1 * systemObj.n2 * systemObj.n3);
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
     else
       fprintf('Cannot find hard rod interactions\n')
     end
   elseif particleObj.type == 'disks' 
-    fprintf('Not written\n')
+    if interObj.hard == 'mayer'
+      interObj.hardSpec = 'disksMayer';
+      [~,interObj.FmFt] = mayerFncHd(...
+        systemObj.n1, systemObj.n2, systemObj.n3,  ...
+        systemObj.l1, systemObj.l2, particleObj.lMaj) ;
+      interObj.muExScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
+        (systemObj.n1 * systemObj.n2 * systemObj.n3);
+      fprintf('%s hard %s\n', interObj.hard, particleObj.type);
+    elseif interObj.hard == 'spt'
+      interObj.hardSpec = 'disksSpt';
+      fprintf('%s hard %s\n', interObj.hard, particleObj.type);
+    else
+      fprintf('Cannot find hard disk interactions\n')
+    end
   elseif particleObj.type == 'spheres' 
-    fprintf('Not written\n')
+    if interObj.hard == 'mayer'
+      interObj.hardSpec = 'spheresMayer';
+      [~,interObj.FmFt] = mayerFncHs(...
+        systemObj.n1, systemObj.n2, systemObj.n3,...
+        systemObj.l1, systemObj.l2, systemObj.l3, particleObj.lMaj) ;
+      interObj.muExScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
+        (systemObj.n1 * systemObj.n2 * systemObj.n3);
+      fprintf('%s hard %s\n', interObj.hard, particleObj.type);
+    else
+      fprintf('Cannot find hard sphere interactions\n')
+    end
   else
     fprintf('Cannot find particle type\n');
     error('Cannot find particle type\n');

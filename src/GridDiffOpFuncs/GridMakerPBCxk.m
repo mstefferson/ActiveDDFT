@@ -40,4 +40,9 @@ end
 %2D k-vector grid
 [gridObj.k2rep2,gridObj.k1rep2] = meshgrid(gridObj.k2,gridObj.k1);
 
+%Grid indices
+gridObj.k1ind0 = floor( n1 ./ 2 ) + 1;
+gridObj.k2ind0 = floor( n2 ./ 2 ) + 1;
+gridObj.k3ind0 = floor( n3 ./ 2 ) + 1;
+
 end

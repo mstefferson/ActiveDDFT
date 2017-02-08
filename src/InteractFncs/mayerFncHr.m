@@ -4,9 +4,9 @@
 % origin with its orientation angle being zero. Using the COM trapezoid intersection
 % method (as seen in HardRod---cpp--project.)
 
-function [MayerFnc] = mayerFncHr(n1, n2, n3, l1, l2, Lrod)
+function [mayerFnc,mayerFncFt] = mayerFncHr(n1, n2, n3, l1, l2, Lrod)
 % allocate
-MayerFnc = zeros(n1,n2,n3);
+mayerFnc = zeros(n1,n2,n3);
 dx    = l1/n1;
 dy    = l2/n2;
 dphi  = 2*pi / n3;
@@ -41,17 +41,17 @@ for i = 1:n1
         % phi = 0,pi
         if( k == 1 || k == n3 / 2 + 1 )
           if (xTempSq <= TooFar) && (yTemp == 0)
-            MayerFnc(i,j,k) = -1;
+            mayerFnc(i,j,k) = -1;
           else
-            MayerFnc(i,j,k) = 0;
+            mayerFnc(i,j,k) = 0;
           end
         end
         % phi = pi/2, 3pi/2
         if( k == n3 / 4 + 1 || k == 3 * n3 / 4 +1 )
           if( (yTempSq <= LrodHSq) && xTempSq <= LrodHSq)
-            MayerFnc(i,j,k) = -1;
+            mayerFnc(i,j,k) = -1;
           else
-            MayerFnc(i,j,k) = 0;
+            mayerFnc(i,j,k) = 0;
           end
         end
         % 0 < phi < pi/2
@@ -60,9 +60,9 @@ for i = 1:n1
           ylL = tan( phiTemp ) * ( xTemp - Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp );
           if( (yTemp >= ylL) && (yTemp <= yuL) && (yTempSq <= yMaxSq) )
-            MayerFnc(i,j,k) = - 1;
+            mayerFnc(i,j,k) = - 1;
           else
-            MayerFnc(i,j,k) = 0;
+            mayerFnc(i,j,k) = 0;
           end
         end
         % pi/2  < phi < pi
@@ -71,9 +71,9 @@ for i = 1:n1
           ylL = tan( phiTemp ) * ( xTemp + Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq *  sin( phiTemp ) * sin( phiTemp );
           if (yTemp >= ylL) && (yTemp <= yuL) && (yTempSq <= yMaxSq)
-            MayerFnc(i,j,k) = - 1;
+            mayerFnc(i,j,k) = - 1;
           else
-            MayerFnc(i,j,k) = 0;
+            mayerFnc(i,j,k) = 0;
           end
         end
         % pi < phi < 3pi/2
@@ -82,9 +82,9 @@ for i = 1:n1
           ylL = tan( phiTemp ) * ( xTemp - Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp);
           if( (yTemp >= ylL) && (yTemp <= yuL) && (yTempSq <= yMaxSq) )
-            MayerFnc(i,j,k) = - 1;
+            mayerFnc(i,j,k) = - 1;
           else
-            MayerFnc(i,j,k) = 0;
+            mayerFnc(i,j,k) = 0;
           end
         end
         % 3pi/2 < phi < 2pi
@@ -93,16 +93,17 @@ for i = 1:n1
           ylL = tan( phiTemp ) * ( xTemp + Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp );
           if( (yTemp >= ylL) && (yTemp <= yuL) && (yTempSq <= yMaxSq) )
-            MayerFnc(i,j,k) = - 1;
+            mayerFnc(i,j,k) = - 1;
           else
-            MayerFnc(i,j,k) = 0;
+            mayerFnc(i,j,k) = 0;
           end
         end
       else
-        MayerFnc(i,j,k) = 0;
+        mayerFnc(i,j,k) = 0;
       end  %%end if dist too far
     end %%end k loop
   end %%end y loop
 end %%end x loop
+mayerFncFt = fftshift(fftn( mayerFnc ) );
 end %% function
 

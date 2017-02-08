@@ -5,8 +5,9 @@ function [GammaCube_FT] = dRhoMaster( rho, rho_FT, ...
 GammaCube_FT = 0;
 % Interactions
 % Hard rod
-if interObj.hardSpec == 'rodsMayer'
-  GammaExCube_FT = dRhoIntCalcVcFtId(rho,rho_FT,interObj.FmFt,systemObj,diffObj);
+if interObj.hard == 'mayer'
+  GammaExCube_FT = dRhoIntCalcVcFt( rho, rho_FT, interObj.FmFt, ...
+    systemObj, diffObj, interObj.muExScale );
   GammaCube_FT = GammaCube_FT + GammaExCube_FT;
 end
 % Driving
