@@ -6,7 +6,7 @@ GammaCube_FT = 0;
 % Interactions
 % mayers 
 if interObj.hardId == 1 % mayers
-  muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muScale);
+  muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muExScale);
   GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, ...
     systemObj, diffObj );
   GammaCube_FT = GammaCube_FT + GammaExCube_FT;
@@ -19,6 +19,7 @@ if interObj.hardId == 2 % spt
     else
       nu = interObj.b .* ifftn( ifftshift( rho_FT(:,:,interObj.k30) ) );
     end
+    keyboard
     [muExFt] = muExDisksSPT(nu);
     GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, ...
       systemObj, diffObj );

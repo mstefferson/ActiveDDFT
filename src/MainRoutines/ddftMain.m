@@ -114,6 +114,9 @@ try
       [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
       rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
     end
+     rhoInit.feq  
+ else
+
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);

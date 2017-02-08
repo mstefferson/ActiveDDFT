@@ -4,7 +4,7 @@
 function [rho] = MakeConc(systemObj,rhoInit,gridObj)
 
 if rhoInit.IntCond == 0
-  [rho] = IntDenCalcIsoPw2Drot(systemObj);
+  [rho] = IntDenCalcIso(systemObj);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 1
@@ -13,18 +13,18 @@ elseif rhoInit.IntCond == 1
     systemObjTemp = systemObj;
     systemObjTemp.bc = 1.502;
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObjTemp,rhoInit);
+    [rho] = IntDenCalcEq(systemObjTemp,rhoInit);
     % Perturb it
     [rho] = PwPerturbFT(rho,systemObjTemp,rhoInit);
   else
     % Initial distribution
-    [rho] = IntDenCalcEqPw2Drot(systemObj,rhoInit);
+    [rho] = IntDenCalcEq(systemObj,rhoInit);
     % Perturb it
     [rho] = PwPerturbFT(rho,systemObj,rhoInit);
   end
 elseif rhoInit.IntCond == 2
   % Initial distribution
-  [rho] = IntDenCalcNemPw2rot(systemObj,gridObj.x3,rhoInit.shiftAngle);
+  [rho] = IntDenCalcNem(systemObj,gridObj.x3,rhoInit.shiftAngle);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif rhoInit.IntCond == 3
