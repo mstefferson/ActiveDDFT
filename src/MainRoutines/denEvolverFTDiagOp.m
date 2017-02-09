@@ -117,8 +117,8 @@ for t = 1:timeObj.N_time-1
   if interObj.anyInter || flags.Drive
     rho    = real(ifftn(ifftshift(rho_FT)));
     % Calculate dRho from interactions and driving
-    keyboard
-    [GammaCube_FT,ShitIsFucked] = dRhoMaster( rho, rho_FT, flags,...
+%     keyboard
+    [GammaCube_FT,ShitIsFuckedTemp] = dRhoMaster( rho, rho_FT, flags,...
       interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3,t );
   end
   % Take a step
@@ -148,13 +148,14 @@ for t = 1:timeObj.N_time-1
     if flags.Interactions == 0 && flags.Drive == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    [SteadyState,ShitIsFucked,MaxReldRho] = ...
+    [SteadyState,ShitIsFuckedTemp2,MaxReldRho] = ...
       BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
     if flags.SaveMe
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
       Density_rec(:,:,:,jrectemp)     = rho;
     end
+    ShitIsFucked = ShitIsFuckedTemp + ShitIsFuckedTemp2;
     % Write a chunk to disk
     if flags.SaveMe
       if ( mod(t, timeObj.N_dtChunk ) == 0 )
@@ -239,4 +240,5 @@ denRecObj.TimeRecVec   = TimeRecVec;
 denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
 denRecObj.simTime      = TimeRecVec(end);
+keyboard
 end %function

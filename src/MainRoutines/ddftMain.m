@@ -156,6 +156,15 @@ try
     [denRecObj]  = denEvolverFT(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
+  figure()
+  axis square
+  keyboard
+  C = trapz_periodic( gridObj.x3, runSave.Den_rec(:,:,:,:), 3 );
+  for ii = 1:timeObj.N_rec
+    imagesc( gridObj.x1, gridObj.x2, C(:,:,ii) )
+    drawnow
+    pause(0.25)
+  end
   keyboard
   evolvedSucess = 1;
   denRecObj.dirName = dirName;

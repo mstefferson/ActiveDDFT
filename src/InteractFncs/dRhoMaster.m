@@ -6,7 +6,7 @@ GammaCube_FT = 0;
 shitIsFucked = 0;
 % Interactions
 % mayers
-keyboard
+
 if interObj.hardId == 1 % mayers
   muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muExScale);
   GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
@@ -32,6 +32,7 @@ if interObj.hardId == 2 % spt
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
 end
+% keyboard
 % Driving
 if flags.Drive && flags.DiagLop
   GammaDrCube_FT  = ...
