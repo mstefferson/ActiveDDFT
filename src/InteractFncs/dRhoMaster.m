@@ -1,17 +1,18 @@
 % Handles all the dRho contributions that are not in Lop
-function [GammaCube_FT] = dRhoMaster( rho, rho_FT, ...
-  flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3 )
+function [GammaCube_FT, shitIsFucked] = dRhoMaster( rho, rho_FT, ...
+  flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3,t )
 % Initialize
 GammaCube_FT = 0;
+shitIsFucked = 0;
 % Interactions
-% mayers 
+% mayers
+keyboard
 if interObj.hardId == 1 % mayers
   muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muExScale);
-  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, ...
-    systemObj, diffObj );
+  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
   GammaCube_FT = GammaCube_FT + GammaExCube_FT;
 end
-% spt 
+% spt
 if interObj.hardId == 2 % spt
   if interObj.typeId == 2 % disks
     if systemObj.n3 == 1
@@ -19,10 +20,15 @@ if interObj.hardId == 2 % spt
     else
       nu = interObj.b .* ifftn( ifftshift( rho_FT(:,:,interObj.k30) ) );
     end
-    keyboard
-    [muExFt] = muExDisksSPT(nu);
-    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, ...
-      systemObj, diffObj );
+    if nu <  1
+      [muExFt] = muExDisksSPT(nu);
+    else
+      error('Density is too high!')
+      fprintf('Density is too high!');
+      shitIsFucked = 1;
+      muExFt = 0;
+    end
+    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
 end

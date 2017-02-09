@@ -98,7 +98,7 @@ elseif( flags.StepMeth == 5 ) % BHAB2
   GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 6 ) % Exponential Euler
   GamProp = ( Prop - 1 ) ./ Lop;
-  GamProp(n1/2+1,n2/2+1,n3/2+1) = 0;
+  GamProp( gridObj.k1ind0, gridObj.k2ind0, gridObj.k3ind0 ) = 0;
   [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
 else
   error('No stepping method selected');
@@ -117,8 +117,9 @@ for t = 1:timeObj.N_time-1
   if interObj.anyInter || flags.Drive
     rho    = real(ifftn(ifftshift(rho_FT)));
     % Calculate dRho from interactions and driving
-    [GammaCube_FT] = dRhoMaster( rho, rho_FT, flags,...
-      interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
+    keyboard
+    [GammaCube_FT,ShitIsFucked] = dRhoMaster( rho, rho_FT, flags,...
+      interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3,t );
   end
   % Take a step
   if( flags.StepMeth == 0 )

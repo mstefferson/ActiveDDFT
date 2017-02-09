@@ -114,9 +114,8 @@ try
       [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
       rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
     end
-     rhoInit.feq  
- else
-
+  else
+     rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);
@@ -157,6 +156,7 @@ try
     [denRecObj]  = denEvolverFT(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
+  keyboard
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
   % Save it

@@ -48,6 +48,13 @@ else
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
     % scaled particle theory
     elseif strcmp( interObj.hard, 'spt' )
+      % for debuggggging
+      [~,interObj.FmFt] = mayerFncHr(...
+        systemObj.n1, systemObj.n2, systemObj.n3, ...
+        systemObj.l1, systemObj.l2, particleObj.lMaj) ;
+      interObj.muExScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
+        (systemObj.n1 * systemObj.n2 * systemObj.n3);
+      %% end debugging
       interObj.hardSpec = 'disksSpt';
       interObj.hardId = 2;
       % packing fraction factor mulitplied by FT factors (for concentration)

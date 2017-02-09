@@ -1,13 +1,13 @@
 % Uses the initial density indicator to choose the correct intial density
 % subroutine.
-
+%
 function [rho] = MakeConc(systemObj,rhoInit,gridObj)
-
-if rhoInit.IntCond == 0
+% go through conditions
+if rhoInit.IntCond == 0 % iso
   [rho] = IntDenCalcIso(systemObj);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
-elseif rhoInit.IntCond == 1
+elseif rhoInit.IntCond == 1 % eq
   % if bc is too close to 1.5, errors arise. Fix this here.
   if 1.499 < systemObj.bc && systemObj.bc < 1.501
     systemObjTemp = systemObj;
@@ -22,12 +22,12 @@ elseif rhoInit.IntCond == 1
     % Perturb it
     [rho] = PwPerturbFT(rho,systemObj,rhoInit);
   end
-elseif rhoInit.IntCond == 2
+elseif rhoInit.IntCond == 2 % nematic
   % Initial distribution
   [rho] = IntDenCalcNem(systemObj,gridObj.x3,rhoInit.shiftAngle);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
-elseif rhoInit.IntCond == 3
+elseif rhoInit.IntCond == 3 % load
   [rho] = IntDenCalcLoaded2Drot(rhoInit.LoadName,systemObj);
   % Perturb it
   [rho] = PwPerturbFT(rho,systemObj,rhoInit);
@@ -45,7 +45,7 @@ elseif rhoInit.IntCond == 4 || rhoInit.IntCond == 5
   end
   % Gaussian perturb
   [rho] = polarPerturbGauss( rho, systemObj, rhoInit, gridObj );
-elseif rhoInit.IntCond == 6
+elseif rhoInit.IntCond == 6 % polar
   % delta function in polar order
   [rho] = deltaPolarIc(systemObj);
   % Perturb it

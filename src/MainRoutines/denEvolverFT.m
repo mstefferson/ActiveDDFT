@@ -58,10 +58,9 @@ jchunk   = 1; % Write chunk index
 [Lop] = DiffOpBuilderDr(diffObj,gridObj,n1,n2,n3,N2,N3);
 %Interactions
 if interObj.anyInter
-  GammaExVec_FT  = reshape( ...
-    dRhoMaster( rho, rho_FT, flags,...
-    interObj, systemObj, diffObj, particleObj ), ...
-    N3,1) ;
+  [GammaEx_FT] = dRhoMaster( rho, rho_FT, flags,...
+    interObj, systemObj, diffObj, particleObj );
+  GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
   GammaExVec_FT = zeros(N3,1);
 end
@@ -123,10 +122,9 @@ for t = 1:timeObj.N_time-1
   end
   %Interactions
   if interObj.anyInter
-    GammaExVec_FT  = reshape( ...
-      dRhoMaster( rho, rho_FT, flags,...
-      interObj, systemObj, diffObj, particleObj ),...
-    N3,1);
+    [GammaEx_FT, ShitIsFucked] = dRhoMaster( rho, rho_FT, flags,...
+      interObj, systemObj, diffObj, particleObj );
+    GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
   end
   % Take step
   if( flags.StepMeth == 0 )
