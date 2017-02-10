@@ -1,8 +1,8 @@
 %  [mayerFnc, mayerFncFt] = mayerFncHs(n1, n2, n3, l1, l2, l3, rSpheres)
 %
 % Calculates mayer function and ft for spheres.
-%
-function [mayerFnc, mayerFncFt] = mayerFncHs(n1, n2, n3, l1, l2, l3, rSpheres)
+% dSpheres: sphere diameter
+function [mayerFnc, mayerFncFt] = mayerFncHs(n1, n2, n3, l1, l2, l3, dSpheres)
 % Allocate
 mayerFnc = zeros(n1,n2,n3);
 % Calcualte distances
@@ -10,7 +10,7 @@ dx1    = l1/n1;
 dx2    = l2/n2;
 dx3    = l3/n3;
 epsilon = 0.00001;
-tooFar =  4 .* rSpheres .* rSpheres + epsilon;
+tooFar =  dSpheres .* dSpheres + epsilon;
 x1 = dx1 .* [ 0 : 1 : n1 / 2  -n1/2+1 : 1 : -1]; 
 x2 = dx2 .* [ 0 : 1 : n2 / 2  -n2/2+1 : 1 : -1];
 x3 = dx3 .* [ 0 : 1 : n3 / 2  -n3/2+1 : 1 : -1];
