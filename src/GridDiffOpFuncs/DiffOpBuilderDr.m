@@ -4,13 +4,13 @@
 function [Lop] = DiffOpBuilderDr(diffObj,gridObj,n1,n2,n3,N2,N3)
 
 % Build a strange km for repmat
-km = zeros( 1, 1, n3 );
-km(1,1,:) = gridObj.km;
+k3 = zeros( 1, 1, n3 );
+k3(1,1,:) = gridObj.k3;
 %%%%%%%%%%%%%%%%%%Diagonal operator%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Lop_kcube = -( ( (diffObj.D_par + diffObj.D_perp)./ 2 ) .* ...
   ( repmat( gridObj.k1', [1, n2, n3] ) .^ 2 + ...
   repmat( gridObj.k2, [n1, 1, n3 ]) .^ 2 ) + ...
-  diffObj.D_rot .* repmat( km, [n1, n2, 1] ) .^ 2  );
+  diffObj.D_rot .* repmat( k3, [n1, n2, 1] ) .^ 2  );
 
 %Diagonal matrix part of the operator (no interactions)
 Lop = spdiags( reshape( Lop_kcube, N3, 1 ), 0, N3, N3 );

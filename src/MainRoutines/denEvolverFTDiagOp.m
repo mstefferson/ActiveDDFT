@@ -240,5 +240,4 @@ denRecObj.TimeRecVec   = TimeRecVec;
 denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
 denRecObj.simTime      = TimeRecVec(end);
-keyboard
 end %function

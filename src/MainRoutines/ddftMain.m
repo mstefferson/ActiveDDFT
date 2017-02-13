@@ -83,7 +83,7 @@ try
   tDiffID = tic;
   [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
     particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
-    gridObj.k1, gridObj.k2, gridObj.km, ...
+    gridObj.k1, gridObj.k2, gridObj.k3, ...
     gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
   diffRunTime = toc(tDiffID);
   if flags.Verbose
@@ -158,14 +158,20 @@ try
   end
   figure()
   axis square
-  keyboard
-  C = trapz_periodic( gridObj.x3, runSave.Den_rec(:,:,:,:), 3 );
-  for ii = 1:timeObj.N_rec
+  if systemObj.n3 ~= 1
+    C = trapz_periodic( gridObj.x3, runSave.Den_rec(:,:,:,:), 3 );
+  else
+    C = runSave.Den_rec(:,:,:,:);
+  end
+  [~,~,~,nFrames] = size( runSave.Den_rec(:,:,:,:) );
+  for ii = 1:nFrames
     imagesc( gridObj.x1, gridObj.x2, C(:,:,ii) )
+    colorbar
     drawnow
     pause(0.25)
   end
-  keyboard
+  Cfinal = C(:,:,end);
+  save('diskCFinal1v2', 'Cfinal' );
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
   % Save it
