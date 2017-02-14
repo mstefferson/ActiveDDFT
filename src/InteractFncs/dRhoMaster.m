@@ -7,12 +7,12 @@ shitIsFucked = 0;
 % Interactions
 % mayers
 if interObj.hardId == 1 % mayers
-  if interObj.typeId == 1; % rods
+  if interObj.typeId == 1 % rods
     muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale);
     GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
-  if interObj.typeId == 2; % disks
+  if interObj.typeId == 2 % disks
     muExFt = muExCalcVc2Ft(rho_FT(:,:,interObj.k3ind0 ), interObj.FmFt,systemObj,interObj.muMayerScale);
     GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
@@ -26,7 +26,7 @@ if interObj.hardId == 2 % spt
     else
       nu = interObj.sptScale .* ifftn( ifftshift( rho_FT(:,:,interObj.k30) ) );
     end
-    if any(nu <  1)
+    if any(nu >  1)
       error('Density is too high!')
       fprintf('Density is too high!');
       shitIsFucked = 1;
