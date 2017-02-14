@@ -7,7 +7,9 @@
 % typeId = 1, 2, 3 rods, disks, spheres
 function [interObj] = interObjMaker( particleObj, systemObj, gridObj )
 % Store interactions in interobj
-  interObj.anyInter = 0;
+interObj.anyInter = 0;
+% save k3 index
+interObj.k3ind0 = floor( systemObj.n3 / 2 ) + 1;
 % Short range interactions
 if isempty(particleObj.interHb)
   interObj.hardFlag = 0;
@@ -40,21 +42,15 @@ else
     if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'disksMayer';
       interObj.hardId = 1;
+      % mayer only a function of x1, x2 for disks
       [~,interObj.FmFt] = mayerFncHd(...
-        systemObj.n1, systemObj.n2, systemObj.n3,  ...
+        systemObj.n1, systemObj.n2, ...
         systemObj.l1, systemObj.l2, particleObj.lMaj) ;
       interObj.muMayerScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
         (systemObj.n1 * systemObj.n2 * systemObj.n3);
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
     % scaled particle theory
     elseif strcmp( interObj.hard, 'spt' )
-      % for debuggggging
-      %[~,interObj.FmFt] = mayerFncHr(...
-        %systemObj.n1, systemObj.n2, systemObj.n3, ...
-        %systemObj.l1, systemObj.l2, particleObj.lMaj) ;
-      %interObj.muMayerScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
-      %  (systemObj.n1 * systemObj.n2 * systemObj.n3);
-      %% end debugging
       interObj.hardSpec = 'disksSpt';
       interObj.hardId = 2;
       % packing fraction factor mulitplied by FT factors (for concentration)
@@ -64,7 +60,7 @@ else
     else
       fprintf('Cannot find hard disk interactions\n')
     end
-  % spheres
+    % spheres
   elseif strcmp( particleObj.type, 'spheres' )
     interObj.typeId = 3;
     % mayer

@@ -5,31 +5,37 @@
 function [NegDivFluxEx_FT] = ...
   dRhoIntCalcMu(rho,muExFt,systemObj,diffObj)
 n3 = systemObj.n3;
-%Takes its derivative in k-space
-dMuEx_dx1_FT   = diffObj.ik1rep3 .*  muExFt;
-dMuEx_dx2_FT   = diffObj.ik2rep3 .*  muExFt;
-dMuEx_dx3_FT = diffObj.ik3rep3 .*  muExFt;
-%Excess chemical potential derivative in real space
-%Mayer function derivative in real-space
-dMuEx_dx1   =  real(ifftn(ifftshift(dMuEx_dx1_FT)));
+% See if muExFt is only a position of position
+[~,~,n3mu] = size(muExFt);
+if n3mu > 1
+  ik1 = diffObj.ik1rep3;
+  ik2 = diffObj.ik2rep3;
+  ik3 = diffObj.ik3rep3;
+else
+  ik1 = diffObj.ik1rep3(:,:,1);
+  ik2 = diffObj.ik2rep3(:,:,1);
+  ik3 = diffObj.ik3rep3(:,:,1);
+end
+%Takes its derivative in k-space, product in real, then back to k-space
+% coordinate 1
+dMuEx_dx1_FT   = ik1 .*  muExFt; % derivative of mu in k space
+dMuEx_dx1   =  real(ifftn(ifftshift(dMuEx_dx1_FT))); % back to real
+jx1 = - rho .* dMuEx_dx1;    %Flux in the x1 direction with isostropic diffusion
+Jx1_FT = fftshift(fftn(jx1)); % FFT 
+% coordinate 2
+dMuEx_dx2_FT   = ik2 .*  muExFt;
 dMuEx_dx2   =  real(ifftn(ifftshift(dMuEx_dx2_FT)));
-dMuEx_dx3 =  real(ifftn(ifftshift(dMuEx_dx3_FT)));
-%Do the hard disk interaction portion of the PDE in real space then FT.
-% Isolate the seperate parts and call them some arbitrary function. We
-% will Fourier transform these functions to solve this in Fourier space
-%
-% Take the divergence of the product of functions. Call these products
-% random variables
-jx1 = - rho .* dMuEx_dx1;    %Flux in the x direction with isostropic diffusion
-jx2 = - rho .* dMuEx_dx2;    %Flux in the y direction with isostropic diffusion
-jx3 = - rho .* dMuEx_dx3;  %Flux in the angular direction with isostropic diffusion
-%Fourier transform these
-Jx1_FT = fftshift(fftn(jx1));
+jx2 = - rho .* dMuEx_dx2;    %Flux in the x2 direction with isostropic diffusion
 Jx2_FT = fftshift(fftn(jx2));
-Jx3_FT = fftshift(fftn(jx3));
-%Calculate the -diverance of the flux in Fourier space. ;
+% coordinate 3
+if n3mu > 1
+  dMuEx_dx3_FT = ik3 .*  muExFt;
+  dMuEx_dx3 =  real(ifftn(ifftshift(dMuEx_dx3_FT)));
+  jx3 = - rho .* dMuEx_dx3;  %Flux in the angular direction with isostropic diffusion
+  Jx3_FT = fftshift(fftn(jx3));
+end
 % Do it all with indexing
-if n3 > 1
+if  n3 > 1 
   Ind    = [ 1:n3 ];
   Ind_m2 = [ n3-1, n3,  1:(n3-2) ]; %m-2 coupling
   Ind_p2 = [ 3:n3, 1, 2 ]; %m+2 coupling
@@ -38,7 +44,8 @@ else
   Ind_m2 = 1;
   Ind_p2 = 1;
 end
-NegDivFluxEx_FT = zeros( systemObj.n1, systemObj.n2, n3 );
+% Allocate and calulate
+NegDivFluxEx_FT = zeros( systemObj.n1, systemObj.n2, n3mu );
 if diffObj.Ani == 0
   NegDivFluxEx_FT(:,:,Ind) = ...
     diffObj.j1f_reps .* Jx1_FT(:,:,Ind) + ...
@@ -53,5 +60,7 @@ else
     diffObj.j2Mp2f_reps .* Jx2_FT(:,:,Ind_p2);
 end
 %Add the C(k) term last
-NegDivFluxEx_FT = NegDivFluxEx_FT ...
-  - diffObj.ik3rep3 .* diffObj.Mob_rot .* Jx3_FT;
+if n3mu > 1
+  NegDivFluxEx_FT = NegDivFluxEx_FT ...
+    - ik3 .* diffObj.Mob_rot .* Jx3_FT;
+end

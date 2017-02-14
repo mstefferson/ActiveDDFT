@@ -6,11 +6,17 @@ GammaCube_FT = 0;
 shitIsFucked = 0;
 % Interactions
 % mayers
-
 if interObj.hardId == 1 % mayers
-  muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale);
-  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
-  GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+  if interObj.typeId == 1; % rods
+    muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale);
+    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
+    GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+  end
+  if interObj.typeId == 2; % disks
+    muExFt = muExCalcVc2Ft(rho_FT(:,:,interObj.k3ind0 ), interObj.FmFt,systemObj,interObj.muMayerScale);
+    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
+    GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+  end
 end
 % spt
 if interObj.hardId == 2 % spt
@@ -32,7 +38,6 @@ if interObj.hardId == 2 % spt
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
 end
-% keyboard
 % Driving
 if flags.Drive && flags.DiagLop
   GammaDrCube_FT  = ...

@@ -3,7 +3,7 @@
 % Calculates mayer function and ft for disks. If there is a third
 % dimension, it will rep the mayer fnc in that dimension
 % dDisks: diameter of disks
-function [mayerFnc, mayerFncFt] = mayerFncHd(n1, n2, n3, l1, l2, dDisks)
+function [mayerFnc, mayerFncFt] = mayerFncHd(n1, n2, l1, l2, dDisks)
 % Allocate
 mayerFnc = zeros(n1,n2);
 % Calcualte distances
@@ -18,7 +18,6 @@ r2 = x1m .^ 2 + x2m .^ 2;
 % Mayer fnc
 ind2Accept = r2 < tooFar;
 mayerFnc( ind2Accept) = -1;
-mayerFnc = repmat( mayerFnc, [1, 1, n3]);
 % FT
 mayerFncFt = fftshift( fftn( mayerFnc ) );
 end
