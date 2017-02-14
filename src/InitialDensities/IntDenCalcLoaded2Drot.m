@@ -3,9 +3,9 @@
 
 function [ rho ] = IntDenCalcLoaded2Drot( filename, systemObj)
 % paths
-path = './src/InitialDensities/SavedRhos/';
-% loadname = [path filename];
-loadname = [filename];
+% path2file = './src/InitialDensities/SavedRhos/';
+path2file = './';
+loadname = [path2file filename];
 % load it. rho should be the name of the saved variable
 load( loadname );
 % Now fit it to the box 

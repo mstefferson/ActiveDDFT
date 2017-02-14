@@ -26,8 +26,10 @@ if interObj.hardId == 2 % spt
     else
       nu = interObj.sptScale .* ifftn( ifftshift( rho_FT(:,:,interObj.k30) ) );
     end
+%     
     if any(nu >  1)
-      error('Density is too high!')
+%       keyboard
+%       error('Density is too high!')
       fprintf('Density is too high!');
       shitIsFucked = 1;
       muExFt = 0;

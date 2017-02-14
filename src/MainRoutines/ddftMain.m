@@ -115,10 +115,11 @@ try
       rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
     end
   else
-     rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
+    rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);
+%   keyboard
   intDenRunTime = toc(tIntDenID);
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
@@ -164,16 +165,27 @@ try
     C = runSave.Den_rec(:,:,:,:);
   end
   [~,~,~,nFrames] = size( runSave.Den_rec(:,:,:,:) );
-  for ii = 1:nFrames
+  Cmin = min(min(min(min( C ) ) ) ) ;
+  Cmax = max(max(max(max( C ) ) ) ) ;
+  ax = gca;
+ 
+  imagesc( gridObj.x1, gridObj.x2, C(:,:,1) )
+  ax.CLim = [Cmin Cmax];
+  colorbar
+  drawnow
+  pause(0.25)
+  for ii = 2:nFrames
     imagesc( gridObj.x1, gridObj.x2, C(:,:,ii) )
+    ax.CLim = [Cmin Cmax];
     colorbar
     drawnow
     pause(0.25)
   end
   Cfinal = C(:,:,end);
-  save('diskCFinal1v2', 'Cfinal' );
+  %save('diskCFinal1v2', 'Cfinal' );
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
+%   keyboard
   % Save it
   if flags.SaveMe
     runSave.denRecObj = denRecObj;

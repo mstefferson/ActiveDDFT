@@ -63,7 +63,7 @@ if interObj.anyInter || flags.Drive
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT] = dRhoMaster( rho, rho_FT, flags, ...
-    interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
+    interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3, 0 );
 else
   GammaCube_FT = zeros( n1, n2, n3);
 end
