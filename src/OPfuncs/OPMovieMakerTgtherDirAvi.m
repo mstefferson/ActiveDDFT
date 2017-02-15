@@ -1,4 +1,4 @@
-
+% Makes movie of OP vs time
 function OPMovieMakerTgtherDirAvi(MovStr,x,y,phi,OP,DistRec,TimeRec)
 nFrames = length(TimeRec);
 n1 = length(x);

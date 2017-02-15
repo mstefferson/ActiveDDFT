@@ -46,10 +46,6 @@ if systemMaster.n3
   rhoInitMaster.IntCond(rhoInitMaster.IntCond == 2) = 0;
   rhoInitMaster.IntCond = unique( rhoInitMaster.IntCond );
 end
-% For now, fix flags and turn off traditional analysis if n3 = 1
-if systemMaster.n3 == 1
-  flagMaster.MakeOP = 0;  flagMaster.MakeMovies = 0;
-end
 % Don't perturb more more than you are allowed to
 if( rhoInitMaster.NumModesX >= systemMaster.n1 / 2 )
   rhoInitMaster.NumModesX = floor(systemMaster.n1 / 2) - 1; 

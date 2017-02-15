@@ -119,7 +119,6 @@ try
   end
   % Build initial density
   [rho] = MakeConc(systemObj,rhoInit,gridObj);
-%   keyboard
   intDenRunTime = toc(tIntDenID);
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...
@@ -157,35 +156,9 @@ try
     [denRecObj]  = denEvolverFT(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
-  figure()
-  axis square
-  if systemObj.n3 ~= 1
-    C = trapz_periodic( gridObj.x3, runSave.Den_rec(:,:,:,:), 3 );
-  else
-    C = runSave.Den_rec(:,:,:,:);
-  end
-  [~,~,~,nFrames] = size( runSave.Den_rec(:,:,:,:) );
-  Cmin = min(min(min(min( C ) ) ) ) ;
-  Cmax = max(max(max(max( C ) ) ) ) ;
-  ax = gca;
- 
-  imagesc( gridObj.x1, gridObj.x2, C(:,:,1) )
-  ax.CLim = [Cmin Cmax];
-  colorbar
-  drawnow
-  pause(0.25)
-  for ii = 2:nFrames
-    imagesc( gridObj.x1, gridObj.x2, C(:,:,ii) )
-    ax.CLim = [Cmin Cmax];
-    colorbar
-    drawnow
-    pause(0.25)
-  end
-  Cfinal = C(:,:,end);
   %save('diskCFinal1v2', 'Cfinal' );
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
-%   keyboard
   % Save it
   if flags.SaveMe
     runSave.denRecObj = denRecObj;
@@ -209,13 +182,17 @@ try
     paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
     paramSave.denRecObj = runSave.denRecObj;
-    % Commonly used trig functions
-    [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
-    cosPhi3d = cos(phi3D);
-    sinPhi3d = sin(phi3D);
-    cos2Phi3d = cosPhi3d .^ 2;
-    sin2Phi3d = sinPhi3d .^ 2;
-    cossinPhi3d = cosPhi3d .* sinPhi3d;
+    if systemObj.n3 > 1
+      % Commonly used trig functions
+      [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
+      cosPhi3d = cos(phi3D);
+      sinPhi3d = sin(phi3D);
+      cos2Phi3d = cosPhi3d .^ 2;
+      sin2Phi3d = sinPhi3d .^ 2;
+      cossinPhi3d = cosPhi3d .* sinPhi3d;
+    else
+      cosPhi3d=0;sinPhi3d=0;cos2Phi3d=0;sin2Phi3d=0;cossinPhi3d=0;
+    end
     % Build time rec vector
     if  denRecObj.DidIBreak == 0
       totRec = length( denRecObj.TimeRecVec );
@@ -227,29 +204,34 @@ try
       opSave.OpTimeRecVec = opTimeRecVec;
     end
     % Set up saving
-    % Distribution slice
-    holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
-    holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
-    opSave.distSlice_rec = reshape( ...
-      runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
-      [systemObj.n3 length(opTimeRecVec)] );
+    
     opSave.C_rec    = zeros(systemObj.n1, systemObj.n2, 2);
-    opSave.POP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
-    opSave.POPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
-    opSave.POPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-    opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
-    opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
-    opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
+    if systemObj.n3 > 1
+      % Distribution slice
+      holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
+      holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
+      opSave.distSlice_rec = reshape( ...
+        runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
+        [systemObj.n3 length(opTimeRecVec)] );
+      opSave.POP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
+      opSave.POPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
+      opSave.POPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
+      opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
+      opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
+      opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
+    end
     % Make movies
     if flags.MakeMovies
       OPobj.C_rec    = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.POP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.POPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.POPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.NOP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.NOPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.NOPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-      OPobj.distSlice_rec = opSave.distSlice_rec;
+      if systemObj.n3 > 1
+        OPobj.POP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
+        OPobj.POPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+        OPobj.POPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+        OPobj.NOP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
+        OPobj.NOPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+        OPobj.NOPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
+        OPobj.distSlice_rec = opSave.distSlice_rec;
+      end
       OPobj.OpTimeRecVec = opTimeRecVec;
     end
     % Break it into chunks
@@ -276,38 +258,44 @@ try
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       % Save it
       opSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
-      opSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
-      opSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
-      opSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
-      opSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
-      opSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
-      opSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+      if systemObj.n3 > 1
+        opSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
+        opSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
+        opSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
+        opSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
+        opSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
+        opSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+      end
       % Save records
       if flags.MakeMovies
         OPobj.C_rec(:,:,Ind)    = OPObjTemp.C_rec;
-        OPobj.POP_rec(:,:,Ind)  = OPObjTemp.POP_rec;
-        OPobj.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
-        OPobj.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
-        OPobj.NOP_rec(:,:,Ind)  = OPObjTemp.NOP_rec;
-        OPobj.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
-        OPobj.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+        if systemObj.n3 > 1
+          OPobj.POP_rec(:,:,Ind)  = OPObjTemp.POP_rec;
+          OPobj.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
+          OPobj.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
+          OPobj.NOP_rec(:,:,Ind)  = OPObjTemp.NOP_rec;
+          OPobj.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
+          OPobj.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+        end
       end
     end % loop over chunks
     % Now do it for steady state sol
-    [~,~,phi3D] = meshgrid(1,1,gridObj.x3);
-    cosPhi3d = cos(phi3D);
-    sinPhi3d = sin(phi3D);
-    cos2Phi3d = cosPhi3d .^ 2;
-    sin2Phi3d = sinPhi3d .^ 2;
-    cossinPhi3d = cosPhi3d .* sinPhi3d;
-    % Calc CPN
-    [~,~,~,~,opSave.NOPeq,~,~] = ...
-      OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
-      gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
-    % Save if movies
-    if flags.MakeMovies
-      OPobj.OpTimeRecVec = opTimeRecVec;
-      OPobj.NOPeq = opSave.NOPeq;
+    if systemObj.n3 > 1
+      [~,~,phi3D] = meshgrid(1,1,gridObj.x3);
+      cosPhi3d = cos(phi3D);
+      sinPhi3d = sin(phi3D);
+      cos2Phi3d = cosPhi3d .^ 2;
+      sin2Phi3d = sinPhi3d .^ 2;
+      cossinPhi3d = cosPhi3d .* sinPhi3d;
+      % Calc CPN
+      [~,~,~,~,opSave.NOPeq,~,~] = ...
+        OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
+        gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
+      % Save if movies
+      if flags.MakeMovies
+        OPobj.OpTimeRecVec = opTimeRecVec;
+        OPobj.NOPeq = opSave.NOPeq;
+      end
     end
     opRunTime = toc(tOpID);
     if flags.Verbose
@@ -321,13 +309,24 @@ try
       movieSuccess = 0;
       % Make matlab movies
       tMovID       = tic;
-      % Save Name
-      movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-        systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
-      % Run function
-      OPMovieMakerTgtherDirAvi(movStr,...
-        gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
-        OPobj.distSlice_rec,OPobj.OpTimeRecVec);
+      % for n3 = 1, just concentration
+      if systemObj.n3 == 1
+        % Save Name
+        movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
+          systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+        % Run function
+        CMovieMakerAvi(movStr,...
+          gridObj.x1,gridObj.x2,OPobj.C_rec,...
+          OPobj.OpTimeRecVec);
+      else
+        % Save Name
+        movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
+          systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+        % Run function
+        OPMovieMakerTgtherDirAvi(movStr,...
+          gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
+          OPobj.distSlice_rec,OPobj.OpTimeRecVec);
+      end
       movieSuccess = 1;
       % Move it
       movRunTime   = toc(tMovID);
@@ -338,26 +337,32 @@ try
       fprintf(lfid,'Make Mov Run Time = %f\n',  movRunTime);
       runTime.mov = movRunTime;
       % Make amplitude plot
-      kx0 = systemObj.n1 / 2 + 1;
-      ky0 = systemObj.n2 / 2 + 1;
-      km0 = systemObj.n3 / 2 + 1;
+      k1ind0 = gridObj.k1ind0;
+      k2ind0 = gridObj.k2ind0;
+      k3ind0 = gridObj.k3ind0;
       nRec = length( denRecObj.TimeRecVec);
       % Ft amps
-      totModes   = 12;
+      if systemObj.n3 > 1
+        totModes   = 12;
+      else
+        totModes = 4;
+      end
       FTind2plot = zeros( totModes , 3 );
       FTmat2plot = zeros( totModes , nRec );
-      FTind2plot(1,:) = [kx0     ky0     km0 ];
-      FTind2plot(2,:) = [kx0 + 1 ky0     km0 ];
-      FTind2plot(3,:) = [kx0     ky0 + 1 km0 ];
-      FTind2plot(4,:) = [kx0 + 1 ky0 + 1 km0 ];
-      FTind2plot(5,:) = [kx0     ky0     km0 + 1];
-      FTind2plot(6,:) = [kx0 + 1 ky0     km0 + 1];
-      FTind2plot(7,:) = [kx0     ky0 + 1 km0 + 1];
-      FTind2plot(8,:) = [kx0 + 1 ky0 + 1 km0 + 1];
-      FTind2plot(9,:) = [kx0     ky0     km0 + 2];
-      FTind2plot(10,:) = [kx0 + 1 ky0     km0 + 2];
-      FTind2plot(11,:) = [kx0     ky0 + 1 km0 + 2];
-      FTind2plot(12,:) = [kx0 + 1 ky0 + 1 km0 + 2];
+      FTind2plot(1,:) = [k1ind0     k2ind0     k3ind0 ];
+      FTind2plot(2,:) = [k1ind0 + 1 k2ind0     k3ind0 ];
+      FTind2plot(3,:) = [k1ind0     k2ind0 + 1 k3ind0 ];
+      FTind2plot(4,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 ];
+      if systemObj.n3 > 1
+        FTind2plot(5,:) = [k1ind0     k2ind0     k3ind0 + 1];
+        FTind2plot(6,:) = [k1ind0 + 1 k2ind0     k3ind0 + 1];
+        FTind2plot(7,:) = [k1ind0     k2ind0 + 1 k3ind0 + 1];
+        FTind2plot(8,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 + 1];
+        FTind2plot(9,:) = [k1ind0     k2ind0     k3ind0 + 2];
+        FTind2plot(10,:) = [k1ind0 + 1 k2ind0     k3ind0 + 2];
+        FTind2plot(11,:) = [k1ind0     k2ind0 + 1 k3ind0 + 2];
+        FTind2plot(12,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 + 2];
+      end
       % Scale by N so it's N independent
       for i = 1:totModes
         FTmat2plot(i,:) =  1 / (systemObj.n1 * systemObj.n2 * systemObj.n3) .* ...
@@ -366,7 +371,7 @@ try
       end
       % Plot Amplitudes
       ampPlotterFT(FTmat2plot, FTind2plot, ...
-        denRecObj.TimeRecVec(1:nRec), kx0, ky0, km0, timeObj.t_tot);
+        denRecObj.TimeRecVec(1:nRec), k1ind0, k2ind0, k3ind0, timeObj.t_tot);
       % Save it
       figtl = sprintf('AmpFT.fig');
       % savefig doesn't like decimals so save it and rename it.
@@ -376,27 +381,35 @@ try
       movefile(figtl,[figtl2 '.fig'])
       saveas(gcf, [figtl2 '.jpg'],'jpg')
       % Plot final slices of final order parameters
-      sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-      if denRecObj.DidIBreak == 0
-        sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
-          OPobj.NOP_rec(:,:,end), systemObj, ...
-          gridObj, denRecObj.rhoFinal, sliceSaveTag )
+      if systemObj.n3 > 1
+        sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+        if denRecObj.DidIBreak == 0
+          sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+            OPobj.NOP_rec(:,:,end), systemObj, ...
+            gridObj, denRecObj.rhoFinal, sliceSaveTag )
+        else
+          stepsNb = length(OPobj.OpTimeRecVec);
+          sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+            OPobj.NOP_rec(:,:,end), systemObj, ...
+            gridObj, runSave.Den_rec( :,:,:, stepsNb), sliceSaveTag );
+        end
+        % Move it
+        movefile([sliceSaveTag '*'], dirName);
+        % Plot max order parameters vs time
+        maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+        plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
+          particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       else
-        stepsNb = length(OPobj.OpTimeRecVec);
-        sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
-          OPobj.NOP_rec(:,:,end), systemObj, ...
-          gridObj, runSave.Den_rec( :,:,:, stepsNb), sliceSaveTag );
+        % Plot max order parameters vs time
+        maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
+          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+        plotMaxCvsTime( OPobj.C_rec,particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       end
-      % Plot max order parameters vs time
-      maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-      plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
-        OPobj.OpTimeRecVec, maxSaveTag );
-      % Move it
+      % Move everything else
       movefile([figtl2 '*'], dirName);
       movefile([movStr '*'], dirName);
-      movefile([sliceSaveTag '*'], dirName);
       movefile([maxSaveTag '*'], dirName);
     end % End if movies
   end % if OP
