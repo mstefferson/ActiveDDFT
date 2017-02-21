@@ -1,4 +1,7 @@
 %% All files
+plotOPs = 1;
+plotMinMax = 0;
+plotAverage = 0;
 legCell = {'Pe = 0';'Pe = 10';'Pe = 20'; 'Pe = 30'; 'Pe = 60'; 'Pe = 80'; 'Pe = 100'; 'Pe = 120'};
 files = {
   'Hr_Ani1_N646464_Lx10Ly10_bc1.65_vD0_IC1_SM6_t09.04';
@@ -12,196 +15,228 @@ files = {
   };
 numFiles = length( files );
 numGrid = 64;
+indsFixed = 1:numGrid;
+% allocate
+vD = zeros( numFiles );
 % c
-cMaxVec = zeros( numFiles, numGrid );
+cAtMaxVec = zeros( numGrid, numFiles );
 cMax = zeros( numFiles, 1 );
-cMinVec = zeros( numFiles, numGrid );
+cAtMinVec = zeros( numGrid, numFiles );
 cMin = zeros( numFiles, 1 );
-c2bodyVec = zeros( numFiles, numGrid );
+c2bodyVec = zeros( numGrid, numFiles );
+cFinal = zeros( numGrid, numGrid, numFiles );
 % p
-pMaxVec = zeros( numFiles, numGrid );
+pAtMaxVec = zeros( numGrid, numFiles );
 pMax = zeros( numFiles, 1 );
-pMinVec = zeros( numFiles, numGrid );
+pAtMinVec = zeros( numGrid, numFiles );
 pMin = zeros( numFiles, 1 );
-p2bodyVec = zeros( numFiles, numGrid );
+p2bodyVec = zeros( numGrid, numFiles );
+pFinal = zeros( numGrid, numGrid, numFiles );
 % n
-nMaxVec = zeros( numFiles, numGrid );
+nAtMaxVec = zeros( numGrid, numFiles );
 nMax = zeros( numFiles, 1 );
-nMinVec = zeros( numFiles, numGrid );
+nAtMinVec = zeros( numGrid, numFiles );
 nMin = zeros( numFiles, 1 );
-n2bodyAveVec = zeros( numFiles, numGrid );
+n2bodyVec = zeros( numGrid, numFiles );
+nFinal = zeros( numGrid, numGrid, numFiles );
 % Loop
 for ii = 1: numFiles
   filename = files{ii};
   path = ['./analyzedfiles/summarized/vDsweep/' filename ];
   load( [path '/op_' filename '.mat'] )
   load( [path '/params_' filename '.mat'] )
+  vD(ii) = particleObj.vD;
   % get position vector
   x = 0 : systemObj.Ly / systemObj.Ny : systemObj.Ly - systemObj.Ly / systemObj.Ny;
   % Get steady state distribution
-  cFinal = C_rec(:,:,end) ./ pi;
-  nFinal = NOP_rec(:,:,end);
+  cTemp = C_rec(:,:,end) ./ pi;
+  pTemp = POP_rec(:,:,end);
+  nTemp = NOP_rec(:,:,end);
+  cFinal(:,:,ii) = cTemp;
+  pFinal(:,:,ii) = pTemp;
+  nFinal(:,:,ii) = nTemp;
   % get a slice that is averaged over non-varying direction
-  cSlice = mean( cFinal, 1 );
-  pSlice = mean( pFinal, 1 );
-  nSlice = mean( nFinal, 1 );
+  cSlice = mean( cTemp, 1 );
+  pSlice = mean( pTemp, 1 );
+  nSlice = mean( nTemp, 1 );
   % find max
-  [cMax, maxInd] = max( cSlice );
-  [cMin] = min( cSlice );
-  [nMax] = max( nSlice );
-  [nMax] = max( nSlice );
-  [nMin] = min( nSlice );
-  [nMin] = min( nSlice );
+  [cMaxTemp, maxInd] = max( cSlice );
+  [pMaxTemp] = max( pSlice );
+  [nMaxTemp] = max( nSlice );
+  [cMinTemp] = min( cSlice );
+  [pMinTemp] = min( pSlice );
+  [nMinTemp] = min( nSlice );
   % circ and save
   % c
   cSliceMax = circshift( cSlice, -maxInd );
   cSliceMin = circshift( cSlice, -minInd );
-  cMaxVec(ii,:) = cSliceMax;
-  cMax(ii) = cMax;
-  cMinVec(ii,:) = cSliceMin;
-  cMin(ii) = cMin;
+  cAtMaxVec(:,ii) = cSliceMax;
+  cMax(ii) = cMaxTemp;
+  cAtMinVec(:,ii) = cSliceMin;
+  cMin(ii) = cMinTemp;
   % p
   pSliceMax = circshift( pSlice, -maxInd );
   pSliceMin = circshift( pSlice, -minInd );
-  pMaxVec(ii,:) = pSliceMax;
-  pMax(ii) = pMax;
-  pMinVec(ii,:) = pSliceMin;
-  pMin(ii) = pMin;
+  pAtMaxVec(:,ii) = pSliceMax;
+  pMax(ii) = pMaxTemp;
+  pAtMinVec(:,ii) = pSliceMin;
+  pMin(ii) = pMinTemp;
   % p
   nSliceMax = circshift( nSlice, -maxInd );
   nSliceMin = circshift( nSlice, -minInd );
-  nMaxVec(ii,:) = nSliceMax;
-  nMax(ii) = nMax;
-  nMinVec(ii,:) = nSliceMin;
-  nMin(ii) = nMin;
+  nAtMaxVec(:,ii) = nSliceMax;
+  nMax(ii) = nMaxTemp;
+  nAtMinVec(:,ii) = nSliceMin;
+  nMin(ii) = nMinTemp;
   % average
   for jj = 1:numGrid
     deltaInd = jj-1;
-    inds = 1+deltaInd:deltaInd:numGrid+deltaInd;
+    inds = indsFixed + deltaInd;
     inds = mod( inds - 1, numGrid ) + 1;
-    c2bodyVec(ii,jj) = mean( cMaxVec( 1:numGrid ) .* cMaxVec( inds ) ); 
-    p2bodyVec(ii,jj) = mean( pMaxVec( 1:numGrid ) .* pMaxVec( inds ) ); 
-    n2bodyVec(ii,jj) = mean( nMaxVec( 1:numGrid ) .* nMaxVec( inds ) ); 
+    c2bodyVec(jj,ii) = mean( cSliceMax( 1:numGrid ) .* cSliceMax( inds ) ); 
+    p2bodyVec(jj,ii) = mean( pSliceMax( 1:numGrid ) .* pSliceMax( inds ) ); 
+    n2bodyVec(jj,ii) = mean( nSliceMax( 1:numGrid ) .* nSliceMax( inds ) ); 
   end
 end
+%%
 % plot it
-for ii = 1: numFiles
+% OPs
+if plotOPs
+  for ii = 1: numFiles
+    figure()
+    % c
+    subplot(1,3,1)
+    imagesc( x,x, cFinal(:,:,ii) )
+    axis square
+    title(['C(x,y) vD = ' num2str( vD(ii) )] );
+    xlabel('x');
+    ylabel('y');
+    colorbar;
+    % p
+    subplot(1,3,2)
+    imagesc( x,x, pFinal(:,:,ii) )
+    axis square
+    title(['P(x,y) vD = ' num2str( vD(ii) )] );
+    xlabel('x');
+    ylabel('y');
+    colorbar;
+    % n
+    subplot(1,3,3)
+    imagesc( x,x, nFinal(:,:,ii) )
+    axis square
+    title(['N(x,y) vD = ' num2str( vD(ii) )] );
+    xlabel('x');
+    ylabel('y');
+    colorbar;
+  end
+end
+%% plot min max
+if plotMinMax
   figure()
   % c
-  subplot(2,2,1)
-  imagesc( x,x, cFinal )
+  % max
+  subplot(3,2,1)
+  hold on
+  for ii = 1:numFiles
+    plot( x, cAtMaxVec(:,ii) .* cMax(ii) )
+  end
+  title(' $$ c^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
+  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
+  ylabel('$$ c (r_0) c( r_{\perp} ) $$');
   axis square
-  title(['C(x,y) vD = ' num2str(particleObj.vD)] );
-  xlabel('x');
-  ylabel('y');
-  colorbar;
+  hl= legend(legCell );
+  % min
+  subplot(3,2,2)
+  hold on
+  for ii = 1:numFiles
+    plot( x, cAtMinVec(:,ii) .* cMin(ii) )
+  end
+  title(' $$ c^{(2)}(r_1,r_2) $$; $$ r_1 $$ at min');
+  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
+  ylabel('$$ c (r_0) c ( r_{\perp} ) $$');
+  axis square
+  hl= legend(legCell );
+  % p
+  % max
+  subplot(3,2,3)
+  hold on
+  for ii = 1:numFiles
+    plot( x, pAtMaxVec(:,ii) .* pMax(ii) )
+  end
+  title(' $$ p^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
+  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
+  ylabel('$$ p (r_0) p( r_{\perp} ) $$');
+  axis square
+  hl= legend(legCell );
+  % min
+  subplot(3,2,4)
+  hold on
+  for ii = 1:numFiles
+    plot( x, pAtMinVec(:,ii) .* pMin(ii) )
+  end
+  title(' $$ p^{(2)}(r_1,r_2) $$; $$ r_1 $$ at min');
+  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
+  ylabel('$$ p (r_0) p( r_{\perp} ) $$');
+  axis square
+  hl= legend(legCell );
   % n
-  subplot(2,2,2)
-  imagesc( x,x, nFinal )
-  axis square
-  title(['N(x,y) vD = ' num2str(particleObj.vD)] );
-  xlabel('x');
-  ylabel('y');
-  colorbar;
-  % from peak c
-  subplot(2,2,3)
-  plot( x, cSliceMax .* cMax )
-  title(' $$ \rho^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
+  % max
+  subplot(3,2,5)
+  hold on
+  for ii = 1:numFiles
+    plot( x, nAtMaxVec(:,ii) .* nMax(ii) )
+  end
+  title(' $$ n^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
   xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-  ylabel('$$ \rho (r_0) \rho( r_{\perp} ) $$');
+  ylabel('$$ n (r_0) n( r_{\perp} ) $$');
   axis square
-  % from min c
-  subplot(2,2,4)
-  plot( x, cSliceMin .* cMin )
-  title(' $$ \rho^{(2)}(r_1,r_2) $$; $$ r_1 $$ at min');
+  hl= legend(legCell );
+  % min
+  subplot(3,2,6)
+  hold on
+  for ii = 1:numFiles
+    plot( x, nAtMinVec(:,ii) .* nMin(ii) )
+  end
+  title(' $$ n^{(2)}(r_1,r_2) $$; $$ r_1 $$ at min');
   xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-  ylabel('$$ \rho (r_0) \rho( r_{\perp} ) $$');
+  ylabel('$$ n (r_0) n( r_{\perp} ) $$');
   axis square
+  hl= legend(legCell );
 end
-% plot it
-for ii = 1:numFiles
+%% plot average 
+if plotAverage
   figure()
   % c
   subplot(1,3,1)
-  plot( x, c2bodyVec )
+  hold on
+  for ii = 1:numFiles
+    plot( x, c2bodyVec(:,ii) )
+  end
   axis square
   title(' $$ c^{(2)}(r_1,r_2) $$; $$ r_1 $$ averaged');
   xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
   ylabel('$$ c (r_0) c( r_{\perp} ) $$');
+  hl= legend(legCell );
   % p
   subplot(1,3,2)
-  plot( x, p2bodyVec )
+  hold on
+  for ii = 1:numFiles
+    plot( x, p2bodyVec(:,ii) )
+  end
+  axis square
   title(' $$ p^{(2)}(r_1,r_2) $$; $$ r_1 $$ averaged');
   xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-  ylabel('$$ p(r_0) p( r_{\perp} ) $$');
-  axis square
+  ylabel('$$ p (r_0) p( r_{\perp} ) $$');
+  hl= legend(legCell );
   % n
   subplot(1,3,3)
-  plot( x, n2bodyVec )
+  hold on
+  for ii = 1:numFiles
+    plot( x, n2bodyVec(:,ii) )
+  end
+  axis square
   title(' $$ n^{(2)}(r_1,r_2) $$; $$ r_1 $$ averaged');
   xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-  ylabel('$$ n(r_0) n( r_{\perp} ) $$');
-  axis square
+  ylabel('$$ n (r_0) n( r_{\perp} ) $$');
+  hl= legend(legCell );
 end
-%% plot them together
-% max 
-figure()
-subplot(1,2,1)
-hold on
-for ii = 1:numFiles
-  plot( x, cMaxVec(ii,:) .* cMax(ii) )
-end
-title(' $$ \rho^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
-xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-ylabel('$$\rho (r_0) \rho( r_{\perp} )$$');
-axis square
-hl= legend(legCell );
-% min
-subplot(1,2,2)
-hold on
-for ii = 1:numFiles
-  plot( x, cMinVec(ii,:) .* cMin(ii) )
-end
-title(' $$ \rho^{(2)}(r_1,r_2) $$; $$ r_1 $$ at min');
-xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-ylabel('$$\rho (r_0) \rho( r_{\perp} )$$');
-axis square
-hl= legend(legCell );
-% plot it
-figure()
-% c
-subplot(1,3,1)
-hold on
-for ii = 1:numFiles
-  figure()
-  plot( x, c2bodyVec )
-end
-axis square
-title(' $$ c^{(2)}(r_1,r_2) $$; $$ r_1 $$ averaged');
-xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-ylabel('$$ c (r_0) c( r_{\perp} ) $$');
-hl= legend(legCell );
-% p
-subplot(1,3,2)
-hold on
-for ii = 1:numFiles
-  figure()
-  plot( x, p2bodyVec )
-end
-axis square
-title(' $$ p^{(2)}(r_1,r_2) $$; $$ r_1 $$ averaged');
-xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-ylabel('$$ p (r_0) p( r_{\perp} ) $$');
-hl= legend(legCell );
-% n
-subplot(1,3,2)
-hold on
-for ii = 1:numFiles
-  figure()
-  plot( x, n2bodyVec )
-end
-axis square
-title(' $$ n^{(2)}(r_1,r_2) $$; $$ r_1 $$ averaged');
-xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-ylabel('$$ n (r_0) n( r_{\perp} ) $$');
-hl= legend(legCell );
