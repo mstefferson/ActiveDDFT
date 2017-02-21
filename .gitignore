@@ -25,6 +25,8 @@ data/
 data/*
 eo/*
 sandbox/*
+figs/
+figs/*
 
 # Certain files
 Runner.m
