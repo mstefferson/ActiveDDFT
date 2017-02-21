@@ -14,7 +14,7 @@ try
   if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end;
   
   % see how many dirs to analyze
-  dir2Analyze = dir( './runOPfiles/*Ani*');
+  dir2Analyze = dir( './runOPfiles/Hr_*');
   numDirs = length(dir2Analyze);
   
   if numDirs
@@ -104,7 +104,7 @@ try
       maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
         systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
       plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
-        OPobj.OpTimeRecVec, maxSaveTag );
+        particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);
       movefile([figtl2 '*'], dirFullPath);
