@@ -316,7 +316,7 @@ try
           systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
         % Run function
         CMovieMakerAvi(movStr,...
-          gridObj.x1,gridObj.x2,OPobj.C_rec,...
+          gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
           OPobj.OpTimeRecVec);
       else
         % Save Name
@@ -405,7 +405,7 @@ try
         % Plot max order parameters vs time
         maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-        plotMaxCvsTime( OPobj.C_rec,particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
+        plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       end
       % Move everything else
       movefile([figtl2 '*'], dirName);
