@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [GammaCube_FT, shitIsFucked] = dRhoMaster( rho, rho_FT, ...
-  flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3,t )
+  flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3 )
 % Initialize
 GammaCube_FT = 0;
 shitIsFucked = 0;
@@ -26,11 +26,15 @@ if interObj.hardId == 2 % spt
     else
       nu = interObj.sptScale .* ifftn( ifftshift( rho_FT(:,:,interObj.k30) ) );
     end
-%     
+    % check if too high or too low
     if any(nu >  1)
-%       keyboard
-%       error('Density is too high!')
+      error('Density is too high!')
       fprintf('Density is too high!');
+      shitIsFucked = 1;
+      muExFt = 0;
+    elseif any(nu <  0)
+      fprintf('Density is negative!');
+      error('Density is negative!');
       shitIsFucked = 1;
       muExFt = 0;
     else

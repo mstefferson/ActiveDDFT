@@ -63,7 +63,7 @@ if interObj.anyInter || flags.Drive
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT] = dRhoMaster( rho, rho_FT, flags, ...
-    interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3, 0 );
+    interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
 else
   GammaCube_FT = zeros( n1, n2, n3);
 end
@@ -119,7 +119,7 @@ for t = 1:timeObj.N_time-1
     % Calculate dRho from interactions and driving
 %     keyboard
     [GammaCube_FT,ShitIsFuckedTemp] = dRhoMaster( rho, rho_FT, flags,...
-      interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3,t );
+      interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
   end
   % Take a step
   if( flags.StepMeth == 0 )
