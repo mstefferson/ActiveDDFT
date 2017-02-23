@@ -20,15 +20,18 @@ phi = 0 : 2*pi / systemObj.n3 : 2*pi * ( 1 - 1 ./ systemObj.n3 );
 [mayer] = mayerFncHr(...
   systemObj.n1, systemObj.n2, systemObj.n3, ...
   systemObj.l1, systemObj.l2, particleObj.lMaj) ;
-% intergrate mayer
+%% intergrate mayer
 mayerInt = trapz_periodic( phi, mayer, 3 );
 % non-density dependent correlation integrate g(r1,u1,r2,u2)
-pairCorration1 = 4 * pi ^ 2 + 2 * pi * mayerInt;
+pairCorrelation1 = 4 * pi ^ 2 + 2 * pi * mayerInt;
 % now with a density
 %load( [path '/op_' filename '.mat'] )
+%% version 2
 rhoTemp = rand( systemObj.n1, systemObj.n2, systemObj.n3 );
+load('rhoTest30.mat');
+% rhoTemp = rho;
 cTemp = trapz_periodic( phi, rhoTemp, 3 );
-%cTemp = C_rec(:,:,end) ./ pi;
+% cTemp = C_rec(:,:,end) ./ pi;
 %rhoTemp = denRecObj.rhoFinal(:,:,:);
 % try and integrate
 maxDelta1 =  ceil( systemObj.n1 .* particleObj.lMaj ./ systemObj.l1 );
@@ -56,7 +59,7 @@ for ii = 1:systemObj.n1
     end
   end
 end
-% Average
+%% Average
 allInds1 = 1:systemObj.n1;
 allInds2 = 1:systemObj.n2;
 aveCorrelation2 = zeros( systemObj.n1, systemObj.n2);
@@ -78,19 +81,21 @@ for ii = 1:totalInds1
     aveCorrelation2(ii,jj) = aveCorrelation2(ii,jj) ./ ( n1n2 );
   end
 end
-% Average version 2
+aveCorrelation2 = aveCorrelation2 + 1;
+%% Average version 2
 allInds1 = 1:systemObj.n1;
 allInds2 = 1:systemObj.n2;
 aveCorrelation2_v2 = zeros( systemObj.n1, systemObj.n2);
 n1n2 = systemObj.n1 .* systemObj.n2;
 for ii = 1:totalInds1
-  ind2Ave1 = mod( allInds1 + (ii-1), systemObj.n1 ) + 1;
+  ind2Ave1 = mod( allInds1 + (ii-2), systemObj.n1 ) + 1 ;
   for jj = 1:totalInds2
-    ind2Ave2 = mod( allInds2 + (jj-1), systemObj.n2 ) + 1;
+    ind2Ave2 = mod( allInds2 + (jj-2), systemObj.n2 ) + 1 ;
     matTemp = reshape( fullCorrelation2( allInds2, allInds2, ind2Ave1, ind2Ave2 ), [systemObj.n1, systemObj.n2] );
+    tempMean = mean( mean( mean( mean( fullCorrelation2( allInds2, allInds2, ind2Ave1, ind2Ave2 ) ) ) ) );
     aveCorrelation2_v2(ii,jj) =  mean( mean( matTemp ) );
   end
 end
 
-
+aveCorrelation2 = aveCorrelation2 + 1;
 
