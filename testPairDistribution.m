@@ -1,7 +1,8 @@
 %% All files
-plotOPs = 1;
-plotMinMax = 0;
-plotAverage = 0;
+plotOPs = 0;
+plotMax = 1;
+plotMin = 0;
+plotAverage = 1;
 legCell = {'Pe = 0';'Pe = 10';'Pe = 20'; 'Pe = 30'; 'Pe = 60'; 'Pe = 80'; 'Pe = 100'; 'Pe = 120'};
 files = {
   'Hr_Ani1_N646464_Lx10Ly10_bc1.65_vD0_IC1_SM6_t09.04';
@@ -130,12 +131,12 @@ if plotOPs
     colorbar;
   end
 end
-%% plot min max
-if plotMinMax
+%% plot max
+if plotMax
   figure()
   % c
   % max
-  subplot(3,2,1)
+  subplot(1,3,1)
   hold on
   for ii = 1:numFiles
     plot( x, cAtMaxVec(:,ii) .* cMax(ii) )
@@ -145,8 +146,37 @@ if plotMinMax
   ylabel('$$ c (r_0) c( r_{\perp} ) $$');
   axis square
   hl= legend(legCell );
+  % p
+  % max
+  subplot(1,3,2)
+  hold on
+  for ii = 1:numFiles
+    plot( x, pAtMaxVec(:,ii) .* pMax(ii) )
+  end
+  title(' $$ p^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
+  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
+  ylabel('$$ p (r_0) p( r_{\perp} ) $$');
+  axis square
+  hl= legend(legCell );
+  % n
+  % max
+  subplot(1,3,3)
+  hold on
+  for ii = 1:numFiles
+    plot( x, nAtMaxVec(:,ii) .* nMax(ii) )
+  end
+  title(' $$ n^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
+  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
+  ylabel('$$ n (r_0) n( r_{\perp} ) $$');
+  axis square
+  hl= legend(legCell );
+end
+%% plot min 
+if plotMin
+  figure()
+  % c
   % min
-  subplot(3,2,2)
+  subplot(1,3,1)
   hold on
   for ii = 1:numFiles
     plot( x, cAtMinVec(:,ii) .* cMin(ii) )
@@ -157,19 +187,8 @@ if plotMinMax
   axis square
   hl= legend(legCell );
   % p
-  % max
-  subplot(3,2,3)
-  hold on
-  for ii = 1:numFiles
-    plot( x, pAtMaxVec(:,ii) .* pMax(ii) )
-  end
-  title(' $$ p^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
-  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-  ylabel('$$ p (r_0) p( r_{\perp} ) $$');
-  axis square
-  hl= legend(legCell );
   % min
-  subplot(3,2,4)
+  subplot(1,3,2)
   hold on
   for ii = 1:numFiles
     plot( x, pAtMinVec(:,ii) .* pMin(ii) )
@@ -180,19 +199,8 @@ if plotMinMax
   axis square
   hl= legend(legCell );
   % n
-  % max
-  subplot(3,2,5)
-  hold on
-  for ii = 1:numFiles
-    plot( x, nAtMaxVec(:,ii) .* nMax(ii) )
-  end
-  title(' $$ n^{(2)}(r_1,r_2) $$; $$ r_1 $$ at peak');
-  xlabel('$$ ( r_{\perp}-r_0 ) / l_{rod} $$');
-  ylabel('$$ n (r_0) n( r_{\perp} ) $$');
-  axis square
-  hl= legend(legCell );
   % min
-  subplot(3,2,6)
+  subplot(1,3,3)
   hold on
   for ii = 1:numFiles
     plot( x, nAtMinVec(:,ii) .* nMin(ii) )
