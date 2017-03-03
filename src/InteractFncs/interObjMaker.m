@@ -3,8 +3,9 @@
 % Includes interaction types and calculates necessary functions.
 %
 % Id key:
-% hardId = 1, 2, 3 mayer, spt, fmt
 % typeId = 1, 2, 3 rods, disks, spheres
+% hardId = 1, 2, 3 mayer, spt, fmt
+% softId = 1 soft shoulder
 function [interObj] = interObjMaker( particleObj, systemObj, gridObj )
 % Store interactions in interobj
 interObj.anyInter = 0;
@@ -13,6 +14,7 @@ interObj.k3ind0 = floor( systemObj.n3 / 2 ) + 1;
 % Short range interactions
 if isempty(particleObj.interHb)
   interObj.hardFlag = 0;
+  interObj.hardId = 0;
   interObj.hard = 'none';
   fprintf('No short interactions\n');
 else
@@ -79,19 +81,53 @@ else
   else
     fprintf('Cannot find particle type\n');
     error('Cannot find particle type\n');
-  end
-end
+  end % particle type
+end % short range interactions
 % Long range interactions
 if isempty(particleObj.interLr)
   interObj.longFlag = 0;
+  interObj.longId = 0;
   interObj.long = 'none';
   fprintf('No long range interactions\n');
-else
+else 
   interObj.longFlag = 1;
-  interObj.long = particleObj.interLrT;
+  interObj.long = particleObj.interLr;
   interObj.anyInter = 1;
   fprintf('Long interactions %s\n', interObj.long);
-end
+  % Scale
+  interObj.muMfScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
+    (systemObj.n1 * systemObj.n2 * systemObj.n3);
+  % rods
+  if  strcmp( particleObj.type, 'rods' ) 
+    interObj.longFlag = 0;
+    interObj.long = 'none';
+    fprintf('No long range interactions written for rods\n')
+  % disks
+  elseif  strcmp( particleObj.type, 'disks' ) 
+    if strcmp( interObj.long, 'softshoulder' )
+      interObj.longSpec = 'disksSoft';
+      interObj.longId = 1;
+      % scales
+      interObj.lrLs1 = particleObj.lrLs1;
+      interObj.lrLs2 = particleObj.lrLs2;
+      interObj.lrEs1 = particleObj.lrEs1;
+      interObj.lrEs2 = particleObj.lrEs1;
+      % build soft should potential
+      [~, interObj.vFt] = softShoulder2D( interObj.lrEs1, interObj.lrEs2, ...
+        interObj.lrLs1, interObj.lrLs2, ...
+        systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
+    end
+  % spheres
+  elseif strcmp( particleObj.type, 'spheres' )
+    interObj.longFlag = 0;
+    interObj.long = 'none';
+    fprintf('No long range interactions written for spheres\n')
+    fprintf('No long range interactions\n');
+  else
+    fprintf('Cannot find particle type\n');
+    error('Cannot find particle type\n');
+  end % particle type
+end % long range interaction
 % External potentional
 if isempty(particleObj.externalPot)
   interObj.extFlag = 0;
@@ -102,4 +138,3 @@ else
   interObj.ext = particleObj.externalPot;
   fprintf('External %s\n', interObj.ext);
 end
-

@@ -5,6 +5,7 @@ function [GammaCube_FT, shitIsFucked] = dRhoMaster( rho, rho_FT, ...
 GammaCube_FT = 0;
 shitIsFucked = 0;
 % Interactions
+% short range
 % mayers
 if interObj.hardId == 1 % mayers
   if interObj.typeId == 1 % rods
@@ -13,7 +14,7 @@ if interObj.hardId == 1 % mayers
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
   if interObj.typeId == 2 % disks
-    muExFt = muExCalcVc2Ft(rho_FT(:,:,interObj.k3ind0 ), interObj.FmFt,systemObj,interObj.muMayerScale);
+    muExFt = muExCalcVc2Ft( rho_FT(:,:,interObj.k3ind0), interObj.FmFt, systemObj, interObj.muMayerScale );
     GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
@@ -44,14 +45,20 @@ if interObj.hardId == 2 % spt
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   end
 end
-% Driving
+% long range
+if interObj.longId == 1 % mean field
+  [muExFt] =  muExCalcMfFt( rho_FT(:,:,interObj.k3ind0), interObj.vFt, systemObj, interObj.muMfScale );
+  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
+  GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+end
+% driving
 if flags.Drive && flags.DiagLop
   GammaDrCube_FT  = ...
     dRhoDriveCalcFtId(rho,particleObj.vD,...
     cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
   GammaCube_FT = GammaCube_FT + GammaDrCube_FT;
 end
-% Hard rod
+% external
 if interObj.extFlag
   GammaPotCube_FT = 0;
   GammaCube_FT = GammaCube_FT + GammaPotCube_FT;

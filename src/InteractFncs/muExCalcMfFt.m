@@ -1,12 +1,11 @@
-% Function: MuExCalcVc2Ft.m
+% [MuEx_FT] = muExCalcMfFt(rhoFt,vFt,systemObj,scaleFact)
 %
-% Description: Calculates the excess chemical potential from Onsager's 2nd Virial Coefficient
-% for a inhomogenous gas of hard rods.
+% Description: Calculates the excess chemical potential using mean field
 %
-% Called by: dRhoInterCalcVcID
-%Excess chemical potential in position space is a convolution. In k-space, it is a
-%product. Given by the function derivative of the excess free energy w.r.t.
-%the density profile
+% Called by: dRhoMaster
+% Excess chemical potential in position space is a convolution. In k-space, it is a
+% product. Given by the function derivative of the excess free energy w.r.t.
+% the density profile
 
 function [MuEx_FT] = muExCalcMfFt(rhoFt,vFt,systemObj,scaleFact)
 % Calc scale factor if need be

@@ -19,15 +19,18 @@ runMaster.trialID = 1; % Trial Indicator
 runMaster.runID   = 1; % Starting Run indicator *_trial.runID
 %%%%%%%%%% Particles %%%%%%%%%%
 particleMaster.numTypes = 1; % number of types
-particleMaster.type = 'rods'; % rods, disks, spheres 
-particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt, fmt
-particleMaster.interLr = []; %  Long range interaction type in MF.
-particleMaster.interLrEnSc = []; %  Long range interaction energy scale in MF.
-particleMaster.externalPot = []; % External potential 
 particleMaster.lMaj = 1;  % Length along the major axis
 particleMaster.lMin = 0;  % Length along the minor axis
 particleMaster.vD   = [0]; % Driving velocity (vec)
 particleMaster.mob  = 1; % mobility
+particleMaster.type = 'rods'; % rods, disks, spheres 
+particleMaster.interHb = ['mayer']; % Hard body interactions type mayer, spt, fmt
+particleMaster.interLr = []; %  Long range interaction type in MF: softshoulder
+particleMaster.lrLs1 = particleMaster.lMaj; % Long range length scale 1
+particleMaster.lrLs2 = 0; % Long range length scale 2
+particleMaster.lrEs1 = 0; % Long range energy scale 1
+particleMaster.lrEs2 = 0; % Long range energy scale 2
+particleMaster.externalPot = []; % External potential 
 %%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)
 systemMaster.n2 = [64]; % Gridpoints in y dir (vec) 

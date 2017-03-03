@@ -27,7 +27,7 @@ elseif strcmp( particleMaster.type, 'disks' )
   particleMaster.mobRot = particleMaster.mob / ( 3 * particleMaster.lMaj^2 );
   % Make sure concentration is not too high
   threshold = 0.9;
-  if systemMaster.bc > threshold
+  if ~isempty(particleMaster.interHb) && systemMaster.bc > threshold
     systemMaster.bc = 0.9;
   end
 % Spheres 
