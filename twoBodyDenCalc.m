@@ -1,9 +1,9 @@
-% [pDist] = pairDistCalcRho(rho,l1,l2,lRod)
+% [twoBodDen] = pairDistCalcRho(rho,l1,l2,lRod)
 % 
 % Calculates the density dependent pair correlation function
 % g(r,r') = rho^(2) ./ rho^(1)rho^(1)  
 %
-function [pDistAve] = pairDistCalcRho(rho,l1,l2,lRod,plotflag)
+function [twoBodDenAve] = twoBodyDenCalc(rho,l1,l2,lRod,plotflag)
 % add paths just in case
 currentDir = pwd;
 addpath( genpath( [currentDir '/src'] ) );
@@ -28,7 +28,7 @@ indsDelta2 = mod( -maxDelta2:(maxDelta2+1) - 1, n2 ) + 1;
 totalInds2 = 2 .* maxDelta2 + 1;
 indsDelta3 = 1:n3;
 % initialize
-pDist = ones( n1, n2,n1, n2);
+twoBodDen = ones( n1, n2,n1, n2);
 vec2Int = zeros( totalInds1, totalInds2, n3 );
 for ii = 1:n1
   % inds for loop over delta x
@@ -42,15 +42,13 @@ for ii = 1:n1
         .* mayer( indsDelta1, indsDelta2, indsDelta3 );
       vec2Int(:,:,mm) = trapz_periodic( phi, mat2IntTemp, 3 );
     end
-    num = trapz_periodic( phi, vec2Int, 3 );
-    den = ( c(ii,jj) .* c(inds1, inds2) );
-    newterm = num ./ den;
-    reshapeNewterm = reshape( newterm, [1, 1, totalInds1, totalInds2] );
-    pDist( ii, jj, inds1, inds2 ) = pDist( ii, jj, inds1, inds2 ) + reshapeNewterm;
+    intTerm = trapz_periodic( phi, vec2Int, 3 );
+    reshapeNewterm = reshape( c(ii,jj) .* c(inds1, inds2) + intTerm, [1, 1, totalInds1, totalInds2] );
+    twoBodDen( ii, jj, inds1, inds2 ) = reshapeNewterm;
   end
 end
 % Calculate average
-pDistAve = ones( n1, n2);
+twoBodDenAve = ones( n1, n2);
 combInd = combvec( 1:n1, 1:n2 );
 allInds1 = combInd(1,:).';
 allInds2 = combInd(2,:).';
@@ -60,19 +58,19 @@ for ii = indsDelta1
   for jj = indsDelta2
     jj2 = mod( allInds2 + (jj-2), n2 ) + 1 ;
     inds = sub2ind( matSize, allInds1', allInds2', ii2',  jj2' );
-    tempMean =  mean( pDist( inds ) );
-    pDistAve(ii,jj) =  tempMean;
+    tempMean =  mean( twoBodDen( inds ) );
+    twoBodDenAve(ii,jj) =  tempMean;
   end
 end
 % center
 center1 = round( n1 / 2 ) + 1 ;
 center2 = round( n2 / 2 ) + 1 ;
-pDistAve = circshift( circshift( pDistAve, center1-1, 1 ), center2-1, 2 );
+twoBodDenAve = circshift( circshift( twoBodDenAve, center1-1, 1 ), center2-1, 2 );
 % plot
 if plotflag
   figure()
-  imagesc( x1, x2, pDistAve )
-  title('pair distribution g(x,y): density dependent')
+  imagesc( x1, x2, twoBodDenAve )
+  title('$$ \rho ^ { 2 } ( \Delta x, \Delta y) $$  ')
   xlabel('x'); ylabel('y')
   colorbar
 end
