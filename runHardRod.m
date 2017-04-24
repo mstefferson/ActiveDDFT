@@ -41,7 +41,7 @@ else
 end
 % Make sure you don't have a distribution in 3rd dimension if n3 = 1
 % Make sure you don't try and initial angular if n3 = 1
-if systemMaster.n3
+if systemMaster.n3 == 1
   rhoInitMaster.IntCond(rhoInitMaster.IntCond == 1) = 0;
   rhoInitMaster.IntCond(rhoInitMaster.IntCond == 2) = 0;
   rhoInitMaster.IntCond = unique( rhoInitMaster.IntCond );
