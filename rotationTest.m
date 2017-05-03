@@ -1,8 +1,8 @@
 %% rotation test
 % parameters
 Lbox = 1;
-n1 = 64;
-n2 = 64;
+n1 = 8;
+n2 = 8;
 n3 = 8;
 sigX = Lbox .* 0.25 * 0.5;
 sigY = Lbox .* 0.25 * 0.25;
@@ -45,7 +45,11 @@ numRot = n3/2;
 mapRotInds = [1:numRot 1:numRot];
 rotIndsWrap = zeros( n1*n2, n3 );
 % rotIndsCutOffWrap = zeros( n1*n2, n3 );
-rotIndsCutOffWrap = repmat( (1:n1*n2)', [1, n3] );
+unrotInds = (1:n1*n2)';
+rotIndsCutOffWrap = repmat( unrotInds , [1, n3] );
+rot3rep = reshape( repmat( 1:n3, [n1*n2,1] ), [n1*n2*n3, 1] );
+rotSubCutOffAllPhiWrap = zeros(n1*n2*n3,n3);
+% rotSubCutOffWrap = zeros(n1*n2,2,n3);
 rotIndsCenter = zeros( n1*n2, n3 );
 fRotWrap =  zeros( n1, n2, n3 );
 fRotCenter =  zeros( n1, n2, n3 );
@@ -68,26 +72,24 @@ for ii = 1:numRot
   tempXWrap( tempXWrap < 0 ) = (n1 + tempXWrap( tempXWrap < 0 ) );
   tempYWrap( tempYWrap < 0 ) = (n2 + tempYWrap( tempYWrap < 0 ) );
   % round and store inds
+  % This assumes a periodic function
   tempXWrapInds = mod( round( tempXWrap ), n1 ) + 1;
   tempYWrapInds = mod( round( tempYWrap ), n2 ) + 1;
   tempInds =  sub2ind( [n1 n2], tempXWrapInds, tempYWrapInds );
   % subset
+  % in x,y form
   rotIndsCutOffWrap( inds2rotList, ii )  = tempInds(inds2rotList);
   rotIndsWrap( :, ii) = tempInds;
-%   keyboard
+  newInds = unrotInds;
+  newInds(inds2rotList) = tempInds(inds2rotList);
+  [rot1, rot2] =  ind2sub( [n1 n2], newInds );
+  rot1rep = repmat( rot1, [n3, 1] );
+  rot2rep = repmat( rot2, [n3, 1] );
+  tempInds =  sub2ind( [n1 n2 n3], rot1rep, rot2rep, rot3rep );
+  rotSubCutOffAllPhiWrap(:,ii) = tempInds;
   % make it a grid
   tempXWrap = reshape( tempXWrap, [n1 n2] );
   tempYWrap = reshape( tempYWrap, [n1 n2] );
-  %subset
-%   tempXWrapInds = mod( round( tempXWrap ), n1 ) + 1;
-%   tempYWrapInds = mod( round( tempYWrap ), n2 ) + 1;
-%   tempXSubset = repmat( (1:n1)', [1,n2] );
-%   tempYSubset = repmat( (1:n1)', [1,n2] );
-%   tempXSubset( inds2rotWrap1, inds2rotWrap2 ) = ...
-%     tempXWrapInds( inds2rotWrap1, inds2rotWrap2 );
-%   tempYSubset( inds2rotWrap1, inds2rotWrap2 ) = ...
-%     tempYWrapInds( inds2rotWrap1, inds2rotWrap2 );
-%   tempInds =  sub2ind( [n1 n2], tempXSubset(:)', tempYSubset(:)' );
   % Center
   tempXCenter = rotCenter(1,:) ./ dx1;
   tempYCenter = rotCenter(2,:) ./ dx2;
@@ -148,3 +150,9 @@ for ii = 1:n3
   imagesc( fWrap( reshape( rotIndsCutOffWrap( :, mapRotInds(ii) ), [n1 n2] ) ) );
   title( ['subinds wrap phi = ' num2str( phi(ii) ) ] );
 end
+
+%% Try a 3D spatial only rotation
+fRep = repmat( fWrap, [1,1,n3] );
+% Rotate it
+phiTemp = 2;
+fRepRotate = reshape( fRep( rotSubCutOffAllPhiWrap(:,phiTemp) ), [n1 n2 n3] );
