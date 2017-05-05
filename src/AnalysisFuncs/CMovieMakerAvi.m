@@ -29,7 +29,8 @@ for ii = 1:nFrames
   TitlStr = sprintf('Concentration t = %.2f', TimeRec(ii));
   title(axh1,TitlStr)
   % get frame and recprd
-  Fr = getframe(Fig,[0 0 PosVec(3) PosVec(4)]);
+%   Fr = getframe(Fig,[0 0 PosVec(3) PosVec(4)]);
+  Fr = getframe(Fig);
   writeVideo(Mov,Fr);
 end %% End frame loop
 close all
