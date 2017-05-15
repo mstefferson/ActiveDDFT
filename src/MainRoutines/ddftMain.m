@@ -28,6 +28,13 @@ try
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
+  % long range stuff
+  if ~isempty( particleObj.interLr )
+    particleObj.lrLs1 = paramVec(11); % Long range length scale 1
+    particleObj.lrLs2 = paramVec(12); % Long range length scale 2
+    particleObj.lrEs1 = paramVec(13); % Long range energy scale 1
+    particleObj.lrEs2 = paramVec(14); % Long range energy scale 2
+  end
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];
