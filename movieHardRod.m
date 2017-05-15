@@ -27,7 +27,6 @@ try
       % load things
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
       opFileName = [dirFullPath '/op_' dirTemp '.mat'];
-      
       runSave = matfile( runFileName);
       opSave  = matfile( opFileName );
       gridObj  = runSave.gridObj;
