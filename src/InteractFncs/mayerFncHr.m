@@ -39,7 +39,7 @@ for i = 1:n1
         % calculate phi and handle cases seperately
         phiTemp = (k-1) * dphi;
         % phi = 0,pi
-        if( k == 1 || k == n3 / 2 + 1 )
+        if( k == 1 || k == n3/2 + 1 )
           if (xTempSq <= TooFar) && (yTemp == 0)
             mayerFnc(i,j,k) = -1;
           else
@@ -47,7 +47,7 @@ for i = 1:n1
           end
         end
         % phi = pi/2, 3pi/2
-        if( k == n3 / 4 + 1 || k == 3 * n3 / 4 +1 )
+        if( k == n3/4 + 1 || k == 3*n3/4 +1 )
           if( (yTempSq <= LrodHSq) && xTempSq <= LrodHSq)
             mayerFnc(i,j,k) = -1;
           else
@@ -55,7 +55,7 @@ for i = 1:n1
           end
         end
         % 0 < phi < pi/2
-        if( k < floor( n3 / 4) + 1 )
+        if( k < n3/4 + 1 )
           yuL = tan( phiTemp ) * ( xTemp + Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp - Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp );
@@ -66,7 +66,7 @@ for i = 1:n1
           end
         end
         % pi/2  < phi < pi
-        if( k > floor( n3 / 4) + 1 && k < floor(n3/2) + 1 )
+        if( k >  n3/4 + 1 && k < n3/2 + 1 )
           yuL = tan( phiTemp ) * ( xTemp - Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp + Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq *  sin( phiTemp ) * sin( phiTemp );
@@ -77,7 +77,7 @@ for i = 1:n1
           end
         end
         % pi < phi < 3pi/2
-        if( k > floor(n3/2) + 1 && k < floor(3*n3 / 4) + 1 )
+        if( k > n3/2 + 1 && k < 3*n3/4 + 1 )
           yuL = tan( phiTemp ) * ( xTemp + Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp - Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp);
@@ -88,7 +88,7 @@ for i = 1:n1
           end
         end
         % 3pi/2 < phi < 2pi
-        if(  k > floor(3*n3 / 4) + 1 )
+        if(  k > 3*n3/4 + 1 )
           yuL = tan( phiTemp ) * ( xTemp - Lrod / 2) + epsilon;
           ylL = tan( phiTemp ) * ( xTemp + Lrod / 2) - epsilon;
           yMaxSq =  LrodHSq * sin( phiTemp ) * sin( phiTemp );
