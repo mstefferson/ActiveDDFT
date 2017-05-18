@@ -58,7 +58,7 @@ jchunk   = 1; % Write chunk index
 [Lop] = DiffOpBuilderDr(diffObj,gridObj,n1,n2,n3,N2,N3);
 %Interactions
 if interObj.anyInter
-  [GammaEx_FT] = dRhoMaster( rho, rho_FT, flags,...
+  [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
     interObj, systemObj, diffObj, particleObj );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
@@ -107,104 +107,110 @@ else
 end
 % Initialize some things and start time loop
 tic
-ShitIsFucked = 0;
-SteadyState  = 0;
-MaxReldRho   = 0; % Initialize this so things don't get messed up
+steadyState  = 0;
+maxDrho   = 0; % Initialize this so things don't get messed up
+whatBroke2 = [];
+whatBroke3 = [];
 fprintf(lfid,'Starting master time loop\n');
-for t = 1:timeObj.N_time-1
-  %Need to update rho!!!
-  rhoVec_FT      = rhoVec_FTnext;
-  rhoPrev = rho;
-  % Calculate rho if there is driving or interactions
-  if interObj.anyInter || flags.Drive
-    rho_FT = reshape(rhoVec_FT,n1,n2,n3);
-    rho    = real(ifftn(ifftshift(rho_FT)));
-  end
-  %Interactions
-  if interObj.anyInter
-    [GammaEx_FT, ShitIsFucked] = dRhoMaster( rho, rho_FT, flags,...
-      interObj, systemObj, diffObj, particleObj );
-    GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
-  end
-  % Take step
-  if( flags.StepMeth == 0 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
-  elseif( flags.StepMeth == 1 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
-    GammaExVec_FTprev = GammaExVec_FT;
-  elseif( flags.StepMeth == 2 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
-  elseif( flags.StepMeth == 3 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
-    GammaExVec_FTprev = GammaExVec_FT;
-  elseif( flags.StepMeth == 4 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
-  elseif( flags.StepMeth == 5 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
-      Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
-    GammaExVec_FTprev = GammaExVec_FT;
-  elseif( flags.StepMeth == 6 )
-    [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
-      Lop, rhoVec_FT, GammaExVec_FT, dt );
-  end
-  %Save everything
-  if ( mod(t,timeObj.N_dtRec) == 0 )
-    % Turn it to a cube if it hasn't been yet
-    if flags.Interactions == 0 && flags.Drive == 0
+if shitIsFucked == 0 
+  for t = 1:timeObj.N_time-1
+    %Need to update rho!!!
+    rhoVec_FT      = rhoVec_FTnext;
+    rhoPrev = rho;
+    % Calculate rho if there is driving or interactions
+    if interObj.anyInter || flags.Drive
       rho_FT = reshape(rhoVec_FT,n1,n2,n3);
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    rho_FTnext = reshape(rhoVec_FTnext,n1,n2,n3);
-    [SteadyState,ShitIsFucked,MaxReldRho] = ...
-      BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
-    if flags.SaveMe
-      fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
-      Density_rec(:,:,:,jrectemp)     = rho;
+    %Interactions
+    if interObj.anyInter
+      [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
+        dRhoMaster( rho, rho_FT, flags,...
+        interObj, systemObj, diffObj, particleObj );
+      GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
-    %Make sure things are taking too long. This is a sign density---> inf
-    [TooLong] = ExpTooLongChecker(...
-      ticExptemp,ticExpInt,rhoVec_FT,n1,n2,n3,jrec);
-    if TooLong; ShitIsFucked = 1; end
-    % Write a chunk to disk
-    if flags.SaveMe
-      if ( mod(t, timeObj.N_dtChunk ) == 0 )
-        % Record Density_recs to file
-        RecIndTemp = ...
-          (jchunk-1) *  timeObj.N_recChunk + 1 : jchunk * timeObj.N_recChunk;
-        % Shift by one because we include zero
-        RecIndTemp = RecIndTemp + 1;
-        runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-        runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-        jrectemp = 0;
-        jchunk = jchunk + 1;
+    % Take step
+    if( flags.StepMeth == 0 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
+        Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
+    elseif( flags.StepMeth == 1 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperAB2Pf( ...
+        Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
+      GammaExVec_FTprev = GammaExVec_FT;
+    elseif( flags.StepMeth == 2 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperHAB1Pf( ...
+        Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt );
+    elseif( flags.StepMeth == 3 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperHAB2Pf( ...
+        Lop, rhoVec_FT, GammaExVec_FT, GammaExVec_FTprev, NlPf, NlPrevPf, dt  );
+      GammaExVec_FTprev = GammaExVec_FT;
+    elseif( flags.StepMeth == 4 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperBHAB1Pf( ...
+        Lop, rhoVec_FT, GammaExVec_FT, NlPf, dt  );
+    elseif( flags.StepMeth == 5 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperBHAB2Pf( ...
+        Lop, rhoVec_FT, GammaExVec_FT,GammaExVec_FTprev, NlPf, NlExpPf, NlPrevPf, dt );
+      GammaExVec_FTprev = GammaExVec_FT;
+    elseif( flags.StepMeth == 6 )
+      [rhoVec_FTnext, ticExptemp] = DenStepperPhiV( ...
+        Lop, rhoVec_FT, GammaExVec_FT, dt );
+    end
+    %Save everything
+    if ( mod(t,timeObj.N_dtRec) == 0 )
+      % Turn it to a cube if it hasn't been yet
+      if flags.Interactions == 0 && flags.Drive == 0
+        rho_FT = reshape(rhoVec_FT,n1,n2,n3);
+        rho    = real(ifftn(ifftshift(rho_FT)));
       end
-    end
-    jrectemp = jrectemp + 1;
-    jrec = jrec + 1;
-    % Break out if shit is fucked or done. Write first though
-    if ShitIsFucked == 1 || SteadyState == 1;
+      rho_FTnext = reshape(rhoVec_FTnext,n1,n2,n3);
+      [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
+        BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
       if flags.SaveMe
-        jrectemp = jrectemp - 1;
-        StartInd = (jchunk-1) *  timeObj.N_recChunk + 1;
-        RecIndTemp = StartInd:StartInd + (jrectemp) - 1;
-        % Shift by one because we include zero
-        RecIndTemp = RecIndTemp + 1;
-        % Save what remains
-        if ~isempty(RecIndTemp)
-          runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
-          runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+        fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
+        DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+        Density_rec(:,:,:,jrectemp)     = rho;
+      end
+      % Make sure neither dRho or Broken den broke
+      shitIsFucked = shitIsFuckedTemp1 + shitIsFuckedTemp2;
+      %Make sure things are taking too long. This is a sign density---> inf
+      [TooLong] = ExpTooLongChecker(...
+        ticExptemp,ticExpInt,rhoVec_FT,n1,n2,n3,jrec);
+      if TooLong; shitIsFucked = 1; whatBroke3='Too long exp'; end
+      % Write a chunk to disk
+      if flags.SaveMe
+        if ( mod(t, timeObj.N_dtChunk ) == 0 )
+          % Record Density_recs to file
+          RecIndTemp = ...
+            (jchunk-1) *  timeObj.N_recChunk + 1 : jchunk * timeObj.N_recChunk;
+          % Shift by one because we include zero
+          RecIndTemp = RecIndTemp + 1;
+          runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
+          runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+          jrectemp = 0;
+          jchunk = jchunk + 1;
         end
       end
-      break
-    end
-  end %end recording
-end %end time loop
+      jrectemp = jrectemp + 1;
+      jrec = jrec + 1;
+      % Break out if shit is fucked or done. Write first though
+      if shitIsFucked > 0 || steadyState == 1;
+        if flags.SaveMe
+          jrectemp = jrectemp - 1;
+          StartInd = (jchunk-1) *  timeObj.N_recChunk + 1;
+          RecIndTemp = StartInd:StartInd + (jrectemp) - 1;
+          % Shift by one because we include zero
+          RecIndTemp = RecIndTemp + 1;
+          % Save what remains
+          if ~isempty(RecIndTemp)
+            runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
+            runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+          end
+        end
+        break
+      end
+    end %end recording
+  end %end time loop
+end % dont start if already broken
 % Update last rho
 t =  t + 1;
 rhoVec_FT  = rhoVec_FTnext;
@@ -213,7 +219,7 @@ rho        = real(ifftn(ifftshift(rho_FT)));
 trun = toc;
 %Save everything
 if flags.SaveMe
-  if ShitIsFucked == 0 && SteadyState == 0;
+  if shitIsFucked == 0 && steadyState == 0;
     if ( mod(t,timeObj.N_dtRec)== 0 )
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       % Turn it to a cube if it hasn't been yet
@@ -239,11 +245,11 @@ end % end nothing is broken
 % Say you're done
 fprintf(lfid,'Finished master time loop\n');
 %If something broke, return zeros. Else, return the goods
-if ShitIsFucked
+if shitIsFucked
   fprintf('Density is either negative or not conserved.\n');
   fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
 end
-if SteadyState
+if steadyState
   fprintf('Things are going steady if you know what I mean.\n');
   fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
 else
@@ -254,9 +260,10 @@ jrec = jrec - 1;
 TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
 % Save useful info
 denRecObj.didIrun      = 1;
-denRecObj.DidIBreak    = ShitIsFucked;
-denRecObj.SteadyState  = SteadyState;
-denRecObj.MaxReldRho   = MaxReldRho;
+denRecObj.DidIBreak    = shitIsFucked;
+denRecObj.whatBroke    = [whatBroke1 whatBroke2 whatBroke3];
+denRecObj.SteadyState  = steadyState;
+denRecObj.maxDrho      = maxDrho;
 denRecObj.TimeRecVec   = TimeRecVec;
 denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
