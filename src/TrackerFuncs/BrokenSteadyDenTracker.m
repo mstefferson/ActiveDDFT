@@ -16,7 +16,7 @@ if MaxReldRho < timeObj.ss_epsilon_dt
 end
 %See if something broke
 %Negative Density check
-if any( rho < 0 )
+if any( rho(:) < 0 )
   fprintf('Forgive me, your grace. Density has become negative\n');
   ShitIsFucked  = 1;
 end
@@ -29,13 +29,13 @@ if systemObj.n3 ~= 1
   end
 end
 % Nan or infinity
-if any( isinf(rho) )
+if any( isinf( rho(:) ) )
   fprintf('Forgive me, your grace. Density has gone infinite. ');
   fprintf('Does that make sense? No. No it does not\n');
   ShitIsFucked  = 1;
 end
 
-if any( isnan(rho) )
+if any( isnan( rho(:) ) )
   fprintf('Forgive me, your grace. Density elements are no longer numbers. ');
   fprintf('Does that make sense? No. No it does not\n');
   ShitIsFucked  = 1;
