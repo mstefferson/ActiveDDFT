@@ -1,7 +1,7 @@
 % Makes movie of C vs time
 function CMovieMakerAvi(MovStr,x,y,Crec,TimeRec)
 % Calculate log
-if any( min( min( min(Crec) ) ) ) < 0 
+if min( Crec(:) ) > 0
   logCrec = log( Crec );
   logLims = [min(min(min(logCrec))) max(max(max(logCrec)))];
 else
