@@ -4,7 +4,7 @@
 % fourier transform---between two rods 
 % with relative distance and orientations u1, u2
 %
-function [fm, fmFt] = mayerFncHrLabFrame( n1, n2, n3, l1, l2, lrod )
+function [fm, fmFt] = mayerFncHrLabFrame( n1, n2, n3, l1, l2, lRod )
 % spatial vectors
 dx1 = l1 ./ n1;
 dx2 = l2 ./ n2;
@@ -35,4 +35,4 @@ for ii = 1:length( indX1 )
   end
 end
 % fourier transform it
-fmFT = fftshift( fftn( fm ) );
+fmFt = fftshift( fftn( fm ) );

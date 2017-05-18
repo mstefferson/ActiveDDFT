@@ -2,6 +2,7 @@
 function [GammaCube_FT, shitIsFucked] = dRhoMaster( rho, rho_FT, ...
   flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3 )
 % Initialize
+debug  = 1;
 GammaCube_FT = 0;
 shitIsFucked = 0;
 % Interactions
@@ -9,9 +10,30 @@ shitIsFucked = 0;
 % mayers
 if interObj.hardId == 1 % mayers
   if interObj.typeId == 1 % rods
-    muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale);
+    
+    if debug
+      muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale*systemObj.n3);
+      muExFt2 = muExCalcMayerLF(rho_FT, interObj.FmFt2, systemObj,...
+        interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
+      muEx = real( ifftn( ifftshift( muExFt ) ) );
+      muEx2 = real( ifftn( ifftshift( muExFt2 ) ) );
+      figure()
+      if 1
+        ii = 1;
+        subplot(3,1,1); imagesc( muEx(:,:,ii) ); colorbar;
+        subplot(3,1,2); imagesc( muEx2(:,:,ii) ); colorbar;
+        subplot(3,1,3); imagesc( muEx(:,:,ii) - muEx2(:,:,ii) ); colorbar;
+      end
+    else
+%       muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale*systemObj.n3);
+      muExFt = muExCalcMayerLF(rho_FT, interObj.FmFt2, systemObj,...
+        interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
+%       muEx = real( ifftn( ifftshift( muExFt ) ) );
+%       muEx2 = real( ifftn( ifftshift( muExFt2 ) ) );
+    end
     GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
     GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+    keyboard
   end
   if interObj.typeId == 2 % disks
     muExFt = muExCalcVc2Ft( rho_FT(:,:,interObj.k3ind0), interObj.FmFt, systemObj, interObj.muMayerScale );
