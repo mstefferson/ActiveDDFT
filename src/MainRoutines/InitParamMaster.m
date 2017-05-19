@@ -14,7 +14,7 @@ flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
 % Can be vector if (vec) is in comment
-runMaster.num_trial =  1; % number of trials
+runMaster.numTrial =  1; % number of trials
 runMaster.trialID = 1; % Trial Indicator
 runMaster.runID   = 1; % Starting Run indicator *_trial.runID
 %%%%%%%%%% Particles %%%%%%%%%%
@@ -26,10 +26,10 @@ particleMaster.mob  = 1; % mobility
 particleMaster.type = 'rods'; % rods, disks, spheres 
 particleMaster.interHb = ['mayer']; % Hard body interactions type mayer, spt, fmt
 particleMaster.interLr = []; %  Long range interaction type in MF: softshoulder
-particleMaster.lrLs1 = particleMaster.lMaj; % Long range length scale 1
-particleMaster.lrLs2 = 0; % Long range length scale 2
-particleMaster.lrEs1 = 0; % Long range energy scale 1
-particleMaster.lrEs2 = 0; % Long range energy scale 2
+particleMaster.lrLs1 = [particleMaster.lMaj]; % Long range length scale 1
+particleMaster.lrLs2 = [0]; % Long range length scale 2
+particleMaster.lrEs1 = [0]; % Long range energy scale 1
+particleMaster.lrEs2 = [0]; % Long range energy scale 2
 particleMaster.externalPot = []; % External potential 
 %%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)

@@ -8,12 +8,18 @@ end
 % Find max vs time
 Nt = length(time);
 % reshape
-C = reshape( max( max( C_rec )  ), [1 Nt] );
+Cmax = reshape( max( max( C_rec )  ), [1 Nt] );
+Cmin = reshape( min( min( C_rec )  ), [1 Nt] );
 % set-up fiugure and plot
 figure()
 %C
-plot( time, C .* b );
-xlabel('time'); ylabel('C'); title('Max scaled C');
+Cmin2PLot = Cmin .* b;
+Cmax2PLot = Cmax .* b;
+[ax] = plotyy( time, Cmax2PLot, time, Cmin2PLot  );
+xlabel('time'); ylabel( ax(1),'C max'); ylabel( ax(2),'C min');
+ax(1).YLim = [ min(Cmin2PLot) max(Cmax2PLot) ];
+ax(2).YLim = [ min(Cmin2PLot) max(Cmax2PLot) ];
+title('Max scaled C');
 % Save it
 if saveFlag
   savefig( gcf, [saveTag '.fig'] );
