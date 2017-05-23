@@ -32,6 +32,7 @@ try
   tTot = zeros( numFiles, 1 );
   ssEpsilon = zeros( numFiles, 1 );
   bc = zeros( numFiles, 1 );
+  c = zeros( numFiles, 1 );
   vD = zeros( numFiles, 1 );
   steady = zeros( numFiles, 1 );
   broken = zeros( numFiles, 1 );
@@ -77,6 +78,7 @@ try
     tTot(ii) = timeObj.t_tot;
     ssEpsilon(ii) =  timeObj.ss_epsilon;
     bc(ii) = systemObj.bc;
+    c(ii) = systemObj.c;
     vD(ii) = particleObj.vD;
     steady(ii) = denRecObj.SteadyState;
     broken(ii) = denRecObj.DidIBreak;
@@ -130,7 +132,7 @@ try
   % create a table
   T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
     iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
-    l1, l2, l3, dt, tTot, ssEpsilon, bc, vD, steady, broken, whatBroke, ...
+    l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
     kPosNumPeaks, kPosDist, kPosPeakInds, realLatticeSpacing, ...
     kAngNumPeaks, kAngDist, kAngPeakInds, angLatticeSpacing, ...
     spatPhase, angPhase, comments );
