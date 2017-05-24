@@ -4,7 +4,7 @@
 % Creates a phase map for soft shoulder
 %
 function phase = mapPhaseSoftShoulderLinear( cRange, aRange, rs, lVec, ...
-  randomVals, numVals, trialId, plotPhase, saveMe )
+   numVals, randomVals, trialId, plotPhase, saveMe )
 show2Peaks = 1;
 % add Subroutine path
 currentDir = pwd;
@@ -40,13 +40,17 @@ else
   aVec = paramMat(2,:);
   paramMat = combvec( cVec, aVec, lVec );
 end
+% store to avoid broadcast
+cVecFor = paramMat(1,:);
+aVecFor = paramMat(2,:);
+lVecFor = paramMat(3,:);
 % allocate
 phaseMat = zeros( numParams, 1 );
 % initalize parameters
 parfor ii = 1:numParams
-  cTemp = paramMat(1,ii);
-  aTemp = paramMat(2,ii);
-  lTemp = paramMat(3,ii);
+  cTemp = cVecFor(ii);
+  aTemp = aVecFor(ii);
+  lTemp = lVecFor(ii);
   nTemp = ceil( 10 * lTemp  / pi + 2 );
   nTemp = nTemp + mod(nTemp,2);
   paramVec = [ nTemp, nTemp, lTemp, lTemp, 1, aTemp, 1, rs, cTemp ];
@@ -115,7 +119,8 @@ if saveMe
   filename = ['linstabSoftShoulder' ...
     '_c' num2str( cRange(1) ) '-' num2str( cRange(2) ) ...
     '_a' num2str( aRange(1) ) '-' num2str( aRange(2) ) ...
-    '_lnum' num2str( length(l) )  ...
+    '_lnum' num2str( length(lVec) )  ...
+    '_numParams' num2str( numVals)  ...
     '_tr' num2str( trialId ), '.mat' ];
     save( filename, 'phase');
     if ~exist('linstab', 'dir'); mkdir('./linstab'); end
