@@ -7,9 +7,9 @@ fprintf('Starting RunHardRod: %s\n', dateTime);
 currentDir = pwd;
 addpath( genpath( [currentDir '/src'] ) );
 % Make Output Directories
-if ~exist('runfiles', 'dir'); mkdir('./runfiles'); end;
-if ~exist('runOPfiles', 'dir'); mkdir('./runOPfiles'); end;
-if ~exist('analyzedfiles', 'dir'); mkdir('./analyzedfiles'); end;
+if ~exist('runfiles', 'dir'); mkdir('./runfiles'); end
+if ~exist('runOPfiles', 'dir'); mkdir('./runOPfiles'); end
+if ~exist('analyzedfiles', 'dir'); mkdir('./analyzedfiles'); end
 % Grab initial parameters
 if exist('Params.mat','file') == 0
   if exist('initParams.m','file') == 0
@@ -57,9 +57,9 @@ if( rhoInitMaster.NumModesM >= systemMaster.n3 / 2 )
   rhoInitMaster.NumModesM = floor(systemMaster.n3 / 2) - 1;
 end
 %  Make sure variance isn't zero if doing polar
-if rhoInitMaster.gP(2) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end;
-if rhoInitMaster.gP(5) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end;
-if rhoInitMaster.gP(8) == 0; rhoInitMaster.gP(8) = min(systemMaster.l1)/2; end;
+if rhoInitMaster.gP(2) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end
+if rhoInitMaster.gP(5) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end
+if rhoInitMaster.gP(8) == 0; rhoInitMaster.gP(8) = min(systemMaster.l1)/2; end
 % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
 % steady state instead of d rho
 timeMaster.ss_epsilon_dt = timeMaster.ss_epsilon .* timeMaster.dt;
@@ -80,7 +80,7 @@ if flagMaster.AllNsSame == 1
   end
 end
 % Make OP if making movies
-if flagMaster.MakeMovies == 1; Flag.MakeOP = 1; end % if make movie, make OP first
+if flagMaster.MakeMovies == 1; flagMaster.MakeOP = 1; end % if make movie, make OP first
 %Currently, you must save
 if flagMaster.MakeOP && flagMaster.SaveMe == 0
   fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
