@@ -1,6 +1,8 @@
 % phase = mapPhaseSoftShoulderLinear( cRange, aRange, rs, lVec, ...
 %  randomVals, numVals, trialId, plotPhase, saveMe )
-
+%
+% Creates a phase map for soft shoulder
+%
 function phase = mapPhaseSoftShoulderLinear( cRange, aRange, rs, lVec, ...
   randomVals, numVals, trialId, plotPhase, saveMe )
 show2Peaks = 1;

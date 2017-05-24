@@ -1,4 +1,17 @@
-
+% [disp] = dispersionSoftShoulder( paramVec,  plotMe )
+%
+% get the dispersion relation for soft shoulder potential with
+% given input parameter
+% paramVec(1) = n1 
+% paramVec(2) = n2
+% paramVec(3) = l1
+% paramVec(4) =l2
+% paramVec(5) = lrE1
+% paramVec(6) = lrE2
+% paramVec(7) = lrL1
+% paramVec(8) = lrL2 
+% paramVec(9) = c
+%
 function [disp] = dispersionSoftShoulder( paramVec,  plotMe )
 % set plot to zero if no specified
 if nargin == 1

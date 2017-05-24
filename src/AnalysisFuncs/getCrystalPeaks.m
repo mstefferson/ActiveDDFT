@@ -1,4 +1,7 @@
-%%
+% [peaks] = getCrystalPeaks( rho, lBox, plotFlag )
+% 
+% Get the k-space peaks of a concentration
+%
 function [peaks] = getCrystalPeaks( rho, lBox, plotFlag )
 % make sure size is ok
 [n1, n2]  = size( rho );
@@ -26,8 +29,6 @@ if n > 1
   peakFrac2Keep = 0.01;
   [topPeaks, topPeakInds] = sort( desiredFTSq(:), 'descend');
   % get average ignoring first peak
-  %   meanPeaks = mean( topPeaks(2:end) );
-  %   stdPeaks = std( topPeaks(2:end) );
   topPeakInds = topPeakInds(1:maxNumPeaks);
   topPeakInds = topPeakInds( topPeaks(1:maxNumPeaks) > peakFrac2Keep * topPeaks(1) );
   maxNumPeaks = length( topPeakInds );
