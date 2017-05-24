@@ -1,5 +1,5 @@
 % [peaks] = getCrystalPeaks( rho, lBox, plotFlag )
-% 
+%
 % Get the k-space peaks of a concentration
 %
 function [peaks] = getCrystalPeaks( rho, lBox, plotFlag )
@@ -9,9 +9,12 @@ if ( n1 > 1 ) && ( n1 > 1 ) && ( n1 ~= n2 )
   error('Only working for square boxes');
 end
 n = max( n1, n2 );
+dk = 2 * pi / lBox;
 if n > 1
-  maxNumPeaks = min( 7, n ); % max peaks to look for
-  dk = 2 * pi / lBox;
+  numPeaksK = min( 7, n ); % max peaks to look for
+  % positive k vectors
+  k1 = 0:dk:pi*n1/lBox-dk;
+  k2 = 0:dk:pi*n2/lBox-dk;
   % FT
   finalFT = fftshift( fftn( rho ) );
   centerInd1 = floor( n1 / 2 ) + 1;
@@ -25,33 +28,37 @@ if n > 1
   numInds2 = length(inds2);
   desiredFT = finalFT(inds1,inds2);
   desiredFTSq = abs( desiredFT ) .^ 2;
-  %% grab peaks
+  % grab peaks
   peakFrac2Keep = 0.01;
   [topPeaks, topPeakInds] = sort( desiredFTSq(:), 'descend');
   % get average ignoring first peak
-  topPeakInds = topPeakInds(1:maxNumPeaks);
-  topPeakInds = topPeakInds( topPeaks(1:maxNumPeaks) > peakFrac2Keep * topPeaks(1) );
-  maxNumPeaks = length( topPeakInds );
+  topPeakInds = topPeakInds(1:numPeaksK);
+  topPeakInds = topPeakInds( topPeaks(1:numPeaksK) > peakFrac2Keep * topPeaks(1) );
+  numPeaksK = length( topPeakInds );
   [iP, jP] = ind2sub( [ numInds1 numInds2 ], topPeakInds');
-  % distance calc
-  dist2Peaks =  dk .* sqrt( ( iP(1) - iP ) .^ 2  + ( jP(1) - jP ) .^ 2 );
+  peakValK = topPeaks(1:numPeaksK);
+  %  get peak k values and calc distance
+  kVecAll = [ ( k1(iP(1)) - k1(iP) )' ( k2(jP(1)) - k2(jP) )' ];
+  dist2PeaksAll = sqrt( kVecAll(:,1).^2 + kVecAll(:,2).^2 );
+  indsKAll = [ (iP(1) - iP)' (jP(1) - jP)' ];
+  % just positive
+  conds1 =  k1( iP(1) ) - k1(iP) >= 0;
+  conds2 = k2( jP(1) ) - k2(jP) >= 0;
+  conds = conds1 .* conds2;
+  iP = iP( conds == 1 );
+  jP = jP( conds == 1 );
+  kVecPos = [ ( k1(iP(1)) - k1(iP) )' ( k2(jP(1)) - k2(jP) )' ];
+  dist2PeaksPos = sqrt( kVecPos(:,1).^2 + kVecPos(:,2).^2 );
+  indsKPos = [ (iP(1) - iP)' (jP(1) - jP)' ];
+  ka = mean( dist2PeaksPos( dist2PeaksPos > 0 ) );
   % real space lattice spacing
-  if maxNumPeaks > 6
-    a =  4 * pi / ( sqrt(3) * mean( unique( dist2Peaks( dist2Peaks > 0) ) ) ) ;
-  elseif maxNumPeaks == 3
-    a = 2 * pi / mean( unique( dist2Peaks( dist2Peaks > 0 ) ) );
+  if numPeaksK > 6
+    a =  4 * pi / ( sqrt(3) * mean( unique( dist2PeaksPos( dist2PeaksPos > 0) ) ) ) ;
+  elseif numPeaksK == 3
+    a = 2 * pi / mean( unique( dist2PeaksPos( dist2PeaksPos > 0 ) ) );
   else
     a = NaN;
   end
-  % Store everything
-  peaks.numPeaksK = maxNumPeaks;
-  peaks.peakValK = topPeaks(1:maxNumPeaks);
-  peaks.distK = dist2Peaks;
-  peaks.distKunique = unique( dist2Peaks );
-  peaks.indsK = [ (iP-iP(1))' (jP-jP(1))' ];
-  peaks.dk = dk;
-  peaks.a = a;
-  peaks.ka = dk * mean( unique( dist2Peaks > 0 ) );
   % plotting
   if plotFlag
     % get real position peaks
@@ -77,9 +84,9 @@ if n > 1
     dx = lBox / n;
     sizeReal = size( desiredReal );
     if min(n1,n2) > 1
-     xVec = dx * (-ceil( ( max(sizeReal) - 1 ) / 2 ): floor( ( max(sizeReal) - 1 ) / 2 ) );
+      xVec = dx * (-ceil( ( max(sizeReal) - 1 ) / 2 ): floor( ( max(sizeReal) - 1 ) / 2 ) );
     else
-     xVec = dx * (0:n-1);
+      xVec = dx * (0:n-1);
     end
     sizeK = size( desiredFTSq );
     kVec = dk * (-ceil( ( max(sizeK) - 1 ) / 2 ): floor( ( max(sizeK) - 1 ) / 2 ) );
@@ -108,13 +115,27 @@ if n > 1
     end
   end
 else
-  % Store everything
-  peaks.numPeaksK = 1;
-  peaks.peakValK = rho;
-  peaks.distK = 0;
-  peaks.distKunique = 0;
-  peaks.indsK = 0;
-  peaks.dk = 0;
-  peaks.a = 0;
-  peaks.ka = 0;
+  % nothing to find
+  numPeaksK = 1;
+  peakValK = rho;
+  kVecAll = [0 0];
+  dist2PeaksAll = 0;
+  indsKAll = [0 0];
+  kVecPos = [0 0];
+  dist2PeaksPos = 0;
+  indsKPos = [0 0];
+  a = 0;
+  ka = 0;
 end
+% Store everything
+peaks.numPeaksK = numPeaksK;
+peaks.peakValK = peakValK;
+peaks.kVecAll = kVecAll;
+peaks.dist2PeaksAll = dist2PeaksAll;
+peaks.indsKAll = indsKAll;
+peaks.kVecPos = kVecPos;
+peaks.dist2PeaksPos = dist2PeaksPos';
+peaks.indsKPos = indsKPos;
+peaks.dk = dk;
+peaks.a = a;
+peaks.ka = ka;

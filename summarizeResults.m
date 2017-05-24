@@ -39,14 +39,16 @@ try
   whatBroke = cell( numFiles, 1 );
   kPosNumPeaks = zeros( numFiles, 1);
   kPosDist = cell( numFiles, 1);
-  kPosPeakInds = cell( numFiles, 1);
-  spatPhase = cell( numFiles, 1);
-  angPhase = cell( numFiles, 1);
+  kPosPeaks = cell( numFiles, 1);
+  kPosKa = cell( numFiles, 1);
   realLatticeSpacing = zeros( numFiles, 1);
+  spatPhase = cell( numFiles, 1);
   kAngNumPeaks = zeros( numFiles, 1);
   kAngDist = cell( numFiles, 1);
-  kAngPeakInds = cell( numFiles, 1);
+  kAngPeaks = cell( numFiles, 1);
+  kAngKa = cell( numFiles, 1);
   angLatticeSpacing = zeros( numFiles, 1);
+  angPhase = cell( numFiles, 1);
   comments = cell( numFiles, 1);
   for ii = 1:numFiles
     % get path to params
@@ -94,8 +96,9 @@ try
     end
     peaks = getCrystalPeaks( C, systemObj.l1, plotPeaks );
     kPosNumPeaks(ii) = peaks.numPeaksK;
-    kPosDist{ii} = peaks.distK;
-    kPosPeakInds{ii} = peaks.indsK;
+    kPosDist{ii} = peaks.dist2PeaksPos;
+    kPosPeaks{ii} = peaks.kVecPos;
+    kPosKa{ii} = peaks.ka;
     realLatticeSpacing(ii) = peaks.a;
     % record phase. just two for now
     if peaks.numPeaksK == 1
@@ -103,7 +106,11 @@ try
     elseif peaks.numPeaksK == 3
       spatPhase{ii} = 'Band';
     elseif peaks.numPeaksK == 7
-      spatPhase{ii} = 'Crystal';
+      if peaks.ka > 4
+        spatPhase{ii} = 'Crystal B';
+      else
+        spatPhase{ii} = 'Crystal A';
+      end
     else
       spatPhase{ii} = 'Unknown';
     end
@@ -119,22 +126,27 @@ try
     end
     peaks = getCrystalPeaks( f, systemObj.l3, plotPeaks );
     kAngNumPeaks(ii) = peaks.numPeaksK;
-    kAngDist{ii} = peaks.distK;
-    kAngPeakInds{ii} = peaks.indsK;
+    kAngDist{ii} = peaks.dist2PeaksPos;
+    kAngPeaks{ii} = peaks.kVecPos;
+    kAngKa{ii} = peaks.ka;
     angLatticeSpacing(ii) = peaks.a;
     % record angular phase. just two for now
     if peaks.numPeaksK == 1
-      angPhase{ii} = ['Isotropic'];
+      angPhase{ii} = 'Isotropic';
     else
-      angPhase{ii} = ['Nematic'];
+      angPhase{ii} = 'Nematic';
     end
   end
   % create a table
+  kPosNumPeaks(ii) = peaks.numPeaksK;
+  kPosDist{ii} = peaks.dist2PeaksPos;
+  kPosPeaks{ii} = peaks.kVecPos;
+  kPosKa{ii} = peaks.ka;
   T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
     iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
     l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
-    kPosNumPeaks, kPosDist, kPosPeakInds, realLatticeSpacing, ...
-    kAngNumPeaks, kAngDist, kAngPeakInds, angLatticeSpacing, ...
+    kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
+    kAngNumPeaks, kAngDist, kAngPeaks, angLatticeSpacing, kAngKa,...
     spatPhase, angPhase, comments );
 catch err
   fprintf('%s', err.getReport('extended')) ;
