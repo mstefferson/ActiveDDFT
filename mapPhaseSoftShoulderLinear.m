@@ -1,78 +1,122 @@
-function phaseMap = mapPhaseSoftShoulderLinear( bcRange, aRange, rs, lVec, randomVals, numVals, plotPhase )
+% phase = mapPhaseSoftShoulderLinear( cRange, aRange, rs, lVec, ...
+%  randomVals, numVals, trialId, plotPhase, saveMe )
 
+function phase = mapPhaseSoftShoulderLinear( cRange, aRange, rs, lVec, ...
+  randomVals, numVals, trialId, plotPhase, saveMe )
+show2Peaks = 1;
+% add Subroutine path
+currentDir = pwd;
+addpath( genpath( [currentDir '/src'] ) );
+% grab length of l Vec
 numLs = length(lVec);
-% numVals should be a vector of bc and a
-if length( numVals ) == 1
-  numVals = [numVals  numVals];
-end
 % get parameter arrays
 if randomVals
-  bcVec = linspace( bcRange(1), bcRange(2), max( 100, 10 * numVals(1)  ) );
-%   bcVec = bcVec( randperm( length(bcVec), numVals(1) ) );
-  aVec = linspace( aRange(1), aRange(2), max( 100, 10 * numVals(2) ) );
-%   aVec = aVec( randperm( length(aVec), numVals(2) ) );
-  paramMat = combvec( bcVec, aVec);
+  cVec = linspace( cRange(1), cRange(2), max( 100, 10 * numVals  ) );
+  aVec = linspace( aRange(1), aRange(2), max( 100, 10 * numVals ) );
+  paramMat = combvec( cVec, aVec);
   numMapParams = size( paramMat, 2 );
-  randInds = randperm( numMapParams,  mean(numVals) );
+  randInds = randperm( numMapParams,  numVals );
   paramMat = paramMat( :, randInds );
   numMapParams = size( paramMat, 2 );
-  bcVec = paramMat(1,:);
+  cVec = paramMat(1,:);
   aVec = paramMat(2,:);
   paramMat = combvec( paramMat, lVec );
-	numParams = size( paramMat, 2 );
+  numParams = size( paramMat, 2 );
 else
-  if bcRange(1) == 0
-    bcVec = linspace( bcRange(1), bcRange(2), numVals(1)+1 );
-    bcVec = bcVec( bcVec > 0 );
+  % if not random, make a grid of parameter values of length sqrt(numVals)
+  numVals = round( sqrt( numVals ) );
+  if cRange(1) == 0
+    cVec = linspace( cRange(1), cRange(2), numVals+1 );
+    cVec = cVec( cVec > 0 );
   else
-    bcVec = linspace( bcRange(1), bcRange(2), numVals(1)+1 );
+    cVec = linspace( cRange(1), cRange(2), numVals+1 );
   end
-    aVec = linspace( aRange(1), aRange(2), numVals(2) );
-    paramMat = combvec( bcVec, aVec);
-    numMapParams = size( paramMat, 2 );
-    bcVec = paramMat(1,:);
-    aVec = paramMat(2,:);
-    paramMat = combvec( bcVec, aVec, lVec );  
+  aVec = linspace( aRange(1), aRange(2), numVals );
+  paramMat = combvec( cVec, aVec);
+  numMapParams = size( paramMat, 2 );
+  cVec = paramMat(1,:);
+  aVec = paramMat(2,:);
+  paramMat = combvec( cVec, aVec, lVec );
 end
-% build n vec from l
-% nVec = ceil( 10 * lVec  / pi + 2 );
-% nVec = nVec + mod(nVec,2);
 % allocate
-phaseMap = zeros( numParams, 1 );
+phaseMat = zeros( numParams, 1 );
 % initalize parameters
-for ii = 1:numParams
-  bcTemp = paramMat(1,ii);
+parfor ii = 1:numParams
+  cTemp = paramMat(1,ii);
   aTemp = paramMat(2,ii);
   lTemp = paramMat(3,ii);
   nTemp = ceil( 10 * lTemp  / pi + 2 );
   nTemp = nTemp + mod(nTemp,2);
-  paramVec = [ nTemp, nTemp, lTemp, lTemp, 1, aTemp, 1, rs, bcTemp ];
+  paramVec = [ nTemp, nTemp, lTemp, lTemp, 1, aTemp, 1, rs, cTemp ];
   disp = dispersionSoftShoulder( paramVec );
-  phaseMap(ii) = disp.phaseId;
+  phaseMat(ii) = disp.phaseId;
 end
-% ignore coexistence
-phaseMap( phaseMap == 4 ) = 2;
-phaseMap( phaseMap == 5 ) = 3;
 % reshape to a user-friendly form
-phaseMap = reshape( phaseMap, [ numMapParams, numLs ] );
+phaseMat = reshape( phaseMat, [ numMapParams, numLs ] );
+% store it
+phase.phaseMap = phaseMat;
+phase.cVec = cVec';
+phase.aVec = aVec';
+phase.rs = rs;
+phase.lVec = lVec';
+phase.trialId = trialId;
+phase.random = randomVals;
+phase.numVals = numVals;
 % plot time
 if plotPhase
+  % ignore coexistence
+  if show2Peaks
+    legcell = {'liquid', 'crystal A', 'crystal B', ...
+      '2 peaks: A', '2 peaks: B'};
+    numColors = 5;
+  else
+    phaseMat( phaseMat == 4 ) = 2;
+    phaseMat( phaseMat == 5 ) = 3;
+    legcell = {'liquid', 'crystal A', 'crystal B'};
+    numColors = 3;
+  end
   figure(1000)
-  colorArray = colormap(['lines(' num2str(3) ')']);
+  colorArray = colormap(['lines(' num2str(numColors) ')']);
   close(1000)
   for ii = 1:numLs
     figure()
-    tempMat = phaseMap(:,ii);
-    scatter( bcVec( tempMat(:) == 1 ), aVec( tempMat(:) == 1 ), ...
+    tempMat = phaseMat(:,ii);
+    scatter( cVec( tempMat(:) == 1 ), aVec( tempMat(:) == 1 ), ...
       [], colorArray(1,:), 'filled' );
     hold on
-    scatter( bcVec( tempMat(:) == 2 ), aVec( tempMat(:) == 2 ), ...
+    scatter( cVec( tempMat(:) == 2 ), aVec( tempMat(:) == 2 ), ...
       [], colorArray(2,:), 'filled' );
-    scatter( bcVec( tempMat(:) == 3 ), aVec( tempMat(:) == 3 ), ...
+    scatter( cVec( tempMat(:) == 3 ), aVec( tempMat(:) == 3 ), ...
       [], colorArray(3,:), 'filled' );
-    xlabel('bc'); ylabel('a');
-    legend('liquid','crystal A','crystal B', 'location', 'best')
+    if show2Peaks
+      scatter( cVec( tempMat(:) == 4 ), aVec( tempMat(:) == 4 ), ...
+        [], colorArray(4,:), 'filled' );
+      scatter( cVec( tempMat(:) == 5 ), aVec( tempMat(:) == 5 ), ...
+        [], colorArray(5,:), 'filled' );
+    end
+    % clean up plot
+    axis square
+    xlabel('$$\rho R^2 $$'); ylabel('$$ a $$');
+    leg = legend( legcell );
+    leg.Position = [0.7184 0.4672 0.1098 0.2118];
+    ax = gca;
+    ax.XTick = cRange(1):(cRange(2)-cRange(1))/4:cRange(2);
+    ax.YTick = aRange(1):(aRange(2)-aRange(1))/4:aRange(2);
+    ax.XLim = [cRange(1) cRange(2)];
+    ax.YLim = [aRange(1) aRange(2)];
     titstr = ['Linear Phase Diagram L = ' num2str( lVec(ii ) )];
     title(titstr);
   end
 end
+% save it
+if saveMe
+  filename = ['linstabSoftShoulder' ...
+    '_c' num2str( cRange(1) ) '-' num2str( cRange(2) ) ...
+    '_a' num2str( aRange(1) ) '-' num2str( aRange(2) ) ...
+    '_lnum' num2str( length(l) )  ...
+    '_tr' num2str( trialId ), '.mat' ];
+    save( filename, 'phase');
+    if ~exist('linstab', 'dir'); mkdir('./linstab'); end
+  movefile( filename, './linstab');
+end
+

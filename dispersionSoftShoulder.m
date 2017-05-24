@@ -1,8 +1,12 @@
 
 function [disp] = dispersionSoftShoulder( paramVec,  plotMe )
+% set plot to zero if no specified
 if nargin == 1
   plotMe = 0;
 end
+% add Subroutine path
+currentDir = pwd;
+addpath( genpath( [currentDir '/src'] ) );
 % move parameters from vec to vals
 n1 = paramVec(1);
 n2 = paramVec(2);
@@ -14,7 +18,7 @@ lrE1 = paramVec(5);
 lrE2 = paramVec(6);
 lrL1 = paramVec(7);
 lrL2 = paramVec(8);
-bc = paramVec(9);
+c = paramVec(9);
 % make grid
 [gridObj] = GridMakerPBCxk(n1,n2,n3,l1,l2,l3);
 % get FT of potential
@@ -22,7 +26,7 @@ bc = paramVec(9);
   n1, l1, n2, l2 );
 ck = - l1 * l1 / (n1 .* n2) * real(vFt) ;
 % ck = -real(vFt) ;
-rho = 4 / pi * bc;
+rho = c;
 % dispersion
 omega = -( gridObj.k1rep2 .^ 2 + gridObj.k2rep2 .^ 2 ) .* ( 1 - rho .*  ck );
 % plot it
