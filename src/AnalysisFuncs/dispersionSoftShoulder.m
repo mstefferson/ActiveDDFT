@@ -61,10 +61,12 @@ k1pos = scaleK1( indsPos1 );
 omegaSlice = omega( indsPos1, center2)';
 % get peaks
 [omegaPeaks, maxInds] = findpeaks(omegaSlice);
+% add k = 0
 omegaPeaks = [0 omegaPeaks];
 maxInds = [1 maxInds];
-omegaPeaks = omegaPeaks( omegaPeaks >= 0 );
+% just keep ones that are >=0
 maxInds = maxInds( omegaPeaks >= 0 );
+omegaPeaks = omegaPeaks( omegaPeaks >= 0);
 [omegaMax, omegaMaxInd] = max(omegaPeaks);
 kPeaks = k1pos( maxInds );
 kPeakMax = kPeaks(omegaMaxInd);
@@ -91,8 +93,10 @@ elseif length(omegaPeaks) == 3
   end
 end
 % Store
+disp.params = paramVec;
 disp.omega = omega;
 disp.omegaSlice = omegaSlice;
+disp.k1pos = k1pos;
 disp.omegaPeaks = omegaPeaks;
 disp.omegaMax = omegaMax;
 disp.kPeaks = kPeaks;
