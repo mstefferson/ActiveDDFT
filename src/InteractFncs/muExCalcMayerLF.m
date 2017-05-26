@@ -18,8 +18,8 @@ end
 % allocate
 muExFT = zeros( systemObj.n1, systemObj.n2, systemObj.n3 );
 % sum over angular modes
-for ll = 1:systemObj.n3
-  muExFT = muExFT + repmat( rhoFt( :, :, inds(ll) ), [1 1 systemObj.n3] ) .* ...
-    reshape( fmFt( :, :, :, indsMinus(ll) ), [systemObj.n1 systemObj.n2 systemObj.n3] );
+for nn = 1:systemObj.n3
+  muExFT = muExFT + repmat( rhoFt( :, :, indsMinus(nn) ), [1 1 systemObj.n3] ) .* ...
+    reshape( fmFt( :, :, :, inds(nn) ), [systemObj.n1 systemObj.n2 systemObj.n3] );
 end
 muExFT = -scaleFact .* muExFT;
