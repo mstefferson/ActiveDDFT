@@ -5,18 +5,15 @@ function movieHardRod()
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 try
-  tstart = tic;
   % Add Subroutine path
   currentDir = pwd;
   addpath( genpath( [currentDir '/src'] ) );
-  
   %make output directories if they don't exist
-  if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end;
-  
+  if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end 
   % see how many dirs to analyze
   dir2Analyze = dir( './runOPfiles/Hr_*');
   numDirs = length(dir2Analyze);
-  
+  % run if there are things to run
   if numDirs
     fprintf('Making movies for %d dirs \n', numDirs);
     for ii = 1:numDirs
@@ -35,7 +32,6 @@ try
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
       timeObj =  runSave.timeObj;
-      
       % op stuff
       OPobj.OpTimeRecVec = opSave.OpTimeRecVec;
       OPobj.C_rec    = opSave.C_rec;
@@ -131,6 +127,14 @@ try
         maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
         plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
+      end
+      % crystal peaks
+      if strcmp( particleObj.interLr, 'softshoulder' ) && systemObj.n3 == 1
+        cFt = abs( reshape( runSave.DenFT_rec, ...
+        [systemObj.n1, systemObj.n2, length(OPobj.OpTimeRecVec) ] ) ) .^ 2;
+        plotCrystalPeaks( cFt, gridObj.k1, gridObj.k2, ...
+          OPobj.OpTimeRecVec, systemObj, particleObj, 1 );
+        movefile( 'kAmps*', dirFullPath );
       end
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);

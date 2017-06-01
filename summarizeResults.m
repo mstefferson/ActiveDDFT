@@ -1,6 +1,16 @@
 % Summarize run results. Put them all in a table.
-function T = summarizeResults( path2dirs, genComment, plotPeaks )
+function T = summarizeResults( path2dirs, genComment, plotPeaks, saveMe, saveId )
 try
+  if nargin < 4
+    saveMe = 0; saveId = [];
+  else
+    saveRoot = 'runSum';
+    if nargin == 4
+      saveId = [];
+    else
+      saveId = ['_' saveId];
+    end
+  end
   % add path
   currentDir = pwd;
   addpath( genpath( [currentDir '/src'] ) );
@@ -31,6 +41,9 @@ try
   dt = zeros( numFiles, 1 );
   tTot = zeros( numFiles, 1 );
   ssEpsilon = zeros( numFiles, 1 );
+  numModesPert1 = zeros( numFiles, 1 );
+  numModesPert2 = zeros( numFiles, 1 );
+  numModesPert3 = zeros( numFiles, 1 );
   bc = zeros( numFiles, 1 );
   c = zeros( numFiles, 1 );
   vD = zeros( numFiles, 1 );
@@ -77,6 +90,9 @@ try
     l2(ii) = systemObj.l2;
     l3(ii) = systemObj.l3;
     dt(ii) = timeObj.dt;
+    numModesPert1(ii) = rhoInit.NumModesX;
+    numModesPert2(ii) = rhoInit.NumModesY;
+    numModesPert3(ii) = rhoInit.NumModesM;
     tTot(ii) = timeObj.t_tot;
     ssEpsilon(ii) =  timeObj.ss_epsilon;
     bc(ii) = systemObj.bc;
@@ -148,6 +164,13 @@ try
     kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
     kAngNumPeaks, kAngDist, kAngPeaks, angLatticeSpacing, kAngKa,...
     spatPhase, angPhase, comments );
+ % save if
+ if saveMe
+   saveName = [saveRoot saveId];
+   save( [saveName '.mat'], 'T' );
+   writetable( T, [saveName '.csv'] );
+   movefile( [saveName '*'], path2dirs )
+ end
 catch err
   fprintf('%s', err.getReport('extended')) ;
   keyboard

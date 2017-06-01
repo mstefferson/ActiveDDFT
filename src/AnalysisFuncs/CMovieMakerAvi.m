@@ -10,6 +10,7 @@ else
 end
 % Set up figure
 Fig = figure();
+colormap(Fig, viridis);
 set(Fig, 'WindowStyle', 'normal');
 % Get screen size
 pixSS = get(0,'screensize');

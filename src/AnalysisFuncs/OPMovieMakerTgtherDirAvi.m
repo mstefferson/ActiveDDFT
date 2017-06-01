@@ -1,5 +1,8 @@
 % Makes movie of OP vs time
 function OPMovieMakerTgtherDirAvi(MovStr,x,y,phi,OP,DistRec,TimeRec)
+% set colormap
+colormap( viridis );
+% frames and things
 nFrames = length(TimeRec);
 n1 = length(x);
 n2 = length(y);

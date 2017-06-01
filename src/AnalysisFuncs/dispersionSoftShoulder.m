@@ -65,6 +65,7 @@ omegaSlice = omega( indsPos1, center2)';
 omegaPeaks = [0 omegaPeaks];
 maxInds = [1 maxInds];
 % just keep ones that are >=0
+allPeaksInds = maxInds;
 maxInds = maxInds( omegaPeaks >= 0 );
 omegaPeaks = omegaPeaks( omegaPeaks >= 0);
 [omegaMax, omegaMaxInd] = max(omegaPeaks);
@@ -100,14 +101,22 @@ disp.k1pos = k1pos;
 disp.omegaPeaks = omegaPeaks;
 disp.omegaMax = omegaMax;
 disp.kPeaks = kPeaks;
+disp.kPeaksInds = maxInds;
 disp.kPeakMax = kPeakMax;
+disp.kPeakMaxInd = maxInds(omegaMaxInd);
+disp.kAllPeakInds = allPeaksInds;
+disp.kAllPeaks = k1pos(allPeaksInds);
 disp.phase = phase;
 disp.phaseId = phaseId;
 % plots
 if plotMe
   % min inds for plotting
   [omegaMin] = findpeaks(-omegaSlice);
-  omegaMin = min( -omegaMin );
+  if isempty(omegaMin)
+    omegaMin = min( omegaSlice );
+  else
+    omegaMin = min( -omegaMin );
+  end
   figure()
   subplot(1,3,1)
   imagesc( scaleK2(inds2), scaleK1(inds1), ...
