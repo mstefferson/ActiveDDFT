@@ -34,7 +34,7 @@ while dRho > ssEps
   c = real( ifftn( ifftshift( cFt ) ) );
   % implement piccard iteration
   rhoTilde = rhoBulk .* exp( c );
-  rhoNext = (1-alpha) .* rhoTilde + alpha * rho;
+  rhoNext = (1-alpha) .* rho + alpha * rhoTilde;
   % update
   dRho = max( abs( rho(:) - rhoNext(:) ) );
   rho = rhoNext;
