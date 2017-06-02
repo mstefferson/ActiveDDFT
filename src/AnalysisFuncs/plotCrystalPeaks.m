@@ -35,31 +35,36 @@ numk2peaks = length( k2PeakInds );
 % peaks in k-space
 dPeak = 12;
 fig1 = figure();
-colorArray = viridis( nt );
-legcell = cell( nt, 1 );
-for ii = 1:nt
-  legcell{ii} = [ '$$ t = ' num2str( timeRec(ii) ) ' $$'];
+% set max number of time slices to prevent overcrowding
+maxSlices = 6;
+tInterval = floor( (nt-1) / ( maxSlices - 1 ) );
+tSliceInds = tInterval * (0:maxSlices-1) + 1;
+colorArray = viridis( maxSlices );
+legcell = cell( maxSlices, 1 );
+for ii = 1:maxSlices
+  legcell{ii} = [ '$$ t = ' num2str( timeRec( tSliceInds(ii) ) ) ' $$'];
 end
 % k1 peaks
-subplot(1,2,1);
+ax = subplot(1,2,1);
 inds = 2: min( max(k1PeakInds) + dPeak, n1 );
-c2plot =  reshape( cFtPos( inds , 1, :), [length(inds), nt] );
-x2plot = repmat( k1Pos(inds)', [1 nt] );
+c2plot =  reshape( cFtPos( inds , 1, tSliceInds), [length(inds), maxSlices] );
+x2plot = repmat( k1Pos(inds)', [1 maxSlices] );
 p = plot( x2plot, c2plot, 'Linewidth', 2 );
-for ii = 1:nt
+for ii = 1:maxSlices
   p(ii).Color = colorArray(ii,:);
 end
 xlabel( ' $$ k_1 $$ '); ylabel('Amplitude');
 title( '$$ k_1 $$ modes')
+ax.XAxis.TickLabelFormat = '%,.2f';
 leg = legend(legcell);
 leg.Interpreter = 'latex';
 % k2 peaks
 ax = subplot(1,2,2);
 inds = 2: min( max(k2PeakInds) + dPeak, n2 );
-c2plot =  reshape( cFtPos( 1, inds, :), [length(inds), nt] );
-x2plot = repmat( k2Pos(inds)', [1 nt] );
+c2plot =  reshape( cFtPos( 1, inds, tSliceInds), [length(inds), maxSlices] );
+x2plot = repmat( k2Pos(inds)', [1 maxSlices] );
 p = plot( x2plot, c2plot, 'Linewidth', 2 );
-for ii = 1:nt
+for ii = 1:maxSlices
   p(ii).Color = colorArray(ii,:);
 end
 xlabel( ' $$ k_2 $$ '); ylabel('Amplitude');
@@ -71,7 +76,7 @@ leg.Interpreter = 'latex';
 fig2 = figure();
 % k1 peaks vs time
 colorArray = viridis( numk1peaks );
-subplot(2,2,1);
+ax = subplot(2,2,1);
 legcell = cell( numk1peaks, 1 );
 for ii = 1:numk1peaks
   legcell{ii} = ['$$ k_1 =  ' num2str( k1Pos( k1PeakInds(ii) ),'%.1f' ) ' $$'];
@@ -83,6 +88,7 @@ for ii = 1:numk1peaks
 end
 xlabel( ' $$ t $$ '); ylabel('Amplitude');
 title( '$$ k_1 $$ modes')
+ax.YAxis.TickLabelFormat = '%,.2f';
 leg = legend(legcell);
 leg.Interpreter = 'latex';
 % k2 peaks vs time
@@ -192,6 +198,8 @@ colormap(fig3, viridis )
 subplot(1,2,1)
 imagesc( k2, k1, cFt(:,:,end)' )
 colorbar
+xlabel( '$$ k _1 $$ '); ylabel('$$ k_2 $$');
+title('Full k-space amplitudes');
 axis square
 ax = gca;
 ax.YDir = 'normal';
@@ -201,6 +209,8 @@ kSub = 1:min( max([ k1PeakInds k2PeakInds ]) + dPeak, min( n1, n2 ) );
 imagesc( k2Pos(kSub), k1Pos(kSub), ...
   cFtPos(kSub,kSub,end)' );
 colorbar
+xlabel( '$$ k _1 $$ '); ylabel('$$ k_2 $$');
+title('Subdomain k-space amplitudes');
 axis square
 ax = gca;
 ax.YDir = 'normal';
