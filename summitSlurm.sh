@@ -28,19 +28,18 @@
 #SBATCH --partition=shas
 
 # Load any modules you need here
-module load slurm
-module load matlab/matlab-2013b
+module load matlab/R2016b
 
 # Execute the program.
-echo "Time is `date`"
-echo "Submit dir ${SLURM_SUBMIT_DIR}"
+echo "Start time: `date`"
+echo "Submit dir: ${SLURM_SUBMIT_DIR}"
+echo "Job name: ${SLURM_JOB_NAME}" 
 echo "Running ${SLURM_NNODES} nodes. ${SLURM_NTASKS_PER_NODE} tasks per node. ${SLURM_CPUS_PER_TASK} processors per task"
 echo "In dir `pwd`"
 touch jobRunning.txt
 # Run matlab program
 matlab -nodesktop -nosplash \
-  -r  "try, runHardRod, catch, exit(1), end, exit(0);" \
-  2>&1 | tee ${SLURM_JOB_NAME}.out
+  -r  "try, runHardRod, catch, exit(1), end, exit(0);"
 echo "Finished. Matlab exit code: $?" 
-mv jobRunning.txt jobFinish.txt
-echo "Time is `date`"
+mv jobRunning.txt jobFinished.txt
+echo "End time: `date`"
