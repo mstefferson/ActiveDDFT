@@ -1,0 +1,36 @@
+#!/bin/bash
+# Collects runs and deletes temp run directories
+
+# Hard code working dir
+runDir=/scratch/summit/mist7261/Hardrod
+storeDir=/projects/mist7261/Hardrod
+homeDir=`pwd`;
+
+echo "In $homeDir. Collecting runs in $runDir"
+
+# Go into all directories in rundir and see if they are done
+cd $runDir
+echo "In $runDir"
+for i in `ls`; 
+  do 
+  cd $i;
+  echo "In $i";
+  # Check status of job by seeing what's up with run_*.mat
+  statusFile=jobFinished.txt
+  if [ -f $statusFile ];
+  then
+    echo "Code finished. Collecting files"
+    mv ./runfiles/* $storeDir/runfiles
+    mv ./runOPfiles/* $storeDir/runOPfiles
+    mkdir $storeDir/outputFiles/$i
+    mv ./*.out $storeDir/outputFiles/$i
+    cd ..
+    rm -r $i
+  else #code still running
+    echo "Code is still running. I'm out of here"
+  cd ..
+  fi
+done
+
+echo "Files collected. Coming home"
+cd $homeDir
