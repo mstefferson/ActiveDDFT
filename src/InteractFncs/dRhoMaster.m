@@ -5,19 +5,18 @@ function [GammaCube_FT, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
 GammaCube_FT = 0;
 shitIsFucked = 0;
 whatBroke = [];
-% Interactions
-% short range
+% Interactions: short range
 % mayers
 if interObj.hardId == 1 % mayers
   if interObj.typeId == 1 % rods
-    muExFt = muExCalcVc2Ft(rho_FT, interObj.FmFt,systemObj,interObj.muMayerScale);
-    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
-    GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+    % calculate excess chemical potential
+    muExFt = muExCalcMayerLF(rho_FT, interObj.FmFt, systemObj,...
+      interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
+    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
   end
   if interObj.typeId == 2 % disks
     muExFt = muExCalcVc2Ft( rho_FT(:,:,interObj.k3ind0), interObj.FmFt, systemObj, interObj.muMayerScale );
-    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
-    GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
   end
 end
 % spt
@@ -42,11 +41,10 @@ if interObj.hardId == 2 % spt
     else
       [muExFt] = muExDisksSPT(nu);
     end
-    GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
-    GammaCube_FT = GammaCube_FT + GammaExCube_FT;
+    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
   end
 end
-% long range
+% Interactions: long range
 if interObj.longId == 1 % mean field
   [muExFt] =  muExCalcMfFt( rho_FT(:,:,interObj.k3ind0), interObj.vFt, systemObj, interObj.muMfScale );
   GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
@@ -59,7 +57,7 @@ if flags.Drive && flags.DiagLop
     cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
   GammaCube_FT = GammaCube_FT + GammaDrCube_FT;
 end
-% external
+% external potential
 if interObj.extFlag
   GammaPotCube_FT = 0;
   GammaCube_FT = GammaCube_FT + GammaPotCube_FT;

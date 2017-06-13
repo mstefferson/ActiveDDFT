@@ -39,7 +39,7 @@ systemMaster.bc = [1.45]; % Scaled concentration (vec)
 systemMaster.l1 = [10];  % Box length (vec)
 systemMaster.l2 = [10];  % Box length (vec)
 systemMaster.l3 = 2 * pi;
-systemMaster.Tmp = 1;   % Temperature
+systemMaster.tmp = 1;   % Temperature
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
 timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording

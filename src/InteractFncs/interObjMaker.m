@@ -28,11 +28,14 @@ else
     if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'rodsMayer';
       interObj.hardId = 1;
-      [~,interObj.FmFt] = mayerFncHr(...
+      % grab lap frame mayer function
+      [~,interObj.FmFt] = mayerFncHrLabFrame(...
         systemObj.n1, systemObj.n2, systemObj.n3, ...
-        systemObj.l1, systemObj.l2, particleObj.lMaj) ;
-      interObj.muMayerScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
-        (systemObj.n1 * systemObj.n2 * systemObj.n3);
+        systemObj.l1, systemObj.l2, particleObj.lMaj);
+      interObj.muMayerScale = ( systemObj.tmp * systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
+        (systemObj.n1 * systemObj.n2 * systemObj.n3 ^ 2);
+      interObj.muMayerInds = 1:systemObj.n3;
+      interObj.muMayerMinusInds = [1 systemObj.n3:-1:2];
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
     else
       fprintf('Cannot find hard rod interactions\n')
