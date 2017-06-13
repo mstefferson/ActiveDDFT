@@ -213,19 +213,3 @@ runMin = floor( runTime / 60);  runTime = runTime - runMin*60;
 runSec = floor(runTime);
 fprintf('RunTime: %.2d:%.2d:%.2d (hr:min:sec)\n', runHr, runMin,runSec);
 fprintf('Finished RunHardRod: %s\n', dateTime);
-% check for log file
-logFile = dir('*.out');
-if ~isempty(logFile)
-  if length(logFile) == 1
-    fprintf('One log file found. Copying it to save dir.\n')
-  else
-    fprintf('Too many files. Copying all to save dir.\n')
-  end
-  for ii = 1:length(logFile)
-    newLog = [ filename(1:end-4) '_l' num2str(ii,'%.2d') '.out' ];
-    movefile(logFile(ii).name, newLog );
-    movefile( newLog, denRecObj.dirName );
-  end
-else
-  fprintf('No log file found\n')
-end

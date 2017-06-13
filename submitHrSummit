@@ -1,0 +1,42 @@
+#!/bin/bash
+# Submit jobs to a temp working directory
+# ./submitHr jobName 
+
+# Hard code working dir
+runDir=/scratch/summit/mist7261/Hardrod/
+homeDir=`pwd`;
+
+echo "In $homeDir. Making a temp directory in $runDir"
+
+# Variables from inputs
+if [ $# -le 0 ]
+then
+  echo "no jobname given"
+  jobName=hardrod
+  echo "jobname is $jobName"
+else
+  jobName=$1;
+  echo "jobname is $jobName"
+fi
+
+# working directory
+workingDir=${runDir}${jobName}_${RANDOM}
+
+# Make dir and copy over all files
+echo "Making working directory in ${workingDir}"
+mkdir $workingDir
+cp ./*.m $workingDir
+cp ./*.sh $workingDir
+cp -r ./src $workingDir
+
+# cd in
+cd $workingDir
+echo "In `pwd`, submitting jobs"
+
+# submit!
+echo "sbatch --job-name $jobName summitSlurm.sh"
+sbatch --job-name=$jobName summitSlurm.sh
+
+# return home!
+echo "Jobs submitted. Homeward bound."
+cd $homeDir
