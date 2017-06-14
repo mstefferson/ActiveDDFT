@@ -20,12 +20,60 @@ for i in `ls`;
   if [ -f $statusFile ];
   then
     echo "Code finished. Collecting files"
-    mv ./runfiles/* $storeDir/runfiles
-    mv ./runOPfiles/* $storeDir/runOPfiles
-    mkdir $storeDir/outputFiles/$i
-    mv ./*.out $storeDir/outputFiles/$i
+    # copy .out .err to all outputs then move it if directory is not empty
+    # runfiles
+    if [ -d "./runfiles" ]; then
+      if [ "$(ls -A ./runfiles)" ]; then
+        echo "runfiles is not empty. Copying .out/.err and moving"
+        for d in `ls ./runfiles`
+        do 
+          cp *.out ./runfiles/$d; 
+          cp *.out ./runfiles/$d; 
+        done
+        # move it and delete. if fails, say so
+        mv ./runfiles/* $storeDir/runfiles && rm -r runfiles || echo "error moving a directory"
+      else
+        echo "runfiles is empty"
+        rm -d runfiles
+      fi
+    fi
+    # runOPfiles
+    if [ -d "./runOPfiles" ]; then
+      if [ "$(ls -A ./runOPfiles)" ]; then
+        echo "runOPfiles is not empty. Copying .out/.err and moving"
+        for d in `ls ./runOPfiles`
+        do 
+          cp *.out ./runOPfiles/$d; 
+          cp *.out ./runOPfiles/$d; 
+        done
+        # move it and delete. if fails, say so
+        mv ./runOPfiles/* $storeDir/runOPfiles && rm -r runOPfiles || echo "error moving a directory"
+      else
+        echo "runOPfiles is empty"
+        rm -d runOPfiles
+      fi
+    fi
+    # analyzedfiles
+    if [ -d "./analyzedfiles" ]; then
+      if [ "$(ls -A ./analyzedfiles)" ]; then
+        echo "analyzedfiles is not empty. Copying .out/.err and moving"
+        for d in `ls ./analyzedfiles`
+        do 
+          cp *.out ./analyzedfiles/$d; 
+          cp *.out ./analyzedfiles/$d; 
+        done
+        # move it and delete. if fails, say so
+        mv ./analyzedfiles/* $storeDir/analyzedfiles && rm -r analyzedfiles || echo "error moving a directory"
+      else
+        echo "analyzedfiles is empty"
+        rm -d analyzedfiles
+      fi
+    fi
+    # remove all .sh and .m
+    rm -r ./src/
+    rm ./*.*
     cd ..
-    rm -r $i
+    rm -d $i
   else #code still running
     echo "Code is still running. I'm out of here"
   cd ..
