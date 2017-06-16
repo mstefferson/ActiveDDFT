@@ -153,8 +153,15 @@ try
     runSave.Den_rec(:,:,:,1) = rho;
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
+    % Save params now
+    paramSave.flags = flags;
+    paramSave.particleObj = particleObj;
+    paramSave.rhoInit = rhoInit;
+    paramSave.systemObj = systemObj;
+    paramSave.runObj = runObj;
+    paramSave.timeObj = timeObj;
   end
-  % Run the main code
+% Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
     [denRecObj]  = denEvolverFTDiagOp(...
@@ -168,7 +175,7 @@ try
   denRecObj.dirName = dirName;
   % Save it
   if flags.SaveMe
-    runSave.denRecObj = denRecObj;
+    paramSave.denRecObj = runSave.denRecObj;
   end
   bodyRunTime  = toc(tBodyID);
   if flags.Verbose
@@ -180,15 +187,7 @@ try
   % Run movies if you want
   if flags.MakeOP  == 1
     tOpID           = tic ;
-    % Save params in seperate files if making OPobj
-    % Set up saving
-    paramSave.flags = flags;
-    paramSave.particleObj = particleObj;
-    paramSave.rhoInit = rhoInit;
-    paramSave.systemObj = systemObj;
-    paramSave.runObj = runObj;
-    paramSave.timeObj = timeObj;
-    paramSave.denRecObj = runSave.denRecObj;
+    % Save
     if systemObj.n3 > 1
       % Commonly used trig functions
       [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
