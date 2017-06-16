@@ -11,7 +11,7 @@
 
 #SBATCH --nodes 1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task 1
+#SBATCH --cpus-per-task 12
 
 # Set the output file name to [jobid].out (or leave as default of slurm-[jobid].out)
 
