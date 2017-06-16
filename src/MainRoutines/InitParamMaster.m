@@ -57,6 +57,7 @@ timeMaster.ss_epsilon = 1 * 10^(-5); % steady state condition dRho
 % 4: Gaussian perturbations with homogenous concentration 
 % 5: Gaussian perturbations with inhomogenous concentration 
 % 6: Delta function in polar order 
+% 7: Crystal
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
 rhoInitMaster.LoadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %
@@ -71,6 +72,8 @@ rhoInitMaster.shiftAngle = 0; % If perturbing about nematic, shift distribution 
 % Gaussian perturbation 
 % rhoInitMaster.gP = [ aYf, varY, centerY, aYf, varY, centerY, aPhif, varPhi, centerPhi ]
 rhoInitMaster.gP = [0, systemMaster.l1/2, 0, 0, systemMaster.l1/2, 0, 0, systemMaster.l3/2, 0]; 
+% Crystal crystalLattice = [a sigma]. A: 2.26, B:1.21
+rhoInitMaster.crystalLattice = [1.21 systemMaster.l1 / 100]; 
 % Save the Params
 save('Params.mat','particleMaster','systemMaster',...
   'runMaster','timeMaster','flagMaster','rhoInitMaster')

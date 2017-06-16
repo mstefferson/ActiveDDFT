@@ -5,7 +5,7 @@
 % paramVec(1) = n1 
 % paramVec(2) = n2
 % paramVec(3) = l1
-% paramVec(4) =l2
+% paramVec(4) = l2
 % paramVec(5) = lrE1
 % paramVec(6) = lrE2
 % paramVec(7) = lrL1
@@ -73,9 +73,11 @@ kPeaks = k1pos( maxInds );
 kPeakMax = kPeaks(omegaMaxInd);
 % Guess at the crystal
 if length(omegaPeaks) == 1
+  phaseInfo = 'No unstable peaks';
   phase = 'liquid';
   phaseId = 1;
 elseif length(omegaPeaks) == 2
+  phaseInfo = '1 unstable peaks';
   if kPeakMax < 4
     phase = 'crystal A';
     phaseId = 2;
@@ -84,12 +86,12 @@ elseif length(omegaPeaks) == 2
     phaseId = 3;
   end
 elseif length(omegaPeaks) == 3
-  phase = '2 unstable peaks: ';
+  phaseInfo = '2 unstable peaks: ';
   if kPeakMax < 4
-    phase = [phase 'crystal A'];
+    phase = ['crystal A'];
     phaseId = 4;
   else
-    phase = [phase 'crystal B'];
+    phase = ['crystal B'];
     phaseId = 5;
   end
 end
@@ -107,6 +109,7 @@ disp.kPeakMaxInd = maxInds(omegaMaxInd);
 disp.kAllPeakInds = allPeaksInds;
 disp.kAllPeaks = k1pos(allPeaksInds);
 disp.phase = phase;
+disp.phaseInfo = phaseInfo;
 disp.phaseId = phaseId;
 % plots
 if plotMe
