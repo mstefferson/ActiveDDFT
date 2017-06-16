@@ -1,32 +1,47 @@
-% IntDen2DrotCalcPerturbEqPw.m 
-% Description: creates the initial density in 2 spatial directions and one
-% rotation DoF. The initial density of the form
-% rho = rho_equilbrium + \sum A_k exp( i (k_x x + k_y y + k_phi phi)
-% A_k is an input parameter
-
-
-function [rho] = IntDenCalcEq(systemObj, rhoInit)
-
-%Add in some slight deviation from the equilbrium density at specific modes.
-% The number of modes counts the modes above and below k=0. But given the
-% symmetry, these modes are the same if you add a perturbation like cos(kx)
-% But really, we are adding 2*NumModes to the system
-%
-% Density is normalized so that
-%
-% # of particles           = int( rho(x,y,phi) dx dy dphi )
-% c(x,y) (concentration)   = int( rho(x,y,phi) dphi )
-% f(phi) (AngDistribution) = int( rho(x,y,phi) dx dy ) ./ # Particles
-% 1                        = int( f(phi) dphi)
-
-% Build rho from equilibrium
-% Initialize rho
-rho = systemObj.c .* ...
-    ones(systemObj.n1,systemObj.n2,systemObj.n3);
-
-% Map distribution to a homogeneous system
-for i = 1:systemObj.n3
-    rho(:,:,i) = rho(:,:,i) .* rhoInit.feq(i);
+% IntDenCalcEq(systemObj, particleObj rhoInit)
+function [rho] = IntDenCalcEq(systemObj, particleObj, rhoInit)
+% make equilbrium concentration based on interaction
+if strcmp( particleObj.interHb, 'mayer')
+  fprintf('Choosing hardrod IN equilbrium distribution\n');
+  % if bc is too close to 1.5, errors arise. Fix this here.
+  if 1.499 < systemObj.bc && systemObj.bc < 1.501
+    systemObjTemp = systemObj;
+    systemObjTemp.bc = 1.502;
+    % Initial distribution
+    [rho] = IntDenCalcEqHr(systemObjTemp,rhoInit);
+  else
+    % Initial distribution
+    [rho] = IntDenCalcEqHr(systemObj,rhoInit);
+  end
+elseif strcmp( particleObj.interLr, 'softshoulder')
+  % find equilbrium crystal
+  paramVec = [systemObj.n1 systemObj.n2 systemObj.l1 systemObj.l2...
+    particleObj.lrEs1 particleObj.lrEs2 particleObj.lrLs1 particleObj.lrLs2...
+    systemObj.c];
+  disp = dispersionSoftShoulder( paramVec );
+  if systemObj.n1 == systemObj.n2 && systemObj.l1 == systemObj.l2 
+    if strcmp( disp.phase, 'crystal A' )
+      a = 2.26;
+      rho = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
+        a, rhoInit.crystalLattice(2) );
+    elseif strcmp( disp.phase, 'crystal B' )
+      a = 1.21;
+      rho = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
+        a, rhoInit.crystalLattice(2) );
+    else
+      a = Inf;
+      [rho] = IntDenCalcIso(systemObj);
+    end
+    fprintf('Choosing soft shoulder %s with %.2f lattice spacing\n', ...
+      disp.phase, a );
+    % rep it
+    rho =  1 / systemObj.l3 * repmat( rho, [1,1,systemObj.n3] );
+  else
+    fprintf('Not making crystal, box not symmetric\n');
+    error('Box must be symmetric');
+    rho = 0;
+  end
+else
+  fprintf('Cannot find equilbrium distribution based on interaction, making iso\n');
+  [rho] = IntDenCalcIso(systemObj);
 end
-
-end %end function
