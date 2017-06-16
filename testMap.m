@@ -46,6 +46,13 @@ sigma1 = l / 10;
 sigma2 = l / 12;
 f = exp( -xi1Mesh .^ 2 ./ ( 2 * sigma1 ^ 2 ) - xi2Mesh .^ 2 ./ ( 2 * sigma2 ^ 2 ) ) .* ...
   cos( k1 * xi1Mesh ) .* cos( k2 * xi2Mesh );
+% try rhoFt
+path2file = '/Users/mike/Projects/HardRodML/analyzedfiles/analyzeMe/l10/modes16/Hr_disks_softshoulder_1il1_2il1.85_1ie1_2ie2.5_diag1_N2562561_ls1010_bc3.14_vD0_IC0_SM6_t06.01/';
+temp = 'params_Hr_disks_softshoulder_1il1_2il1.85_1ie1_2ie2.5_diag1_N2562561_ls1010_bc3.14_vD0_IC0_SM6_t06.01.mat';
+load( [path2file temp] );
+rhoFt = fftshift( fftn( denRecObj.rhoFinal ) );
+f = rhoFt;
+%
 fPad = zeros( nf, nf );
 fPad( 1+nPad:nPad + ni, 1+nPad:nPad + ni ) = f;
 % linear interp
@@ -54,18 +61,18 @@ fMap( isnan( fMap ) ) = 0;
 % plot
 figure()
 subplot(2,2,1)
-imagesc(f);
+imagesc(abs( f ) .^ 2);
 colorbar
 title('original');
 subplot(2,2,2)
-imagesc(fMap);
+imagesc( abs( fMap ) .^ 2 );
 colorbar
 title('stretched');
 subplot(2,2,3)
-plot(xi, f(xiCenterInd,:), xi, f(:,xiCenterInd) )
+plot(xi, abs( f(xiCenterInd,:) ) .^ 2 , xi, abs( f(:,xiCenterInd) ) .^ 2)
 legend('columns','rows','location','best')
 title('original')
 subplot(2,2,4)
-plot(xi, fMap(xiCenterInd,:), xi, fMap(:,xiCenterInd) )
+plot(xi, abs( fMap(xiCenterInd,:) ) .^2 , xi, abs( fMap(:,xiCenterInd) .^ 2 ) )
 title('original')
 legend('columns','rows','location','best')
