@@ -14,7 +14,7 @@
 %
 % Isotropic diffusion. The propagaotr is a cube.
 %
-function [denRecObj]  = ...
+function [denRecObj,rho]  = ...
   denEvolverFTDiagOp(rho,systemObj,particleObj,...
   timeObj,gridObj,diffObj,interObj,flags,lfid)
 global runSave
@@ -240,7 +240,6 @@ denRecObj.whatBroke    = [whatBroke1 whatBroke2];
 denRecObj.SteadyState  = steadyState;
 denRecObj.maxDrho      = maxDrho;
 denRecObj.TimeRecVec   = TimeRecVec;
-denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
 denRecObj.simTime      = TimeRecVec(end);
 end %function

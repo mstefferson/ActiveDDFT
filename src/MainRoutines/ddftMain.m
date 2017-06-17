@@ -38,6 +38,7 @@ try
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];
+    saveNameRhoFinal   = ['rhoFinal_' filename];
     saveNameParams = ['params_' filename];
     dirName  = filename(1:end-4) ;
     if flags.MakeOP == 0
@@ -55,6 +56,7 @@ try
       mkdir(dirName);
     end
     paramSave = matfile(saveNameParams,'Writable',true);
+    rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
     runSave = matfile(saveNameRun,'Writable',true);
     denRecObj.dirName = dirName; % Just in case
   else
@@ -161,23 +163,24 @@ try
     paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
   end
-% Run the main code
+  % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
-    [denRecObj]  = denEvolverFTDiagOp(...
+    [denRecObj, rho]  = denEvolverFTDiagOp(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   else
-    [denRecObj]  = denEvolverFT(...
+    [denRecObj, rho]  = denEvolverFT(...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
-  %save('diskCFinal1v2', 'Cfinal' );
+  bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
   % Save it
   if flags.SaveMe
-    paramSave.denRecObj = runSave.denRecObj;
+    paramSave.denRecObj = denRecObj;
+    runSave.denRecObj   = denRecObj;
+    rhoFinalSave.rho   = rho;
   end
-  bodyRunTime  = toc(tBodyID);
   if flags.Verbose
     fprintf('Ran Main Body t%d_%d: %.3g \n', ...
       runObj.trialID, runObj.runID, bodyRunTime);
@@ -200,7 +203,7 @@ try
       cosPhi3d=0;sinPhi3d=0;cos2Phi3d=0;sin2Phi3d=0;cossinPhi3d=0;
     end
     % Build time rec vector
-    if  denRecObj.DidIBreak == 0
+    if denRecObj.DidIBreak == 0
       totRec = length( denRecObj.TimeRecVec );
       opTimeRecVec = denRecObj.TimeRecVec ;
       opSave.OpTimeRecVec = opTimeRecVec;
@@ -210,7 +213,6 @@ try
       opSave.OpTimeRecVec = opTimeRecVec;
     end
     % Set up saving
-    
     opSave.C_rec    = zeros(systemObj.n1, systemObj.n2, 2);
     if systemObj.n3 > 1
       % Distribution slice
@@ -225,20 +227,6 @@ try
       opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
       opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
       opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-    end
-    % Make movies
-    if flags.MakeMovies
-      OPobj.C_rec    = zeros(systemObj.n1, systemObj.n2, totRec);
-      if systemObj.n3 > 1
-        OPobj.POP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
-        OPobj.POPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-        OPobj.POPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-        OPobj.NOP_rec  = zeros(systemObj.n1, systemObj.n2, totRec);
-        OPobj.NOPx_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-        OPobj.NOPy_rec = zeros(systemObj.n1, systemObj.n2, totRec);
-        OPobj.distSlice_rec = opSave.distSlice_rec;
-      end
-      OPobj.OpTimeRecVec = opTimeRecVec;
     end
     % Break it into chunks
     numChunks = timeObj.N_chunks;
@@ -272,19 +260,29 @@ try
         opSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
         opSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
       end
-      % Save records
-      if flags.MakeMovies
-        OPobj.C_rec(:,:,Ind)    = OPObjTemp.C_rec;
-        if systemObj.n3 > 1
-          OPobj.POP_rec(:,:,Ind)  = OPObjTemp.POP_rec;
-          OPobj.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
-          OPobj.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
-          OPobj.NOP_rec(:,:,Ind)  = OPObjTemp.NOP_rec;
-          OPobj.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
-          OPobj.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
-        end
-      end
     end % loop over chunks
+    % fix size
+    opSave.C_rec    = opSave.C_rec(:,:,1:totRec);
+    if systemObj.n3 > 1
+      opSave.POP_rec  = opSave.POP_rec(:,:,1:totRec);
+      opSave.POPx_rec = opSave.POPx_rec(:,:,1:totRec);
+      opSave.POPy_rec = opSave.POPy_rec(:,:,1:totRec);
+      opSave.NOP_rec  = opSave.NOP_rec(:,:,1:totRec);
+      opSave.NOPx_rec = opSave.NOPx_rec(:,:,1:totRec);
+      opSave.NOPy_rec = opSave.NOPy_rec(:,:,1:totRec);
+    end
+    if flags.MakeMovies
+      OPobj.OpTimeRecVec = opTimeRecVec;
+      OPobj.C_rec    = opSave.C_rec;
+      if systemObj.n3 > 1
+        OPobj.POP_rec  = opSave.POP_rec;
+        OPobj.POPx_rec = opSave.POPx_rec;
+        OPobj.POPy_rec = opSave.POPy_rec;
+        OPobj.NOP_rec  = opSave.NOP_rec;
+        OPobj.NOPx_rec = opSave.NOPx_rec;
+        OPobj.NOPy_rec = opSave.NOPy_rec;
+      end
+    end
     % Now do it for steady state sol
     if systemObj.n3 > 1
       [~,~,phi3D] = meshgrid(1,1,gridObj.x3);
@@ -299,7 +297,6 @@ try
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
       % Save if movies
       if flags.MakeMovies
-        OPobj.OpTimeRecVec = opTimeRecVec;
         OPobj.NOPeq = opSave.NOPeq;
       end
     end
@@ -393,7 +390,7 @@ try
         if denRecObj.DidIBreak == 0
           sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
             OPobj.NOP_rec(:,:,end), systemObj, ...
-            gridObj, denRecObj.rhoFinal, sliceSaveTag )
+            gridObj, rhoFinalSave.rhoFinal, sliceSaveTag )
         else
           stepsNb = length(OPobj.OpTimeRecVec);
           sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
@@ -431,6 +428,7 @@ try
   if flags.SaveMe
     paramSave.runTime = runTime;
     movefile(saveNameRun,dirName);
+    movefile( saveNameRhoFinal,dirName);
     movefile( saveNameParams,dirName);
     if flags.MakeOP == 1
       movefile( saveNameOP,dirName);

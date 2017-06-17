@@ -22,7 +22,7 @@
 %
 % Interactions handled using Mayer function.
 %
-function [denRecObj] = denEvolverFT(...
+function [denRecObj, rho] = denEvolverFT(...
   rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
 global runSave
 fprintf(lfid,'In body of code\n');
@@ -265,7 +265,6 @@ denRecObj.whatBroke    = [whatBroke1 whatBroke2 whatBroke3];
 denRecObj.SteadyState  = steadyState;
 denRecObj.maxDrho      = maxDrho;
 denRecObj.TimeRecVec   = TimeRecVec;
-denRecObj.rhoFinal     = rho;
 denRecObj.runTime      = trun;
 denRecObj.simTime      = TimeRecVec(end);
 end %function

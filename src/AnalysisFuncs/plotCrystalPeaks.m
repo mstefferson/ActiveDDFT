@@ -11,9 +11,7 @@ fig0 = gcf;
 % get size and center
 [n1, n2, nt] = size( cFt );
 k1center = n1 / 2 + 1;
-% k1PosLength = n1 / 2;
 k2center = n2 / 2 + 1;
-% k2PosLength = n1 / 2;
 % get positive kx, ky vectors
 k1Pos = k1( k1center:n1 );
 k2Pos = k2( k2center:n2 );

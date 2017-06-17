@@ -130,11 +130,13 @@ try
       end
       % crystal peaks
       if strcmp( particleObj.interLr, 'softshoulder' ) && systemObj.n3 == 1
-        cFt = abs( reshape( runSave.DenFT_rec, ...
+        cFt = abs( reshape( runSave.DenFT_rec(:,:,1,1:length(OPobj.OpTimeRecVec)) , ...
         [systemObj.n1, systemObj.n2, length(OPobj.OpTimeRecVec) ] ) ) .^ 2;
-        plotCrystalPeaks( cFt, gridObj.k1, gridObj.k2, ...
-          OPobj.OpTimeRecVec, systemObj, particleObj, 1 );
-        movefile( 'kAmps*', dirFullPath );
+        if length(OPobj.OpTimeRecVec) > 1
+          plotCrystalPeaks( cFt, gridObj.k1, gridObj.k2, ...
+           OPobj.OpTimeRecVec, systemObj, particleObj, 1 );
+          movefile( 'kAmps*', dirFullPath );
+        end
       end
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);
