@@ -24,6 +24,7 @@ try
       % load things
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
       opFileName = [dirFullPath '/op_' dirTemp '.mat'];
+      rhoFinalFileName = [dirFullPath '/rhoFinal_' dirTemp '.mat'];
       runSave = matfile( runFileName);
       opSave  = matfile( opFileName );
       gridObj  = runSave.gridObj;
@@ -32,6 +33,8 @@ try
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
       timeObj =  runSave.timeObj;
+      load(rhoFinalFileName);
+      rhoFinal = rho;
       % op stuff
       OPobj.OpTimeRecVec = opSave.OpTimeRecVec;
       OPobj.C_rec    = opSave.C_rec;
@@ -115,7 +118,7 @@ try
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
         sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
           OPobj.NOP_rec(:,:,end), systemObj, ...
-          gridObj, denRecObj.rhoFinal, sliceSaveTag )
+          gridObj, rhoFinal, sliceSaveTag )
         movefile([sliceSaveTag '*'], dirFullPath);
         % Plot max order parameters vs time
         maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
