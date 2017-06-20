@@ -177,7 +177,11 @@ end
 p = plot( timeRec, tempFt2plot1, timeRec, tempFt2plot2 );
 ax = gca;
 limFact = 1.61;
-ax.YLim = [ 0 limFact * min( [ max( tempFt2plot1 ) max( tempFt2plot2 ) ] ) ];
+if  min( [ max( tempFt2plot1 ) max( tempFt2plot2 ) ] ) == 0
+  ax.YLim = [ 0 0.1 ];
+else
+  ax.YLim = [ 0 limFact * min( [ max( tempFt2plot1 ) max( tempFt2plot2 ) ] ) ];
+end
 p(1).LineStyle = dashtype1;
 p(1).LineWidth = 2;
 p(2).LineStyle = dashtype2;

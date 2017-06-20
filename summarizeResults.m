@@ -1,3 +1,4 @@
+% T = summarizeResults( path2dirs, genComment, plotPeaks, saveMe, saveId )
 % Summarize run results. Put them all in a table.
 function T = summarizeResults( path2dirs, genComment, plotPeaks, saveMe, saveId )
 try
@@ -103,12 +104,19 @@ try
     whatBroke{ii} = denRecObj.whatBroke;
     comments{ii} = genComment;
     % Get spatial peaks
+    if isfield( denRecObj, 'rhoFinal' )
+      rhoFinal = denRecObj.rhoFinal;
+    else
+      loadMe = dir( [fileTemp '/rhoFinal_*'] );
+      load( [fileTemp '/' loadMe.name ] );
+      rhoFinal = rho;
+    end
     if systemObj.n3 == 1
-      C = denRecObj.rhoFinal;
+      C = rhoFinal;
     else
       dx3 = systemObj.l3 / systemObj.n3;
       x3 = 0:dx3:systemObj.l3 - dx3;
-      C = trapz_periodic( x3, denRecObj.rhoFinal, 3 );
+      C = trapz_periodic( x3, rhoFinal, 3 );
     end
     peaks = getCrystalPeaks( C, systemObj.l1, plotPeaks );
     kPosNumPeaks(ii) = peaks.numPeaksK;
