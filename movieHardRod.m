@@ -33,8 +33,13 @@ try
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
       timeObj =  runSave.timeObj;
-      load(rhoFinalFileName);
-      rhoFinal = rho;
+      % get rho Final
+      if isfield( denRecObj, 'rhoFinal')
+        rhoFinal = denRecObj.rhoFinal;
+      else
+        load(rhoFinalFileName);
+        rhoFinal = rho;
+      end
       % op stuff
       OPobj.OpTimeRecVec = opSave.OpTimeRecVec;
       OPobj.C_rec    = opSave.C_rec;
@@ -62,13 +67,11 @@ try
           gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
           OPobj.OpTimeRecVec);
       end
-      
       % Make amplitude plot
       kx0 = systemObj.n1 / 2 + 1;
       ky0 = systemObj.n2 / 2 + 1;
       km0 = floor( systemObj.n3 / 2 ) + 1;
       nRec = length( denRecObj.TimeRecVec);
-      
       % fill in amps
       if systemObj.n3 > 1
         totModes   = 12;
