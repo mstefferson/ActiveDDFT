@@ -11,7 +11,7 @@
 function [MuEx_FT] = muExCalcVc2Ft(rho_FT,Fm_FT,systemObj,scaleFact)
 %Now includes the correct scale
 if nargin == 3
-  scaleFact = (systemObj.l3 * systemObj.l1 * systemObj.l2) / (systemObj.n1 * systemObj.n2 * systemObj.n3);
+  scaleFact = -(systemObj.tmp * systemObj.l3 * systemObj.l1 * systemObj.l2) / (systemObj.n1 * systemObj.n2 * systemObj.n3);
 end
-MuEx_FT = - scaleFact .* systemObj.Tmp .* Fm_FT .* rho_FT;
+MuEx_FT = scaleFact  .* Fm_FT .* rho_FT;
 end
