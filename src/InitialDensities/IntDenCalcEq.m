@@ -18,22 +18,34 @@ elseif strcmp( particleObj.interLr, 'softshoulder')
   paramVec = [systemObj.n1 systemObj.n2 systemObj.l1 systemObj.l2...
     particleObj.lrEs1 particleObj.lrEs2 particleObj.lrLs1 particleObj.lrLs2...
     systemObj.c];
-  disp = dispersionSoftShoulder( paramVec );
+  disper = dispersionSoftShoulder( paramVec );
   if systemObj.n1 == systemObj.n2 && systemObj.l1 == systemObj.l2 
-    if strcmp( disp.phase, 'crystal A' )
+    if strcmp( disper.phase, 'crystal A' )
       a = 2.26;
-      rho = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
+      [rho, crysGrid] = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
         a, rhoInit.crystalLattice(2) );
-    elseif strcmp( disp.phase, 'crystal B' )
+      kCrys = crysGrid.kaClosestEven;
+      kUnstable = disper.kAllUnstable( disper.kAllUnstable > 0 );
+      kUnstable = kUnstable( kUnstable < 4 ); 
+      if kCrys < min(kUnstable ) || kCrys > max( kUnstable )
+        fprintf('Reaching crystal may not be possible given the box size\n');
+      end
+    elseif strcmp( disper.phase, 'crystal B' )
       a = 1.21;
-      rho = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
+      [rho, crysGrid] = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
         a, rhoInit.crystalLattice(2) );
+      kCrys = crysGrid.kaClosestEven;
+      kUnstable = disper.kAllUnstable( disper.kAllUnstable > 0 );
+      kUnstable = kUnstable( kUnstable > 4 ); 
+      if kCrys < min(kUnstable ) || kCrys > max( kUnstable )
+        fprintf('Reaching crystal may not be possible given the box size \n');
+      end
     else
       a = Inf;
       [rho] = IntDenCalcIso(systemObj);
     end
     fprintf('Choosing soft shoulder %s with %.2f lattice spacing\n', ...
-      disp.phase, a );
+      disper.phase, a );
     % rep it
     rho =  1 / systemObj.l3 * repmat( rho, [1,1,systemObj.n3] );
   else

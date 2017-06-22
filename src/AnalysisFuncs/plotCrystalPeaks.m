@@ -1,12 +1,12 @@
 % Plot k peaks vs time
-function plotCrystalPeaks( cFt, k1, k2, timeRec, systemObj, particleObj, saveMe)
+function plotCrystalPeaks( cFt, c, k1, k2, timeRec, systemObj, particleObj, saveMe)
 % add paths for now
 addpath( genpath( './src' ) )
-% run disperion
+% run dispererion
 paramVec = [ systemObj.n1, systemObj.n2, systemObj.l1, systemObj.l2, ...
   particleObj.lrEs1, particleObj.lrEs2, ...
   particleObj.lrLs1, particleObj.lrLs2, systemObj.c ];
-disp = dispersionSoftShoulder( paramVec, 1 );
+disper = dispersionSoftShoulder( paramVec, 1 );
 fig0 = gcf;
 % get size and center
 [n1, n2, nt] = size( cFt );
@@ -51,6 +51,18 @@ p = plot( x2plot, c2plot, 'Linewidth', 2 );
 for ii = 1:maxSlices
   p(ii).Color = colorArray(ii,:);
 end
+% plot n index by peaks
+c2plot( c2plot < max( c2plot(:,1) / 100 ) ) = 0;
+[~,getIndsForPeaks1] = findpeaks( c2plot(:,1) );
+[~,getIndsForPeaks2] = findpeaks( c2plot(:,end) );
+getIndsForPeaks = unique( [getIndsForPeaks1; getIndsForPeaks2 ] );
+text4plot = cellstr( num2str( getIndsForPeaks, 'n = %d' ) );
+maxC2plot = max( c2plot, [], 2 );
+for ii = 1:length(text4plot) 
+  text( 2*pi/systemObj.l1*(getIndsForPeaks(ii)-0.5 ), ...
+    maxC2plot( getIndsForPeaks(ii) ) .* 1.01 , ...
+    text4plot{ii} );
+end
 xlabel( ' $$ k_1 $$ '); ylabel('Amplitude');
 title( '$$ k_1 $$ modes')
 ax.XAxis.TickLabelFormat = '%,.2f';
@@ -64,6 +76,18 @@ x2plot = repmat( k2Pos(inds)', [1 maxSlices] );
 p = plot( x2plot, c2plot, 'Linewidth', 2 );
 for ii = 1:maxSlices
   p(ii).Color = colorArray(ii,:);
+end
+% plot n index by peaks
+c2plot( c2plot < max( c2plot(:,1) / 100 ) ) = 0;
+[~,getIndsForPeaks1] = findpeaks( c2plot(:,1) );
+[~,getIndsForPeaks2] = findpeaks( c2plot(:,end) );
+getIndsForPeaks = unique( [getIndsForPeaks1; getIndsForPeaks2 ] );
+text4plot = cellstr( num2str( getIndsForPeaks, 'n = %d' ) );
+maxC2plot = max( c2plot, [], 2 );
+for ii = 1:length(text4plot) 
+  text( 2*pi/systemObj.l1*(getIndsForPeaks(ii)-0.5 ), ...
+    maxC2plot( getIndsForPeaks(ii) ) .* 1.01 , ...
+    text4plot{ii} );
 end
 xlabel( ' $$ k_2 $$ '); ylabel('Amplitude');
 title( '$$ k_2 $$ modes')
@@ -107,7 +131,7 @@ ax.YAxis.TickLabelFormat = '%,.2f';
 leg = legend(legcell);
 leg.Interpreter = 'latex';
 % unstable peaks plotyy
-maxLinDispPeaks = disp.kAllPeakInds;
+maxLinDispPeaks = disper.kAllPeakInds;
 if length( maxLinDispPeaks ) < 3
   maxLinDispPeaks = [ maxLinDispPeaks,...
     ones(1,3-length( maxLinDispPeaks ) ) ];
@@ -125,11 +149,12 @@ else
   tempFt2plot1 = reshape( cFtPos(1, maxLinDispPeaks(2), : ), [1 nt] )' ;
 end
 % get stabillity info
-if maxLinDispPeaks(2) == disp.kPeakMaxInd
+if maxLinDispPeaks(2) == disper.kPeakMaxInd
   plotk1peak = 'max unstable';
   dashtype1 = '-';
-elseif any( maxLinDispPeaks(2) == disp.kPeaksInds )
+elseif any( maxLinDispPeaks(2) == disper.kPeaksInds )
   plotk1peak = 'unstable';
+  % plot all unstable peaks
   dashtype1 = '--';
 else
   plotk1peak = 'stable';
@@ -141,17 +166,23 @@ if length(k1PeakInds) >= length(k2PeakInds)
 else
   tempFt2plot2 = reshape( cFtPos(1, maxLinDispPeaks(3), : ), [1 nt] )' ;
 end
-% get stabillity info
-if maxLinDispPeaks(3) == disp.kPeakMaxInd
+% get stability info
+if maxLinDispPeaks(3) == disper.kPeakMaxInd
   plotk2peak = 'max unstable';
   dashtype2 = '-';
-elseif any( maxLinDispPeaks(3) == disp.kPeaksInds)
+elseif any( maxLinDispPeaks(3) == disper.kPeaksInds)
   plotk2peak = 'unstable';
   dashtype2 = '--';
 else
   plotk2peak = 'stable';
   dashtype2 = ':';
 end
+% get peak k values from dispersion
+nLow = maxLinDispPeaks(2) - 1;
+kLow = 2*pi/systemObj.l1 * nLow;
+nUpp = maxLinDispPeaks(3) - 1;
+kUpp = 2*pi/systemObj.l1 * nUpp;
+% plot it
 [~, p1, p2 ] = plotyy( timeRec, tempFt2plot1, timeRec, tempFt2plot2);
 p1.LineStyle = dashtype1;
 p1.LineWidth = 2;
@@ -164,7 +195,7 @@ legcell = { ['$$ k_{p,l} $$ : ' plotk1peak ], ...
   [ '$$ k_{p,u} $$ : ' plotk2peak ] };
 leg = legend(legcell,'location','best');
 leg.Interpreter = 'latex';
-% unstable peaks plot together
+% unstable peaks plot together, but only show low amplitude
 subplot(2,2,4);
 % normalize if possible
 if tempFt2plot1(1) ~= 0 && tempFt2plot2(1) ~= 0
@@ -186,18 +217,72 @@ p(1).LineStyle = dashtype1;
 p(1).LineWidth = 2;
 p(2).LineStyle = dashtype2;
 p(2).LineWidth = 2;
-titlstr = [ ' $$ k_{p,l} = ' num2str( maxLinDispPeaks(2) )...
-  '$$ $$ k_{p,u} = ' num2str( maxLinDispPeaks(3) ) '$$'];
+titlstr = [ ' $$ k_{p,l} = ' num2str( kLow, '%.2f' ) ' n_{p,l}: ' num2str( nLow )...
+  '$$; $$ k_{p,u} = ' num2str( kUpp, ' %.2f' ) 'n_{p,u}: ' num2str( nUpp ) '$$'];
 title(titlstr)
 xlabel('t');ylabel(ylab);
 legcell = { ['$$ k_{p,l} $$ : ' plotk1peak ], ...
   [ '$$ k_{p,u} $$ : ' plotk2peak ] };
 leg = legend(legcell,'location','best');
 leg.Interpreter = 'latex';
-% all peaks
+% plot all unstable peaks
+if ~isempty(disper.kAllUnstableInds)
+  numUnstab = length( disper.kAllUnstableInds );
+  figure()
+  % peak 2
+  if length(k1PeakInds) >= length(k2PeakInds)
+    allUnstable = reshape( cFtPos( disper.kAllUnstableInds, 1, : ), [numUnstab nt] )' ;
+  else
+    allUnstable = reshape( cFtPos( 1, disper.kAllUnstableInds, : ), [numUnstab nt] )' ;
+  end
+  plot( timeRec, allUnstable );
+  ylab = 'Amplitude';
+  title('All unstable k from linear stab')
+  xlabel('t'); ylabel(ylab);
+  legCell = cellstr(num2str( [disper.kAllUnstableNs' disper.kAllUnstable'], ...
+    'n,k=%.2d k=%.2f') );
+  legend( legCell, 'location', 'best');
+  if saveMe
+    figname = 'kAmpsUnstable';
+    savefig( gcf, figname )
+    saveas( gcf, figname, 'jpg' )
+  end
+end
+% all peaks 
+maxC = max(c(:));
+minC = min(c(:));
+meanC = min(c(:));
+if abs( maxC - minC ) / meanC < 1e-2
+  maxC = maxC + meanC * 0.01;
+  minC = minC - meanC * 0.01;
+end
+x1 = systemObj.l1 / systemObj.n1 * (0:systemObj.n1-1);
+x2 = systemObj.l2 / systemObj.n2 * (0:systemObj.n2-1);
 fig3 = figure();
 colormap(fig3, viridis )
-subplot(1,2,1)
+subplot(2,2,1)
+imagesc( x1, x2, c' )
+colorbar
+xlabel( '$$ x _1 $$ '); ylabel('$$ x_2 $$');
+title('C');
+axis square
+ax = gca;
+ax.YDir = 'normal';
+ax.YLabel = fliplr(ax.YLabel);
+ax.CLim = [minC maxC];
+% log(c)
+subplot(2,2,2)
+imagesc( x1, x2, log(c) );
+colorbar
+xlabel( '$$ x_1 $$ '); ylabel('$$ x_2 $$');
+title('log(c)');
+axis square
+ax = gca;
+ax.YDir = 'normal';
+ax.YLabel = fliplr(ax.YLabel);
+ax.CLim = log( [minC maxC] ) ;
+% cFT
+subplot(2,2,3)
 imagesc( k2, k1, cFt(:,:,end)' )
 colorbar
 xlabel( '$$ k _1 $$ '); ylabel('$$ k_2 $$');
@@ -206,7 +291,8 @@ axis square
 ax = gca;
 ax.YDir = 'normal';
 ax.YLabel = fliplr(ax.YLabel);
-subplot(1,2,2)
+% cFt smaller
+subplot(2,2,4)
 kSub = 1:min( max([ k1PeakInds k2PeakInds ]) + dPeak, min( n1, n2 ) );
 imagesc( k2Pos(kSub), k1Pos(kSub), ...
   cFtPos(kSub,kSub,end)' );

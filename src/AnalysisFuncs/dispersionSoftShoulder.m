@@ -12,7 +12,7 @@
 % paramVec(8) = lrL2 
 % paramVec(9) = c
 %
-function [disp] = dispersionSoftShoulder( paramVec,  plotMe )
+function [disper] = dispersionSoftShoulder( paramVec,  plotMe )
 % set plot to zero if no specified
 if nargin == 1
   plotMe = 0;
@@ -71,6 +71,8 @@ omegaPeaks = omegaPeaks( omegaPeaks >= 0);
 [omegaMax, omegaMaxInd] = max(omegaPeaks);
 kPeaks = k1pos( maxInds );
 kPeakMax = kPeaks(omegaMaxInd);
+% grab all unstable inds
+allUnstableInds = find( omegaSlice > 0 );
 % Guess at the crystal
 if length(omegaPeaks) == 1
   phaseInfo = 'No unstable peaks';
@@ -96,21 +98,26 @@ elseif length(omegaPeaks) == 3
   end
 end
 % Store
-disp.params = paramVec;
-disp.omega = omega;
-disp.omegaSlice = omegaSlice;
-disp.k1pos = k1pos;
-disp.omegaPeaks = omegaPeaks;
-disp.omegaMax = omegaMax;
-disp.kPeaks = kPeaks;
-disp.kPeaksInds = maxInds;
-disp.kPeakMax = kPeakMax;
-disp.kPeakMaxInd = maxInds(omegaMaxInd);
-disp.kAllPeakInds = allPeaksInds;
-disp.kAllPeaks = k1pos(allPeaksInds);
-disp.phase = phase;
-disp.phaseInfo = phaseInfo;
-disp.phaseId = phaseId;
+disper.params = paramVec;
+disper.omega = omega;
+disper.omegaSlice = omegaSlice;
+disper.k1pos = k1pos;
+disper.omegaPeaks = omegaPeaks;
+disper.omegaMax = omegaMax;
+disper.kPeaks = kPeaks;
+disper.kPeaksInds = maxInds;
+disper.kPeakMax = kPeakMax;
+disper.kPeakMaxInd = maxInds(omegaMaxInd);
+disper.kPeakMaxN = disper.kPeakMaxInd - 1;
+disper.kAllPeakInds = allPeaksInds;
+disper.kAllPeakNs = allPeaksInds-1;
+disper.kAllPeaks = k1pos(allPeaksInds);
+disper.kAllUnstableInds = allUnstableInds;
+disper.kAllUnstableNs = allUnstableInds-1;
+disper.kAllUnstable = k1pos(allUnstableInds);
+disper.phase = phase;
+disper.phaseInfo = phaseInfo;
+disper.phaseId = phaseId;
 % plots
 if plotMe
   % min inds for plotting
