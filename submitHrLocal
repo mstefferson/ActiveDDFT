@@ -1,0 +1,1 @@
+matlab -nodesktop -nodisplay < runHardRod.m &> hr.out &
