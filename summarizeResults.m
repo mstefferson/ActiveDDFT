@@ -18,168 +18,174 @@ try
   % get files
   dirs2analyze = dir( [path2dirs '/Hr_*'] );
   numFiles = length( dirs2analyze );
-  % allocate
-  counter = zeros( numFiles, 1 );
-  filename = cell( numFiles, 1 );
-  particleType = cell( numFiles, 1 );
-  shortRange = cell( numFiles, 1 );
-  longRange = cell( numFiles, 1 );
-  diagOp = zeros( numFiles, 1 );
-  iC = zeros( numFiles, 1 );
-  sM = zeros( numFiles, 1 );
-  trId = zeros( numFiles, 1 );
-  rId = zeros( numFiles, 1 );
-  longL1 = zeros( numFiles, 1 );
-  longL2 = zeros( numFiles, 1 );
-  longE1 = zeros( numFiles, 1 );
-  longE2 = zeros( numFiles, 1 );
-  n1 = zeros( numFiles, 1 );
-  n2 = zeros( numFiles, 1 );
-  n3 = zeros( numFiles, 1 );
-  l1 = zeros( numFiles, 1 );
-  l2 = zeros( numFiles, 1 );
-  l3 = zeros( numFiles, 1 );
-  dt = zeros( numFiles, 1 );
-  tTot = zeros( numFiles, 1 );
-  ssEpsilon = zeros( numFiles, 1 );
-  numModesPert1 = zeros( numFiles, 1 );
-  numModesPert2 = zeros( numFiles, 1 );
-  numModesPert3 = zeros( numFiles, 1 );
-  bc = zeros( numFiles, 1 );
-  c = zeros( numFiles, 1 );
-  vD = zeros( numFiles, 1 );
-  steady = zeros( numFiles, 1 );
-  broken = zeros( numFiles, 1 );
-  whatBroke = cell( numFiles, 1 );
-  kPosNumPeaks = zeros( numFiles, 1);
-  kPosDist = cell( numFiles, 1);
-  kPosPeaks = cell( numFiles, 1);
-  kPosKa = cell( numFiles, 1);
-  realLatticeSpacing = zeros( numFiles, 1);
-  spatPhase = cell( numFiles, 1);
-  kAngNumPeaks = zeros( numFiles, 1);
-  kAngDist = cell( numFiles, 1);
-  kAngPeaks = cell( numFiles, 1);
-  kAngKa = cell( numFiles, 1);
-  angLatticeSpacing = zeros( numFiles, 1);
-  angPhase = cell( numFiles, 1);
-  comments = cell( numFiles, 1);
-  for ii = 1:numFiles
-    % get path to params
-    fileTemp = [path2dirs '/' dirs2analyze(ii).name];
-    loadMe = dir( [fileTemp '/params_*'] );
-    load( [fileTemp '/' loadMe.name ] );
-    % store everything
-    counter(ii) = ii;
-    filename{ii} = dirs2analyze(ii).name;
-    particleType{ii} = particleObj.type;
-    shortRange{ii} = particleObj.interHb;
-    longRange{ii} = particleObj.interLr;
-    diagOp(ii) = flags.DiagLop;
-    iC(ii) = rhoInit.IntCond;
-    sM(ii) = flags.StepMeth;
-    trId(ii) = runObj.trialID;
-    rId(ii) = runObj.runID;
-    longL1(ii) =  particleObj.lrLs1;
-    longL2(ii) = particleObj.lrLs2;
-    longE1(ii) = particleObj.lrEs1;
-    longE2(ii) = particleObj.lrEs2;
-    n1(ii) = systemObj.n1;
-    n2(ii) = systemObj.n2;
-    n3(ii) = systemObj.n3;
-    l1(ii) = systemObj.l1;
-    l2(ii) = systemObj.l2;
-    l3(ii) = systemObj.l3;
-    dt(ii) = timeObj.dt;
-    numModesPert1(ii) = rhoInit.NumModesX;
-    numModesPert2(ii) = rhoInit.NumModesY;
-    numModesPert3(ii) = rhoInit.NumModesM;
-    tTot(ii) = timeObj.t_tot;
-    ssEpsilon(ii) =  timeObj.ss_epsilon;
-    bc(ii) = systemObj.bc;
-    c(ii) = systemObj.c;
-    vD(ii) = particleObj.vD;
-    steady(ii) = denRecObj.SteadyState;
-    broken(ii) = denRecObj.DidIBreak;
-    whatBroke{ii} = denRecObj.whatBroke;
-    comments{ii} = genComment;
-    % Get spatial peaks
-    if isfield( denRecObj, 'rhoFinal' )
-      rhoFinal = denRecObj.rhoFinal;
-    else
-      loadMe = dir( [fileTemp '/rhoFinal_*'] );
+  if numFiles > 0
+    % allocate
+    counter = zeros( numFiles, 1 );
+    filename = cell( numFiles, 1 );
+    particleType = cell( numFiles, 1 );
+    shortRange = cell( numFiles, 1 );
+    longRange = cell( numFiles, 1 );
+    diagOp = zeros( numFiles, 1 );
+    iC = zeros( numFiles, 1 );
+    sM = zeros( numFiles, 1 );
+    trId = zeros( numFiles, 1 );
+    rId = zeros( numFiles, 1 );
+    longL1 = zeros( numFiles, 1 );
+    longL2 = zeros( numFiles, 1 );
+    longE1 = zeros( numFiles, 1 );
+    longE2 = zeros( numFiles, 1 );
+    n1 = zeros( numFiles, 1 );
+    n2 = zeros( numFiles, 1 );
+    n3 = zeros( numFiles, 1 );
+    l1 = zeros( numFiles, 1 );
+    l2 = zeros( numFiles, 1 );
+    l3 = zeros( numFiles, 1 );
+    dt = zeros( numFiles, 1 );
+    tTot = zeros( numFiles, 1 );
+    ssEpsilon = zeros( numFiles, 1 );
+    numModesPert1 = zeros( numFiles, 1 );
+    numModesPert2 = zeros( numFiles, 1 );
+    numModesPert3 = zeros( numFiles, 1 );
+    bc = zeros( numFiles, 1 );
+    c = zeros( numFiles, 1 );
+    vD = zeros( numFiles, 1 );
+    steady = zeros( numFiles, 1 );
+    broken = zeros( numFiles, 1 );
+    whatBroke = cell( numFiles, 1 );
+    kPosNumPeaks = zeros( numFiles, 1);
+    kPosDist = cell( numFiles, 1);
+    kPosPeaks = cell( numFiles, 1);
+    kPosKa = cell( numFiles, 1);
+    realLatticeSpacing = zeros( numFiles, 1);
+    spatPhase = cell( numFiles, 1);
+    kAngNumPeaks = zeros( numFiles, 1);
+    kAngDist = cell( numFiles, 1);
+    kAngPeaks = cell( numFiles, 1);
+    kAngKa = cell( numFiles, 1);
+    angLatticeSpacing = zeros( numFiles, 1);
+    angPhase = cell( numFiles, 1);
+    comments = cell( numFiles, 1);
+    for ii = 1:numFiles
+      % get path to params
+      fileTemp = [path2dirs '/' dirs2analyze(ii).name];
+      loadMe = dir( [fileTemp '/params_*'] );
       load( [fileTemp '/' loadMe.name ] );
-      rhoFinal = rho;
+      % store everything
+      counter(ii) = ii;
+      filename{ii} = dirs2analyze(ii).name;
+      particleType{ii} = particleObj.type;
+      shortRange{ii} = particleObj.interHb;
+      longRange{ii} = particleObj.interLr;
+      diagOp(ii) = flags.DiagLop;
+      iC(ii) = rhoInit.IntCond;
+      sM(ii) = flags.StepMeth;
+      trId(ii) = runObj.trialID;
+      rId(ii) = runObj.runID;
+      longL1(ii) =  particleObj.lrLs1;
+      longL2(ii) = particleObj.lrLs2;
+      longE1(ii) = particleObj.lrEs1;
+      longE2(ii) = particleObj.lrEs2;
+      n1(ii) = systemObj.n1;
+      n2(ii) = systemObj.n2;
+      n3(ii) = systemObj.n3;
+      l1(ii) = systemObj.l1;
+      l2(ii) = systemObj.l2;
+      l3(ii) = systemObj.l3;
+      dt(ii) = timeObj.dt;
+      numModesPert1(ii) = rhoInit.NumModesX;
+      numModesPert2(ii) = rhoInit.NumModesY;
+      numModesPert3(ii) = rhoInit.NumModesM;
+      tTot(ii) = timeObj.t_tot;
+      ssEpsilon(ii) =  timeObj.ss_epsilon;
+      bc(ii) = systemObj.bc;
+      c(ii) = systemObj.c;
+      vD(ii) = particleObj.vD;
+      steady(ii) = denRecObj.SteadyState;
+      broken(ii) = denRecObj.DidIBreak;
+      whatBroke{ii} = denRecObj.whatBroke;
+      comments{ii} = genComment;
+      % Get spatial peaks
+      if isfield( denRecObj, 'rhoFinal' )
+        rhoFinal = denRecObj.rhoFinal;
+      else
+        loadMe = dir( [fileTemp '/rhoFinal_*'] );
+        load( [fileTemp '/' loadMe.name ] );
+        rhoFinal = rho;
+      end
+      if systemObj.n3 == 1
+        C = rhoFinal;
+      else
+        dx3 = systemObj.l3 / systemObj.n3;
+        x3 = 0:dx3:systemObj.l3 - dx3;
+        C = trapz_periodic( x3, rhoFinal, 3 );
+      end
+      peaks = getCrystalPeaks( C, systemObj.l1, plotPeaks );
+      kPosNumPeaks(ii) = peaks.numPeaksK;
+      kPosDist{ii} = peaks.dist2PeaksPos;
+      kPosPeaks{ii} = peaks.kVecPos;
+      kPosKa{ii} = peaks.ka;
+      realLatticeSpacing(ii) = peaks.a;
+      % record phase. just two for now
+      if peaks.numPeaksK == 1
+        spatPhase{ii} = 'Liquid';
+      elseif peaks.numPeaksK == 3
+        spatPhase{ii} = 'Band';
+      elseif peaks.numPeaksK == 7
+        if peaks.ka > 4
+          spatPhase{ii} = 'Crystal B';
+        else
+          spatPhase{ii} = 'Crystal A';
+        end
+      else
+        spatPhase{ii} = 'Unknown';
+      end
+      % angular
+      if systemObj.n3 > 1
+        dx1 = systemObj.l1 / systemObj.n1;
+        dx2 = systemObj.l2 / systemObj.n2;
+        x1 = 0:dx1:systemObj.l1 - dx1;
+        x2 = 0:dx2:systemObj.l2 - dx2;
+        f = trapz_periodic( x1, trapz_periodic( x2, denRecObj.rhoFinal, 2 ), 1 );
+      else
+        f = 1;
+      end
+      peaks = getCrystalPeaks( f, systemObj.l3, plotPeaks );
+      kAngNumPeaks(ii) = peaks.numPeaksK;
+      kAngDist{ii} = peaks.dist2PeaksPos;
+      kAngPeaks{ii} = peaks.kVecPos;
+      kAngKa{ii} = peaks.ka;
+      angLatticeSpacing(ii) = peaks.a;
+      % record angular phase. just two for now
+      if peaks.numPeaksK == 1
+        angPhase{ii} = 'Isotropic';
+      else
+        angPhase{ii} = 'Nematic';
+      end
     end
-    if systemObj.n3 == 1
-      C = rhoFinal;
-    else
-      dx3 = systemObj.l3 / systemObj.n3;
-      x3 = 0:dx3:systemObj.l3 - dx3;
-      C = trapz_periodic( x3, rhoFinal, 3 );
-    end
-    peaks = getCrystalPeaks( C, systemObj.l1, plotPeaks );
+    % create a table
     kPosNumPeaks(ii) = peaks.numPeaksK;
     kPosDist{ii} = peaks.dist2PeaksPos;
     kPosPeaks{ii} = peaks.kVecPos;
     kPosKa{ii} = peaks.ka;
-    realLatticeSpacing(ii) = peaks.a;
-    % record phase. just two for now
-    if peaks.numPeaksK == 1
-      spatPhase{ii} = 'Liquid';
-    elseif peaks.numPeaksK == 3
-      spatPhase{ii} = 'Band';
-    elseif peaks.numPeaksK == 7
-      if peaks.ka > 4
-        spatPhase{ii} = 'Crystal B';
-      else
-        spatPhase{ii} = 'Crystal A';
-      end
-    else
-      spatPhase{ii} = 'Unknown';
-    end
-    % angular
-    if systemObj.n3 > 1
-      dx1 = systemObj.l1 / systemObj.n1;
-      dx2 = systemObj.l2 / systemObj.n2;
-      x1 = 0:dx1:systemObj.l1 - dx1;
-      x2 = 0:dx2:systemObj.l2 - dx2;
-      f = trapz_periodic( x1, trapz_periodic( x2, denRecObj.rhoFinal, 2 ), 1 );
-    else
-      f = 1;
-    end
-    peaks = getCrystalPeaks( f, systemObj.l3, plotPeaks );
-    kAngNumPeaks(ii) = peaks.numPeaksK;
-    kAngDist{ii} = peaks.dist2PeaksPos;
-    kAngPeaks{ii} = peaks.kVecPos;
-    kAngKa{ii} = peaks.ka;
-    angLatticeSpacing(ii) = peaks.a;
-    % record angular phase. just two for now
-    if peaks.numPeaksK == 1
-      angPhase{ii} = 'Isotropic';
-    else
-      angPhase{ii} = 'Nematic';
-    end
+    T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
+      iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
+      l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
+      kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
+      kAngNumPeaks, kAngDist, kAngPeaks, angLatticeSpacing, kAngKa,...
+      spatPhase, angPhase, comments );
+  else
+    T = [];
+    fprintf('No files homie\n')
   end
-  % create a table
-  kPosNumPeaks(ii) = peaks.numPeaksK;
-  kPosDist{ii} = peaks.dist2PeaksPos;
-  kPosPeaks{ii} = peaks.kVecPos;
-  kPosKa{ii} = peaks.ka;
-  T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
-    iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
-    l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
-    kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
-    kAngNumPeaks, kAngDist, kAngPeaks, angLatticeSpacing, kAngKa,...
-    spatPhase, angPhase, comments );
- % save if
- if saveMe
-   saveName = [saveRoot saveId];
-   save( [saveName '.mat'], 'T' );
-   writetable( T, [saveName '.csv'] );
-   movefile( [saveName '*'], path2dirs )
- end
+  % save if
+  if saveMe
+    saveName = [saveRoot saveId];
+    save( [saveName '.mat'], 'T' );
+    writetable( T, [saveName '.csv'] );
+    movefile( [saveName '*'], path2dirs )
+  end
 catch err
   fprintf('%s', err.getReport('extended')) ;
   keyboard
 end
+

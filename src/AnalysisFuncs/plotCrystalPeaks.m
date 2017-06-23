@@ -2,6 +2,8 @@
 function plotCrystalPeaks( cFt, c, k1, k2, timeRec, systemObj, particleObj, saveMe)
 % add paths for now
 addpath( genpath( './src' ) )
+% square cFt
+cFt = abs( cFt ) .^ 2;
 % run dispererion
 paramVec = [ systemObj.n1, systemObj.n2, systemObj.l1, systemObj.l2, ...
   particleObj.lrEs1, particleObj.lrEs2, ...
@@ -56,12 +58,14 @@ c2plot( c2plot < max( c2plot(:,1) / 100 ) ) = 0;
 [~,getIndsForPeaks1] = findpeaks( c2plot(:,1) );
 [~,getIndsForPeaks2] = findpeaks( c2plot(:,end) );
 getIndsForPeaks = unique( [getIndsForPeaks1; getIndsForPeaks2 ] );
-text4plot = cellstr( num2str( getIndsForPeaks, 'n = %d' ) );
-maxC2plot = max( c2plot, [], 2 );
-for ii = 1:length(text4plot) 
-  text( 2*pi/systemObj.l1*(getIndsForPeaks(ii)-0.5 ), ...
-    maxC2plot( getIndsForPeaks(ii) ) .* 1.01 , ...
-    text4plot{ii} );
+if ~isempty(getIndsForPeaks)
+  text4plot = cellstr( num2str( getIndsForPeaks, 'n = %d' ) );
+  maxC2plot = max( c2plot, [], 2 );
+  for ii = 1:length(text4plot)
+    text( 2*pi/systemObj.l1*(getIndsForPeaks(ii)-0.5 ), ...
+      maxC2plot( getIndsForPeaks(ii) ) .* 1.01 , ...
+      text4plot{ii} );
+  end
 end
 xlabel( ' $$ k_1 $$ '); ylabel('Amplitude');
 title( '$$ k_1 $$ modes')
@@ -82,12 +86,14 @@ c2plot( c2plot < max( c2plot(:,1) / 100 ) ) = 0;
 [~,getIndsForPeaks1] = findpeaks( c2plot(:,1) );
 [~,getIndsForPeaks2] = findpeaks( c2plot(:,end) );
 getIndsForPeaks = unique( [getIndsForPeaks1; getIndsForPeaks2 ] );
-text4plot = cellstr( num2str( getIndsForPeaks, 'n = %d' ) );
-maxC2plot = max( c2plot, [], 2 );
-for ii = 1:length(text4plot) 
-  text( 2*pi/systemObj.l1*(getIndsForPeaks(ii)-0.5 ), ...
-    maxC2plot( getIndsForPeaks(ii) ) .* 1.01 , ...
-    text4plot{ii} );
+if ~isempty(getIndsForPeaks)
+  text4plot = cellstr( num2str( getIndsForPeaks, 'n = %d' ) );
+  maxC2plot = max( c2plot, [], 2 );
+  for ii = 1:length(text4plot)
+    text( 2*pi/systemObj.l1*(getIndsForPeaks(ii)-0.5 ), ...
+      maxC2plot( getIndsForPeaks(ii) ) .* 1.01 , ...
+      text4plot{ii} );
+  end
 end
 xlabel( ' $$ k_2 $$ '); ylabel('Amplitude');
 title( '$$ k_2 $$ modes')
@@ -248,7 +254,7 @@ if ~isempty(disper.kAllUnstableInds)
     saveas( gcf, figname, 'jpg' )
   end
 end
-% all peaks 
+% all peaks
 maxC = max(c(:));
 minC = min(c(:));
 meanC = min(c(:));

@@ -20,8 +20,11 @@ if n > 1
   centerInd1 = floor( n1 / 2 ) + 1;
   centerInd2 = floor( n2 / 2 ) + 1;
   % number of mode cutoff
-  numModes1 = min( 12, n1-1);
-  numModes2 = min( 12, n2-1);
+  % crystal b has smalled spacing a = 1.21. Convert that to mode number
+  aMin = 1.21;
+  nMode = ceil( 2 * lBox / (sqrt(3)*aMin) );
+  numModes1 = min( 2*nMode, n1-1);
+  numModes2 = min( 2*nMode, n2-1);
   inds1 = centerInd1 - numModes1 : centerInd1 + numModes1;
   inds2 = centerInd2 - numModes2 : centerInd2 + numModes2;
   numInds1 = length(inds1);

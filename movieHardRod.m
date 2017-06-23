@@ -9,7 +9,7 @@ try
   currentDir = pwd;
   addpath( genpath( [currentDir '/src'] ) );
   %make output directories if they don't exist
-  if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end 
+  if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end
   % see how many dirs to analyze
   dir2Analyze = dir( './runOPfiles/Hr_*');
   numDirs = length(dir2Analyze);
@@ -117,12 +117,14 @@ try
       saveas(gcf, [figtl2 '.jpg'],'jpg')
       % Plot final slices of final order parameters
       if systemObj.n3 > 1
-        sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-        sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
-          OPobj.NOP_rec(:,:,end), systemObj, ...
-          gridObj, rhoFinal, sliceSaveTag )
-        movefile([sliceSaveTag '*'], dirFullPath);
+        if strcmp( particleObj.interHb, 'mayer' )
+          sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+            systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+          sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+            OPobj.NOP_rec(:,:,end), systemObj, ...
+            gridObj, rhoFinal, sliceSaveTag )
+          movefile([sliceSaveTag '*'], dirFullPath);
+        end
         % Plot max order parameters vs time
         maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
@@ -135,14 +137,24 @@ try
         plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       end
       % crystal peaks
-      if strcmp( particleObj.interLr, 'softshoulder' ) && systemObj.n3 == 1
-        cFt2 = abs( reshape( runSave.DenFT_rec(:,:,1,1:length(OPobj.OpTimeRecVec)) , ...
-        [systemObj.n1, systemObj.n2, length(OPobj.OpTimeRecVec) ] ) ) .^ 2;
-        if length(OPobj.OpTimeRecVec) > 1
-          plotCrystalPeaks( cFt2, rhoFinal, gridObj.k1, gridObj.k2, ...
-           OPobj.OpTimeRecVec, systemObj, particleObj, 1 );
-          movefile( 'kAmps*', dirFullPath );
+      nFrames = length(OPobj.OpTimeRecVec);
+      if strcmp( particleObj.interLr, 'softshoulder' ) && nFrames > 1
+        
+        % get concentration in k space
+        if systemObj.n3 == 1
+          cFt = reshape( runSave.DenFT_rec(:,:,1,1:nFrames) , ...
+            [systemObj.n1, systemObj.n2, nFrames ] );
+          cFinal = rhoFinal;
+        else
+          cFt = zeros( systemObj.n1, systemObj.n2, nFrames );
+          for nn = 1:nFrames
+            cFt(:,:,nn) = fftshift( fftn( opSave.C_rec(:,:,nn) ) );
+          end
+          cFinal = opSave.C_rec(:,:,end);
         end
+        plotCrystalPeaks( cFt, cFinal, gridObj.k1, gridObj.k2, ...
+          OPobj.OpTimeRecVec, systemObj, particleObj, 1 );
+        movefile( 'kAmps*', dirFullPath );
       end
       % move it avi and figs into directory
       movefile([movStr '*'], dirFullPath);
