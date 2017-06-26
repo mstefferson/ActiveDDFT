@@ -119,19 +119,19 @@ try
         x3 = 0:dx3:systemObj.l3 - dx3;
         C = trapz_periodic( x3, rhoFinal, 3 );
       end
-      peaks = getCrystalPeaks( C, systemObj.l1, plotPeaks );
-      kPosNumPeaks(ii) = peaks.numPeaksK;
-      kPosDist{ii} = peaks.dist2PeaksPos;
-      kPosPeaks{ii} = peaks.kVecPos;
-      kPosKa{ii} = peaks.ka;
-      realLatticeSpacing(ii) = peaks.a;
+      cryPeaks = getCrystalPeaks( C, systemObj.l1, plotPeaks );
+      kPosNumPeaks(ii) = cryPeaks.numPeaksK;
+      kPosDist{ii} = cryPeaks.dist2PeaksPos;
+      kPosPeaks{ii} = cryPeaks.kVecPos;
+      kPosKa{ii} = cryPeaks.ka;
+      realLatticeSpacing(ii) = cryPeaks.a;
       % record phase. just two for now
-      if peaks.numPeaksK == 1
+      if ~isfinite(cryPeaks.a)
         spatPhase{ii} = 'Liquid';
-      elseif peaks.numPeaksK == 3
+      elseif cryPeaks.numPeaksK == 3
         spatPhase{ii} = 'Band';
-      elseif peaks.numPeaksK == 7
-        if peaks.ka > 4
+      elseif cryPeaks.numPeaksK == 7
+        if cryPeaks.ka > 4
           spatPhase{ii} = 'Crystal B';
         else
           spatPhase{ii} = 'Crystal A';
@@ -145,28 +145,29 @@ try
         dx2 = systemObj.l2 / systemObj.n2;
         x1 = 0:dx1:systemObj.l1 - dx1;
         x2 = 0:dx2:systemObj.l2 - dx2;
-        f = trapz_periodic( x1, trapz_periodic( x2, denRecObj.rhoFinal, 2 ), 1 );
+        f = reshape( trapz_periodic( x1, trapz_periodic( x2, rhoFinal, 2 ), 1 ),...
+          [1 systemObj.n3] );
       else
         f = 1;
       end
-      peaks = getCrystalPeaks( f, systemObj.l3, plotPeaks );
-      kAngNumPeaks(ii) = peaks.numPeaksK;
-      kAngDist{ii} = peaks.dist2PeaksPos;
-      kAngPeaks{ii} = peaks.kVecPos;
-      kAngKa{ii} = peaks.ka;
-      angLatticeSpacing(ii) = peaks.a;
+      cryPeaks = getCrystalPeaks( f, systemObj.l3, plotPeaks );
+      kAngNumPeaks(ii) = cryPeaks.numPeaksK;
+      kAngDist{ii} = cryPeaks.dist2PeaksPos;
+      kAngPeaks{ii} = cryPeaks.kVecPos;
+      kAngKa{ii} = cryPeaks.ka;
+      angLatticeSpacing(ii) = cryPeaks.a;
       % record angular phase. just two for now
-      if peaks.numPeaksK == 1
+      if cryPeaks.numPeaksK == 1
         angPhase{ii} = 'Isotropic';
       else
         angPhase{ii} = 'Nematic';
       end
     end
     % create a table
-    kPosNumPeaks(ii) = peaks.numPeaksK;
-    kPosDist{ii} = peaks.dist2PeaksPos;
-    kPosPeaks{ii} = peaks.kVecPos;
-    kPosKa{ii} = peaks.ka;
+    kPosNumPeaks(ii) = cryPeaks.numPeaksK;
+    kPosDist{ii} = cryPeaks.dist2PeaksPos;
+    kPosPeaks{ii} = cryPeaks.kVecPos;
+    kPosKa{ii} = cryPeaks.ka;
     T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
       iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
       l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
@@ -185,7 +186,7 @@ try
     movefile( [saveName '*'], path2dirs )
   end
 catch err
-  fprintf('%s', err.getReport('extended')) ;
+  fprintf('%s\n', err.getReport('extended')) ;
   keyboard
 end
 
