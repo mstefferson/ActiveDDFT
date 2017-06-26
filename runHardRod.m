@@ -15,9 +15,11 @@ if exist('Params.mat','file') == 0
   if exist('initParams.m','file') == 0
     cpParams();
   end
+  fprintf('No Params.mat found. Running initParams\n');
   initParams();
 end
 load Params.mat;
+fprintf('Params locked and loaded\n');
 movefile('Params.mat', 'ParamsRunning.mat');
 % Fix things
 % Change odd gridspacings to even unless it's one.
