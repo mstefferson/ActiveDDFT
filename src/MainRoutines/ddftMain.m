@@ -28,6 +28,23 @@ try
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
+  % set up the time object
+  dtOrig = timeObj.dt ;
+  if timeObj.scaleDt && particleObj.vD ~=0
+    timeObj.dt = timeObj.dt / particleObj.vD;
+  end
+  % Fix the time
+  ss_epsilon = timeObj.ss_epsilon;
+  scaleDt = timeObj.scaleDt;
+  [timeObj]= ...
+    TimeStepRecMaker(timeObj.dt,timeObj.t_tot,...
+    timeObj.t_rec,timeObj.t_write);
+  % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
+  % steady state instead of d rho
+  timeObj.ss_epsilon = ss_epsilon;
+  timeObj.ss_epsilon_dt = ss_epsilon .* timeObj.dt;
+  timeObj.scaleDt = scaleDt;
+  timeObj.dt_orig = dtOrig;
   % long range stuff
   if ~isempty( particleObj.interLr )
     particleObj.lrLs1 = paramVec(11); % Long range length scale 1

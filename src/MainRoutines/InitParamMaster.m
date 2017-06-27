@@ -3,7 +3,7 @@
 % Main flagMaster
 flagMaster.SaveMe       = 1; % Saving
 flagMaster.Verbose      = 0; % Prints run times
-flagMaster.DiagLop      = 0; % Diag operator = 1. off diag = 0
+flagMaster.DiagLop      = 1; % Diag operator = 1. off diag = 0
 flagMaster.Interactions = 1; % Int = 1. No Int = 0
 flagMaster.MakeMovies   = 0; % No movies if save is zero
 flagMaster.MakeOP       = 1; % No OPs if save is zero
@@ -11,6 +11,7 @@ flagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
 flagMaster.SquareBox    = 0; % Forces box to be square
 flagMaster.StepMeth     = [6]; % Stepping (integrating) method (vec)
 flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
+flagMaster.scaleDt = 1; % scale dt by velocity
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
 % Can be vector if (vec) is in comment
@@ -46,6 +47,7 @@ timeMaster.t_rec      = 0.1;  % time elapsed before recording
 timeMaster.t_write    = 0.2;  % time elapsed before writing to file
 timeMaster.t_tot      = 1.0;  % total run time
 timeMaster.ss_epsilon = 1 * 10^(-5); % steady state condition dRho
+timeMaster.scaleDt = flagMaster.scaleDt;
 %%%%%%%%% Initial Condition %%%%%%%%%%%%%%%%%%%%%
 % Key
 % The number of k-modes above and below k = 0 added as a perturbation

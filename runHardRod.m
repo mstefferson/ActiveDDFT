@@ -55,9 +55,6 @@ end
 if rhoInitMaster.gP(2) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end
 if rhoInitMaster.gP(5) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end
 if rhoInitMaster.gP(8) == 0; rhoInitMaster.gP(8) = min(systemMaster.l1)/2; end
-% Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
-% steady state instead of d rho
-timeMaster.ss_epsilon_dt = timeMaster.ss_epsilon .* timeMaster.dt;
 % Fix Ls if we want the box to be square
 if flagMaster.SquareBox == 1
   systemMaster.L_box = unique( [systemMaster.l1 systemMaster.l2] );
@@ -89,6 +86,7 @@ if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
 %ParamObj = ParamMaster;
 systemObj = systemMaster;
 particleObj = particleMaster;
+timeObj = timeMaster;
 rhoInit  = rhoInitMaster;
 flags    = flagMaster;
 runObj  = runMaster;
@@ -115,14 +113,6 @@ if flags.rndStrtUpSeed
 else
   fprintf('Using MATLABs original seed\n');
 end
-% Fix the time
-fprintf('Making time obj\n');
-[timeObj]= ...
-  TimeStepRecMaker(timeMaster.dt,timeMaster.t_tot,...
-  timeMaster.t_rec,timeMaster.t_write);
-timeObj.ss_epsilon = timeMaster.ss_epsilon;
-timeObj.ss_epsilon_dt = timeMaster.ss_epsilon_dt;
-fprintf('Finished time obj\n');
 % Display everythin
 disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
 % Make paramMat
