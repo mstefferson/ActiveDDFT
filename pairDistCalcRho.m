@@ -46,25 +46,18 @@ for ii = 1:n1
     num = trapz_periodic( phi, vec2Int, 3 );
     den = ( c(ii,jj) .* c(inds1, inds2) );
     newterm = num ./ den;
-%     newtermNoNorm = den + num;
     reshapeNewterm = reshape( newterm, [1, 1, totalInds1, totalInds2] );
-%     reshapeNewtermNoNorm = reshape( newtermNoNorm, [1, 1, totalInds1, totalInds2] );
     pDist( ii, jj, inds1, inds2 ) = pDist( ii, jj, inds1, inds2 ) + reshapeNewterm;
-%     pDistNoNorm( ii, jj, inds1, inds2 ) = reshapeNewtermNoNorm;
   end
 end
 
 %% new attempt
 expV =  mayer + 1;
 pDistDelta = zeros( n1, n2);
-% vec2Int = zeros( totalInds1, totalInds2, n3 );
-% vec2Int = zeros( n1, n2, n3 );
 vec2Int = zeros( 1, n3 );
-% indsDelta1 = 1:n1;
 shiftInds1 = -n1/2:1:n1/2;
 shiftInds2 = -n2/2:1:n2/2;
 allInds1 = 1:n1;
-% indsDelta2 = 1:n2;
 allInds2 = 1:n2;
 allInds3 = 1:n3;
 try
@@ -72,7 +65,6 @@ try
   for ii = 1:n1
     shift1Temp = shiftInds1(ii);
     % inds for loop over delta x
-    %   shiftInds1 = mod( (shift1Temp-1) + indsDelta1 - 1, n1 ) + 1;
     shiftInds1 = mod( (shift1Temp-1) + allInds1 - 1, n1 ) + 1;
     for jj = 1:n2
       shift2Temp = shiftInds2(jj);
@@ -81,16 +73,9 @@ try
       % integrate of r', u' for each u.
       for mm = 1:n3
         shiftInds3 = mod( (mm-1) +  allInds3 - 1, n3 ) + 1;
-        %       mat2IntTemp = rho(indsDelta1, indsDelta2, indsDelta3) .* rho( inds1, inds2, inds3)...
-        %         .* expV( indsDelta1, indsDelta2, indsDelta3 );
         mat2IntTemp = rho(allInds1, allInds2, allInds3) .* rho( shiftInds1, shiftInds2, shiftInds3);
-        
-        %       vec2Int(:,:,mm) = trapz_periodic( phi, mat2IntTemp, 3 );
         vec2Int(mm) = trapz_periodic( x1, trapz_periodic( x2, trapz_periodic( phi, mat2IntTemp, 3 ), 2 ), 1);
       end
-      %     num = trapz_periodic( phi, vec2Int, 3 ) ;
-      %     num = trapz_periodic( phi, vec2Int.* ...
-      %       repmat( expV( ii, jj, indsDelta3 ), [n1, n2] ), 3 );
       pDistDelta( ii, jj ) = trapz_periodic( phi, reshape( expV( ii, jj, allInds3), [1 n3] ) .* vec2Int );
     end
     ii
@@ -113,7 +98,6 @@ pDistDelta = 1 ./ normFac .* pDistDeltaNoNorm ;
 
 %% Calculate average
 pDistAve= ones( n1, n2);
-% pDistAveNoNorm = ones( n1, n2);
 combInd = combvec( 1:n1, 1:n2 );
 allInds1 = combInd(1,:).';
 allInds2 = combInd(2,:).';
@@ -124,9 +108,7 @@ for ii = indsDelta1
     jj2 = mod( allInds2 + (jj-2), n2 ) + 1 ;
     inds = sub2ind( matSize, allInds1', allInds2', ii2',  jj2' );
     tempMean =  mean( pDist( inds ) );
-    %     tempMeanNoNorm =  mean( pDistNoNorm( inds ) );
     pDistAve(ii,jj) =  tempMean;
-    %     pDistAveNoNorm(ii,jj) = tempMeanNoNorm;
   end
 end
 % center
