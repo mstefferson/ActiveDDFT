@@ -30,6 +30,8 @@ elseif strcmp( particleObj.interLr, 'softshoulder')
       if kCrys < min(kUnstable ) || kCrys > max( kUnstable )
         fprintf('Reaching crystal may not be possible given the box size\n');
       end
+      % rep it
+      rho =  1 / systemObj.l3 * repmat( rho, [1,1,systemObj.n3] );
     elseif strcmp( disper.phase, 'crystal B' )
       a = 1.21;
       [rho, crysGrid] = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
@@ -40,14 +42,14 @@ elseif strcmp( particleObj.interLr, 'softshoulder')
       if kCrys < min(kUnstable ) || kCrys > max( kUnstable )
         fprintf('Reaching crystal may not be possible given the box size \n');
       end
+      % rep it
+      rho =  1 / systemObj.l3 * repmat( rho, [1,1,systemObj.n3] );
     else
       a = Inf;
       [rho] = IntDenCalcIso(systemObj);
     end
     fprintf('Choosing soft shoulder %s with %.2f lattice spacing\n', ...
-      disper.phase, a );
-    % rep it
-    rho =  1 / systemObj.l3 * repmat( rho, [1,1,systemObj.n3] );
+      disper.phase, a );  
   else
     fprintf('Not making crystal, box not symmetric\n');
     error('Box must be symmetric');
