@@ -42,7 +42,7 @@ else
 end
 % Recording indecies
 jrectemp = 1; % Temporary holder for Density_rec
-jrec     = 2; % Actual index for runSave
+jrec     = timeObj.recStartInd; % Actual index for runSave
 jchunk   = 1; % Write chunk index
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 [Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
@@ -167,6 +167,7 @@ if shitIsFucked == 0
           RecIndTemp = RecIndTemp + 1;
           runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
           runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+          runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
           jrectemp = 0;
           jchunk = jchunk + 1;
         end
@@ -185,6 +186,7 @@ if shitIsFucked == 0
           if ~isempty(RecIndTemp)
             runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
             runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+            runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
           end
         end
         break
@@ -216,6 +218,7 @@ if flags.SaveMe
       RecIndTemp = RecIndTemp + 1;
       runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
       runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
+      runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
     end
     jrec = jrec + 1; % Still +1. Programs assumes this always happens
   end

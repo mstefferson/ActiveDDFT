@@ -1,188 +1,33 @@
-
-% Program is the main() for running the diffusion of 2D hard rods with
-% orientation. Program handles interactions using DDFT
-
-function  [ denRecObj ] = ...
-  ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
-% use latex for plots
-set(0,'defaulttextinterpreter','latex')
-% globals and init
-global runSave
-movieSuccess = 0;
-evolvedSucess = 0;
-movStr = '';
-try
-  % Set up denRecObj just in case code doesn't finish
-  denRecObj.didIrun = 0;
-  % Move parameter vector to obj
-  systemObj.n1 = paramVec(1);
-  systemObj.n2 = paramVec(2);
-  systemObj.n3 = paramVec(3);
-  systemObj.l1 = paramVec(4);
-  systemObj.l2 = paramVec(5);
-  particleObj.vD = paramVec(6);
-  systemObj.bc = paramVec(7);
-  rhoInit.IntCond = paramVec(8);
-  flags.StepMeth = paramVec(9);
-  runObj.runID = paramVec(10);
-  systemObj.c = systemObj.bc ./ particleObj.b;
-  systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
-  systemObj.lBox = [systemObj.l1 systemObj.l2];
-  % set up the time object
-  dtOrig = timeObj.dt ;
-  if timeObj.scaleDt && particleObj.vD ~=0
-    timeObj.dt = timeObj.dt / particleObj.vD;
+% Continue an unfinished run
+function [denRecObj] = continueHr()
+  % find parameters/runfiles. Make sure there is only one
+  paramslist = dirs('./params_*');
+  runlist = dirs('./run_*');
+  if length( runlist ) > 1 || length( paramslist ) > 1
+    error('too many runs to finish!')
   end
-  % Fix the time
-  ss_epsilon = timeObj.ss_epsilon;
-  scaleDt = timeObj.scaleDt;
-  [timeObj]= ...
-    TimeStepRecMaker(timeObj.dt,timeObj.t_tot,...
-    timeObj.t_rec,timeObj.t_write);
-  % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
-  % steady state instead of d rho
-  timeObj.ss_epsilon = ss_epsilon;
-  timeObj.ss_epsilon_dt = ss_epsilon .* timeObj.dt;
-  timeObj.scaleDt = scaleDt;
-  timeObj.dt_orig = dtOrig;
-  timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
-  % long range stuff
-  if ~isempty( particleObj.interLr )
-    particleObj.lrLs1 = paramVec(11); % Long range length scale 1
-    particleObj.lrLs2 = paramVec(12); % Long range length scale 2
-    particleObj.lrEs1 = paramVec(13); % Long range energy scale 1
-    particleObj.lrEs2 = paramVec(14); % Long range energy scale 2
-  end
-  % Set-up save paths, file names, and matfile
-  if flags.SaveMe
-    saveNameRun   = ['run_' filename];
-    saveNameRhoFinal   = ['rhoFinal_' filename];
-    saveNameParams = ['params_' filename];
-    dirName  = filename(1:end-4) ;
-    if flags.MakeOP == 0
-      dirName  = ['./runfiles/' dirName ];
-    else
-      saveNameOP   = ['op_' filename];
-      if flags.MakeMovies == 1
-        dirName  = ['./analyzedfiles/' dirName ];
-      else
-        dirName  = ['./runOPfiles/' dirName ];
-      end
-      opSave = matfile(saveNameOP,'Writable',true);
-    end
-    if exist(dirName,'dir') == 0
-      mkdir(dirName);
-    end
-    paramSave = matfile(saveNameParams,'Writable',true);
-    rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
-    runSave = matfile(saveNameRun,'Writable',true);
-    denRecObj.dirName = dirName; % Just in case
-  else
-    dirName = pwd;
-  end
-  % verbose
-  if flags.Verbose
-    if flags.AnisoDiff
-      fprintf('Running Anisotropic Diffusion\n');
-    else
-      fprintf('Running Isotropic Diffusion\n');
-    end
-  end
-  % Record how long things take
-  tMainID  = tic;
+  filename = runlist.name( 5:end );
+  % load params, matfile runs
+  load( paramslist.name )
+  saveNameRhoFinal   = ['rhoFinal_' filename];
+  runSave = matfile(runlist.name,'Writable',true);
+  rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
+  rho = runSave.Den_rec(:,:,:,end);
+  % get run time
+  ntCompleted = size( runSave.Den_rec, 4 );
+  nt_new = timeObj.N_time - ntCompleted;
+  timeObj.N_time = nt_new;
+  timeObj.recStartInd = ntCompleted + 1;
   % Create a file that holds warning print statements
   locString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(locString,'a+');    % a+ allows to append data
-  fprintf(lfid,'Starting main, current code\n');
-  % Make remaining objects
-  % Make all the grid stuff %
-  tGridID = tic;
-  [gridObj] = GridMakerPBCxk(systemObj.n1,systemObj.n2,systemObj.n3,...
-    systemObj.l1,systemObj.l2,systemObj.l3);
-  gridrunTime = toc(tGridID);
-  if flags.Verbose
-    fprintf('Made grid t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, gridrunTime);
-  end
-  fprintf(lfid,'Made Grid: %.3g \n', gridrunTime);
-  runTime.grid = gridrunTime;
-  %Make diffusion coeff
-  tDiffID = tic;
+  % rerun some unsaved things
   [diffObj] =  DiffMobCoupCoeffCalc( systemObj.tmp,...
     particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
     gridObj.k1, gridObj.k2, gridObj.k3, ...
     gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
-  diffRunTime = toc(tDiffID);
-  if flags.Verbose
-
-    fprintf('Made diffusion object t%d_%d: %.3g\n', ...
-      runObj.trialID, runObj.runID, diffRunTime);
-  end
-  fprintf(lfid,'Made diffusion object: %.3g\n', diffRunTime);
-  runTime.diff = diffRunTime;
-  %Initialze density
-  tIntDenID = tic;
-  % Find non-driving steady state
-  if strcmp( particleObj.type, 'rods')
-    % Number of coefficients
-    Nc    = 20;
-    % Equilib distribution. Don't let bc = 1.5
-    if 1.499 < systemObj.bc && systemObj.bc < 1.501
-      rhoInit.bc = 1.502;
-    else
-      rhoInit.bc = systemObj.bc;
-    end
-    if systemObj.n3 == 1
-      rhoInit.feq = [];
-    else
-      [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
-      rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
-      % shift it
-      rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
-      [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
-      rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
-    end
-  else
-    rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
-  end
-  % Build initial density
-  [rho] = MakeConc(systemObj,particleObj,rhoInit,gridObj);
-  intDenRunTime = toc(tIntDenID);
-  if flags.Verbose
-    fprintf('Made initial density t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, intDenRunTime);
-  end
-  fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
-  runTime.intDen = intDenRunTime;
-  % Set-up interactions and external potentials
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
-  % Save everything before running body of code
-  if flags.SaveMe
-    runSave.flags    = flags;
-    runSave.runObj    = runObj;
-    runSave.systemObj = systemObj;
-    runSave.particleObj = particleObj;
-    runSave.timeObj  = timeObj;
-    runSave.rhoInit  = rhoInit;
-    % Clean up gridobj before saving
-    fields2del = {'k1rep2','k2rep2'};
-    gridTemp = rmfield(gridObj,fields2del);
-    runSave.gridObj  = gridTemp;
-    runSave.Den_rec = zeros(systemObj.n1,systemObj.n2,systemObj.n3,2);
-    runSave.DenFT_rec = complex( ...
-      zeros(systemObj.n1,systemObj.n2,systemObj.n3,2), 0 );
-    runSave.Den_rec(:,:,:,1) = rho;
-    runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
-    runSave.denRecObj   = denRecObj;
-    runSave.numSavedRho = 1;
-    % Save params now
-    paramSave.flags = flags;
-    paramSave.particleObj = particleObj;
-    paramSave.rhoInit = rhoInit;
-    paramSave.systemObj = systemObj;
-    paramSave.runObj = runObj;
-    paramSave.timeObj = timeObj;
-  end
+  keyboard
   % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
