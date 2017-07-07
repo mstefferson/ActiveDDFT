@@ -6,8 +6,7 @@ function  [ denRecObj ] = ...
   ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
-% globals and init
-global runSave
+
 movieSuccess = 0;
 evolvedSucess = 0;
 movStr = '';
@@ -114,7 +113,6 @@ try
     gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
   diffRunTime = toc(tDiffID);
   if flags.Verbose
-
     fprintf('Made diffusion object t%d_%d: %.3g\n', ...
       runObj.trialID, runObj.runID, diffRunTime);
   end
@@ -174,7 +172,7 @@ try
     runSave.Den_rec(:,:,:,1) = rho;
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
-    runSave.numSavedRho = 1;
+    runSave.numSavedRhos = 1;
     % Save params now
     paramSave.flags = flags;
     paramSave.particleObj = particleObj;
@@ -182,19 +180,19 @@ try
     paramSave.systemObj = systemObj;
     paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
+    paramSave.denRecObj = denRecObj;
   end
   % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
-    [denRecObj, rho]  = denEvolverFTDiagOp(...
+    [denRecObj, rho]  = denEvolverFTDiagOp( runSave,...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   else
-    [denRecObj, rho]  = denEvolverFT(...
+    [denRecObj, rho]  = denEvolverFT( runSave,...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
-  denRecObj.dirName = dirName;
   % Save it
   if flags.SaveMe
     paramSave.denRecObj = denRecObj;

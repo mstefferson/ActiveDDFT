@@ -15,9 +15,8 @@
 % Isotropic diffusion. The propagaotr is a cube.
 %
 function [denRecObj,rho]  = ...
-  denEvolverFTDiagOp(rho,systemObj,particleObj,...
+  denEvolverFTDiagOp(runSave,rho,systemObj,particleObj,...
   timeObj,gridObj,diffObj,interObj,flags,lfid)
-global runSave
 fprintf(lfid,'In body of code\n');
 %Set N since it used so frequently
 n1  = systemObj.n1;
@@ -167,7 +166,7 @@ if shitIsFucked == 0
           RecIndTemp = RecIndTemp + 1;
           runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
           runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-          runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
+          runSave.numSavedRhos = RecIndTemp(end);
           jrectemp = 0;
           jchunk = jchunk + 1;
         end
@@ -186,7 +185,7 @@ if shitIsFucked == 0
           if ~isempty(RecIndTemp)
             runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
             runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
-            runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
+            runSave.numSavedRhos = RecIndTemp(end);
           end
         end
         break
@@ -218,7 +217,7 @@ if flags.SaveMe
       RecIndTemp = RecIndTemp + 1;
       runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
       runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-      runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
+      runSave.numSavedRhos = RecIndTemp(end);
     end
     jrec = jrec + 1; % Still +1. Programs assumes this always happens
   end

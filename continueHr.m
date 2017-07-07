@@ -1,41 +1,78 @@
-% Continue an unfinished run
 function [denRecObj] = continueHr()
+  try
+  evolvedSucess = 0;
+  % Record how long things take
+  tMainID  = tic;
   % find parameters/runfiles. Make sure there is only one
-  paramslist = dirs('./params_*');
-  runlist = dirs('./run_*');
+  paramslist = dir('./params_*');
+  runlist = dir('./run_*');
   if length( runlist ) > 1 || length( paramslist ) > 1
     error('too many runs to finish!')
   end
+  % get names
   filename = runlist.name( 5:end );
+  saveNameRun   = ['run_' filename];
+  saveNameRhoFinal   = ['rhoFinal_' filename];
+  saveNameParams = ['params_' filename];
   % load params, matfile runs
   load( paramslist.name )
-  saveNameRhoFinal   = ['rhoFinal_' filename];
   runSave = matfile(runlist.name,'Writable',true);
   rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
   rho = runSave.Den_rec(:,:,:,end);
+  % get directory name
+  dirName  = filename(1:end-4) ;
+  if flags.MakeOP == 0
+    dirName  = ['./runfiles/' dirName ];
+  else
+    saveNameOP   = ['op_' filename];
+    if flags.MakeMovies == 1
+      dirName  = ['./analyzedfiles/' dirName ];
+    else
+      dirName  = ['./runOPfiles/' dirName ];
+    end
+    opSave = matfile(saveNameOP,'Writable',true);
+  end
+  if exist(dirName,'dir') == 0
+    mkdir(dirName);
+  end
+  %dirName = denRecObj.dirName;
   % get run time
+  timeObjCont = timeObj;
   ntCompleted = size( runSave.Den_rec, 4 );
-  nt_new = timeObj.N_time - ntCompleted;
-  timeObj.N_time = nt_new;
-  timeObj.recStartInd = ntCompleted + 1;
+  timeObjCont.recStartInd = ntCompleted + 1;
+  nRecNew = timeObj.N_rec - ntCompleted;
+  timeObjCont.N_rec = nRecNew;
+  timeObjCont.N_time = timeObjCont.N_rec * timeObj.N_dtRec;
+  % print some things
+  fprintf('Ran %d chunks. Want %d total. Running %d more time steps starting recording at %d\n', ...
+    ntCompleted, timeObj.N_rec, timeObjCont.N_time, timeObjCont.recStartInd )
   % Create a file that holds warning print statements
   locString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(locString,'a+');    % a+ allows to append data
   % rerun some unsaved things
+  % gird
+  tGridID = tic;
+  [gridObj] = GridMakerPBCxk(systemObj.n1,systemObj.n2,systemObj.n3,...
+    systemObj.l1,systemObj.l2,systemObj.l3);
+  gridrunTime = toc(tGridID);
+  runTime.grid = gridrunTime;
+  % diff
+  tDiffID = tic;
   [diffObj] =  DiffMobCoupCoeffCalc( systemObj.tmp,...
     particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
     gridObj.k1, gridObj.k2, gridObj.k3, ...
     gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
+  diffRunTime = toc(tDiffID);
+  runTime.diff = diffRunTime;
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
-  keyboard
   % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
-    [denRecObj, rho]  = denEvolverFTDiagOp(...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
+    [denRecObj, rho]  = denEvolverFTDiagOp(runSave,...
+      rho, systemObj, particleObj, timeObjCont, gridObj, diffObj, interObj, flags, lfid);
   else
-    [denRecObj, rho]  = denEvolverFT(...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
+    [denRecObj, rho]  = denEvolverFT(runSave,...
+      rho, systemObj, particleObj, timeObjCont, gridObj, diffObj, interObj, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
@@ -83,6 +120,7 @@ function [denRecObj] = continueHr()
       % Distribution slice
       holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
       holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
+      keyboard
       opSave.distSlice_rec = reshape( ...
         runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
         [systemObj.n3 length(opTimeRecVec)] );
@@ -300,6 +338,7 @@ function [denRecObj] = continueHr()
     end
   end
 catch err %Catch errors
+  keyboard
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
   runSave.err = err;

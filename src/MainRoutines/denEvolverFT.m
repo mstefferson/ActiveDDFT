@@ -23,8 +23,7 @@
 % Interactions handled using Mayer function.
 %
 function [denRecObj, rho] = denEvolverFT(...
-  rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
-global runSave
+  runSave,rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
 fprintf(lfid,'In body of code\n');
 %Set N since it used so frequently
 n1  = systemObj.n1;
@@ -186,7 +185,7 @@ if shitIsFucked == 0
           RecIndTemp = RecIndTemp + 1;
           runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
           runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-          runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
+          runSave.numSavedRhos = RecIndTemp(end);
           jrectemp = 0;
           jchunk = jchunk + 1;
         end
@@ -239,7 +238,7 @@ if flags.SaveMe
       RecIndTemp = RecIndTemp + 1;
       runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
       runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-      runSave.numSavedRhos(:,:,:,RecIndTemp) = RecIndTemp(end);
+      runSave.numSavedRhos = RecIndTemp(end);
     end
     jrec = jrec + 1; % Still +1. Programs assumes this always happens
   end %end recording
