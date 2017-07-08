@@ -15,8 +15,10 @@
 % Isotropic diffusion. The propagaotr is a cube.
 %
 function [denRecObj,rho]  = ...
-  denEvolverFTDiagOp(runSave,rho,systemObj,particleObj,...
+  denEvolverFTDiagOp(rho,systemObj,particleObj,...
   timeObj,gridObj,diffObj,interObj,flags,lfid)
+%
+global runSave
 fprintf(lfid,'In body of code\n');
 %Set N since it used so frequently
 n1  = systemObj.n1;
@@ -42,7 +44,6 @@ end
 % Recording indecies
 jrectemp = 1; % Temporary holder for Density_rec
 jrec     = timeObj.recStartInd; % Actual index for runSave
-jchunk   = 1; % Write chunk index
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 [Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 Prop = exp(Lop .* dt);   % Exponentiate the elements
@@ -117,7 +118,6 @@ if shitIsFucked == 0
     if interObj.anyInter || flags.Drive
       rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
-  %     keyboard
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
         interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
     end
@@ -160,32 +160,29 @@ if shitIsFucked == 0
       if flags.SaveMe
         if ( mod(t, timeObj.N_dtChunk ) == 0 )
           % Record Density_recs to file
-          RecIndTemp = ...
-            (jchunk-1) *  timeObj.N_recChunk + 1 : jchunk * timeObj.N_recChunk;
-          % Shift by one because we include zero
-          RecIndTemp = RecIndTemp + 1;
-          runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-          runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-          runSave.numSavedRhos = RecIndTemp(end);
+          jrecEnd = jrec+timeObj.N_recChunk-1;
+          recIndTemp = jrec : jrecEnd;
+          runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
+          runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
+          runSave.numSavedRhos = recIndTemp(end);
           jrectemp = 0;
-          jchunk = jchunk + 1;
+          jrec = jrecEnd + 1;
         end
       end
       jrectemp = jrectemp + 1;
-      jrec = jrec + 1;
       % Break out if shit is fucked or done. Write first though
       if shitIsFucked > 0 || steadyState == 1
         if flags.SaveMe
+          % update record holders
           jrectemp = jrectemp - 1;
-          StartInd = (jchunk-1) *  timeObj.N_recChunk + 1;
-          RecIndTemp = StartInd:StartInd + (jrectemp) - 1;
-          % Shift by one because we include zero
-          RecIndTemp = RecIndTemp + 1;
+          jrecEnd = jrec + (jrectemp) - 1;
+          recIndTemp = jrec:jrecEnd;
           % Save what remains
-          if ~isempty(RecIndTemp)
-            runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec(:,:,:,1:jrectemp);
-            runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
-            runSave.numSavedRhos = RecIndTemp(end);
+          if ~isempty(recIndTemp)
+            runSave.Den_rec(:,:,:,recIndTemp) = Density_rec(:,:,:,1:jrectemp);
+            runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
+            runSave.numSavedRhos = recIndTemp(end);
+            jrec = jrecEnd + 1;
           end
         end
         break
@@ -211,15 +208,13 @@ if flags.SaveMe
     Density_rec(:,:,:,jrectemp)     = rho;
     % Record Density_recs to file
     if ( mod(t, timeObj.N_dtChunk ) == 0 )
-      RecIndTemp = ...
-        (jchunk-1) *  timeObj.N_recChunk + 1 : jchunk * timeObj.N_recChunk;
-      % Shift by one because we include zero
-      RecIndTemp = RecIndTemp + 1;
-      runSave.Den_rec(:,:,:,RecIndTemp) = Density_rec;
-      runSave.DenFT_rec(:,:,:,RecIndTemp) = DensityFT_rec;
-      runSave.numSavedRhos = RecIndTemp(end);
+      jrecEnd = jrec+timeObj.N_recChunk-1;
+      recIndTemp = jrec : jrecEnd;
+      runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
+      runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
+      runSave.numSavedRhos = recIndTemp(end);
     end
-    jrec = jrec + 1; % Still +1. Programs assumes this always happens
+    jrec = jrecEnd + 1; % Still +1. Programs assumes this always happens
   end
 end %end recording
 %If something broke, return zeros. Else, return the goods

@@ -1,5 +1,5 @@
 function [denRecObj] = continueHr()
-  try
+try
   evolvedSucess = 0;
   % Record how long things take
   tMainID  = tic;
@@ -8,6 +8,8 @@ function [denRecObj] = continueHr()
   runlist = dir('./run_*');
   if length( runlist ) > 1 || length( paramslist ) > 1
     error('too many runs to finish!')
+  elseif isempty( runlist ) || isempty( paramslist )
+    error('no runs to finish!')
   end
   % get names
   filename = runlist.name( 5:end );
@@ -50,7 +52,7 @@ function [denRecObj] = continueHr()
   locString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(locString,'a+');    % a+ allows to append data
   % rerun some unsaved things
-  % gird
+  % grid
   tGridID = tic;
   [gridObj] = GridMakerPBCxk(systemObj.n1,systemObj.n2,systemObj.n3,...
     systemObj.l1,systemObj.l2,systemObj.l3);
@@ -68,11 +70,13 @@ function [denRecObj] = continueHr()
   % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
-    [denRecObj, rho]  = denEvolverFTDiagOp(runSave,...
-      rho, systemObj, particleObj, timeObjCont, gridObj, diffObj, interObj, flags, lfid);
+    [denRecObj, rho]  = denEvolverFTDiagOp(...
+      rho, systemObj, particleObj, timeObjCont, gridObj, ...
+      diffObj, interObj, flags, lfid);
   else
-    [denRecObj, rho]  = denEvolverFT(runSave,...
-      rho, systemObj, particleObj, timeObjCont, gridObj, diffObj, interObj, flags, lfid);
+    [denRecObj, rho]  = denEvolverFT(...
+      rho, systemObj, particleObj, timeObjCont, gridObj, ...
+      diffObj, interObj, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
@@ -120,7 +124,6 @@ function [denRecObj] = continueHr()
       % Distribution slice
       holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
       holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
-      keyboard
       opSave.distSlice_rec = reshape( ...
         runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
         [systemObj.n3 length(opTimeRecVec)] );
@@ -338,7 +341,6 @@ function [denRecObj] = continueHr()
     end
   end
 catch err %Catch errors
-  keyboard
   % write the error to file and to screen
   fprintf('%s', err.getReport('extended')) ;
   runSave.err = err;

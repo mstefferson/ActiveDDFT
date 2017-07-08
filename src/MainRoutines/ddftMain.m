@@ -6,7 +6,9 @@ function  [ denRecObj ] = ...
   ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
-
+% some global
+global runSave
+% init some flags
 movieSuccess = 0;
 evolvedSucess = 0;
 movStr = '';
@@ -185,10 +187,10 @@ try
   % Run the main code
   tBodyID      = tic;
   if flags.DiagLop == 1
-    [denRecObj, rho]  = denEvolverFTDiagOp( runSave,...
+    [denRecObj, rho]  = denEvolverFTDiagOp( ...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   else
-    [denRecObj, rho]  = denEvolverFT( runSave,...
+    [denRecObj, rho]  = denEvolverFT( ...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
@@ -454,8 +456,9 @@ try
   end
 catch err %Catch errors
   % write the error to file and to screen
-  fprintf('%s', err.getReport('extended')) ;
+  fprintf('%s\n', err.getReport('extended')) ;
   runSave.err = err;
+  keyboard
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
