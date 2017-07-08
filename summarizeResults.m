@@ -81,10 +81,17 @@ try
       sM(ii) = flags.StepMeth;
       trId(ii) = runObj.trialID;
       rId(ii) = runObj.runID;
-      longL1(ii) =  particleObj.lrLs1;
-      longL2(ii) = particleObj.lrLs2;
-      longE1(ii) = particleObj.lrEs1;
-      longE2(ii) = particleObj.lrEs2;
+      if ~isempty( particleObj.interLr )
+        longL1(ii) =  particleObj.lrLs1;
+        longL2(ii) = particleObj.lrLs2;
+        longE1(ii) = particleObj.lrEs1;
+        longE2(ii) = particleObj.lrEs2;
+      else
+        longL1(ii) = 0;
+        longL2(ii) = 0;
+        longE1(ii) = 0;
+        longE2(ii) = 0;
+      end
       n1(ii) = systemObj.n1;
       n2(ii) = systemObj.n2;
       n3(ii) = systemObj.n3;
