@@ -52,6 +52,7 @@ try
     steady = zeros( numFiles, 1 );
     broken = zeros( numFiles, 1 );
     whatBroke = cell( numFiles, 1 );
+    simtime = zeros( numFiles, 1 );
     kPosNumPeaks = zeros( numFiles, 1);
     kPosDist = cell( numFiles, 1);
     kPosPeaks = cell( numFiles, 1);
@@ -110,6 +111,7 @@ try
       steady(ii) = denRecObj.SteadyState;
       broken(ii) = denRecObj.DidIBreak;
       whatBroke{ii} = denRecObj.whatBroke;
+      simtime(ii) = denRecObj.simTime;
       comments{ii} = genComment;
       % Get spatial peaks
       if isfield( denRecObj, 'rhoFinal' )
@@ -178,7 +180,7 @@ try
     T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
       iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
       l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
-      kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
+      simtime, kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
       kAngNumPeaks, kAngDist, kAngPeaks, angLatticeSpacing, kAngKa,...
       spatPhase, angPhase, comments );
   else
