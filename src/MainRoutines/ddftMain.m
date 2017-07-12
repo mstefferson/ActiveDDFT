@@ -32,7 +32,7 @@ try
   % set up the time object
   dtOrig = timeObj.dt ;
   if timeObj.scaleDt && particleObj.vD ~=0
-    timeObj.dt = timeObj.dt / particleObj.vD;
+    timeObj.dt = min( timeObj.dt, timeObj * 30  / particleObj.vD );
   end
   % Fix the time
   ss_epsilon = timeObj.ss_epsilon;

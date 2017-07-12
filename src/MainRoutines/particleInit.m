@@ -1,6 +1,6 @@
 % particleMaster = particleInit( particleMaster, diagFlag )
 %
-% Calculates mobilities for different particle types and 
+% Calculates mobilities for different particle types and
 % makes sure the densities are not too high
 %
 function [particleMaster, systemMaster] = ...
@@ -10,14 +10,14 @@ if strcmp( particleMaster.type, 'rods' )
   particleMaster.lMaj = 1;  % Length along the major axis
   particleMaster.lMin = 0;  % Length along the minor axis
   particleMaster.b  = particleMaster.lMaj^2/pi; % Average excluded volume per particle
-if diagFlag 
-    particleMaster.mobPar = particleMaster.mob; 
+  if diagFlag
+    particleMaster.mobPar = particleMaster.mob;
   else
-    particleMaster.mobPar  = 2*particleMaster.mob; 
+    particleMaster.mobPar  = 2*particleMaster.mob;
   end
   particleMaster.mobPerp   = particleMaster.mob;
   particleMaster.mobRot   = 6 * particleMaster.mob / particleMaster.lMaj^2;
-% Disks 
+  % Disks
 elseif strcmp( particleMaster.type, 'disks' )
   particleMaster.lMaj = 1;  % Length along the major axis
   particleMaster.lMin = 1;  % Length along the minor axis
@@ -30,7 +30,7 @@ elseif strcmp( particleMaster.type, 'disks' )
   if ~isempty(particleMaster.interHb) && systemMaster.bc > threshold
     systemMaster.bc = 0.9;
   end
-% Spheres 
+  % Spheres
 elseif strcmp( particleMaster.type, 'spheres' )
   fprintf('Not written\n')
 else
