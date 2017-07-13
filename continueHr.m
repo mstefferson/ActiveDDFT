@@ -1,5 +1,8 @@
 function [denRecObj] = continueHr()
 try
+  % Add Subroutine path
+  currentDir = pwd;
+  addpath( genpath( [currentDir '/src'] ) );
   evolvedSucess = 0;
   % Record how long things take
   tMainID  = tic;

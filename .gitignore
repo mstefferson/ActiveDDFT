@@ -30,4 +30,4 @@ figs/*
 
 # Certain files
 Runner.m
-initParams.m
+initParams*

@@ -35,7 +35,7 @@ echo "In `pwd`, submitting jobs"
 
 # submit!
 echo "sbatch --job-name $jobName summitSlurm.sh"
-sbatch --job-name=$jobName summitSlurm.sh
+sbatch --job-name=$jobName summitSlurmRun.sh
 
 # return home!
 echo "Jobs submitted. Homeward bound."
