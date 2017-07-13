@@ -23,7 +23,6 @@ try
   load( paramslist.name )
   runSave = matfile(runlist.name,'Writable',true);
   rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
-  rho = runSave.Den_rec(:,:,:,end);
   % get directory name
   dirName  = filename(1:end-4) ;
   if flags.MakeOP == 0
@@ -44,13 +43,18 @@ try
   % get run time
   timeObjCont = timeObj;
   ntCompleted = size( runSave.Den_rec, 4 );
+  % be careful if ntComplete = 2 b/c it could be zeros!!!
+  if ntCompleted == 2; ntCompleted = 1; end
   timeObjCont.recStartInd = ntCompleted + 1;
   nRecNew = timeObj.N_rec - ntCompleted;
   timeObjCont.N_rec = nRecNew;
   timeObjCont.N_time = timeObjCont.N_rec * timeObj.N_dtRec;
+  % grab rho
+  rho = runSave.Den_rec(:,:,:,ntCompleted);
   % print some things
   fprintf('Ran %d chunks. Want %d total. Running %d more time steps starting recording at %d\n', ...
     ntCompleted, timeObj.N_rec, timeObjCont.N_time, timeObjCont.recStartInd )
+  keyboard
   % Create a file that holds warning print statements
   locString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(locString,'a+');    % a+ allows to append data
@@ -359,6 +363,7 @@ catch err %Catch errors
       denRecObj.dirName = dirName;
     end
     movefile(saveNameRun,dirName);
+    movefile( saveNameRhoFinal,dirName);
     movefile( saveNameParams,dirName);
     if flags.MakeOP == 1
       movefile( saveNameOP,dirName);
