@@ -301,6 +301,7 @@ try
         OPobj.NOP_rec  = opSave.NOP_rec;
         OPobj.NOPx_rec = opSave.NOPx_rec;
         OPobj.NOPy_rec = opSave.NOPy_rec;
+        OPobj.distSlice_rec = opSave.distSlice_rec;
       end
     end
     % Now do it for steady state sol
@@ -410,7 +411,7 @@ try
         if denRecObj.DidIBreak == 0
           sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
             OPobj.NOP_rec(:,:,end), systemObj, ...
-            gridObj, rhoFinalSave.rhoFinal, sliceSaveTag )
+            gridObj, rhoFinalSave.rho, sliceSaveTag )
         else
           stepsNb = length(OPobj.OpTimeRecVec);
           sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
@@ -458,7 +459,6 @@ catch err %Catch errors
   % write the error to file and to screen
   fprintf('%s\n', err.getReport('extended')) ;
   runSave.err = err;
-  keyboard
   % Movies can have issues to box size. If they do, just move files
   % to ./runOPfiles
   % Move saved things
