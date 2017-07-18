@@ -54,7 +54,6 @@ try
   % print some things
   fprintf('Ran %d chunks. Want %d total. Running %d more time steps starting recording at %d\n', ...
     ntCompleted, timeObj.N_rec, timeObjCont.N_time, timeObjCont.recStartInd )
-  keyboard
   % Create a file that holds warning print statements
   locString = sprintf('Loc_%s.txt', filename(1:end-4));
   lfid      = fopen(locString,'a+');    % a+ allows to append data
