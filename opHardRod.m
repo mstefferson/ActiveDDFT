@@ -25,25 +25,18 @@ try
     fprintf('Starting analysis\n');
     for ii=1:numDirs
       % Grab a file
-      %saveNameRun = files2Analyze{ii};
-      % move into a dir
+      % get dir name
       dirTemp = dir2Analyze(ii).name;
-      fprintf('Movies for %s\n', dirTemp);
+      fprintf('OP for %s\n', dirTemp);
       dirFullPath = ['./runfiles/' dirTemp];
-      %{      fprintf('Analyzing %s\n',saveNameRun);%}
-      %{movefile( ['./runfiles/' saveNameRun], ['./runfiles/analyzing/' saveNameRun] )%};
-      % Put all variables in a struct
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
       runSave = matfile( runFileName);
-      % don't run anything if it blew up
+      % Put all variables in a struct
       denRecObj = runSave.denRecObj;
       systemObj  = runSave.systemObj;
-      %       particleObj  = runSave.particleObj;
       timeObj  = runSave.timeObj;
-      %       flags  = runSave.flags;
       rhoInit  = runSave.rhoInit;
       gridObj  = runSave.gridObj;
-      %       runObj  = runSave.runObj;
       n1 = systemObj.n1; n2 = systemObj.n2; n3 = systemObj.n3;
       % Build phi3D once
       [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
@@ -94,7 +87,6 @@ try
       else
         numPoints = 2;
       end % if totRec == 1
-      
       % initialize
       OpSave.C_rec    = zeros(n1, n2, numPoints);
       OpSave.POP_rec  = zeros(n1, n2, numPoints);
@@ -105,28 +97,31 @@ try
       OpSave.NOPy_rec = zeros(n1, n2, numPoints);
       % Analyze chucks in parallel
       % Break it into chunks
-      NumChunks = timeObj.N_chunks;
-      SizeChunk = max( floor( totRec/ NumChunks ), 1 );
-      NumChunks = ceil( totRec/ SizeChunk);
+      numChunks = timeObj.N_chunks;
+      sizeChunk = max( floor( totRec/ numChunks ), 1 );
+      numChunks = ceil( totRec/ sizeChunk);
       %OpSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-      C_rec    = zeros(n1, n2,  SizeChunk);
-      POP_rec  = zeros(n1, n2,  SizeChunk);
-      POPx_rec = zeros(n1, n2,  SizeChunk);
-      POPy_rec = zeros(n1, n2,  SizeChunk);
-      NOP_rec  = zeros(n1, n2,  SizeChunk);
-      NOPx_rec = zeros(n1, n2,  SizeChunk);
-      NOPy_rec = zeros(n1, n2,  SizeChunk);
-      for jj = 1:NumChunks
-        if jj ~= NumChunks
-          ind =  (jj-1) * SizeChunk + 1: jj * SizeChunk;
+      C_rec    = zeros(n1, n2,  sizeChunk);
+      POP_rec  = zeros(n1, n2,  sizeChunk);
+      POPx_rec = zeros(n1, n2,  sizeChunk);
+      POPy_rec = zeros(n1, n2,  sizeChunk);
+      NOP_rec  = zeros(n1, n2,  sizeChunk);
+      NOPx_rec = zeros(n1, n2,  sizeChunk);
+      NOPy_rec = zeros(n1, n2,  sizeChunk);
+      % print some things
+      fprintf('totPoints = %d, numChunks = %d, sizeChunk = %d\n',...
+        totRec, numChunks, sizeChunk);
+      for jj = 1:numChunks
+        if jj ~= numChunks
+          ind =  (jj-1) * sizeChunk + 1: jj * sizeChunk;
         else
-          ind = (jj-1) * SizeChunk:totRec;
+          ind = (jj-1) * sizeChunk:totRec;
         end
         ind = ind( ind > 0 );
         % Temp variables
         DenRecTemp = runSave.Den_rec(:,:,:,ind);
         TimeRecVecTemp = OpTimeRecVec(ind);
-        if length(ind) ~= SizeChunk
+        if length(ind) ~= sizeChunk
           C_rec    = zeros(n1, n2,  length(ind) );
           POP_rec  = zeros(n1, n2,  length(ind) );
           POPx_rec = zeros(n1, n2,  length(ind) );
