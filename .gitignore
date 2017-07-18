@@ -27,6 +27,7 @@ eo/*
 sandbox/*
 figs/
 figs/*
+pDist/
 
 # Certain files
 Runner.m
