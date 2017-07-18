@@ -209,6 +209,8 @@ if shitIsFucked == 0
     end %end recording
   end %end time loop
 end % dont start if already broken
+% Say you're done
+fprintf(lfid,'Finished master time loop\n');
 % Update last rho
 t =  t + 1;
 rhoVec_FT  = rhoVec_FTnext;
@@ -239,22 +241,19 @@ if flags.SaveMe
     jrec = jrec + 1; % Still +1. Programs assumes this always happens
   end %end recording
 end % end nothing is broken
-% Say you're done
-fprintf(lfid,'Finished master time loop\n');
-%If something broke, return zeros. Else, return the goods
-if shitIsFucked
-  fprintf('Density is either negative or not conserved.\n');
-  fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
-end
-if steadyState
-  fprintf('Things are going steady if you know what I mean.\n');
-  fprintf('I have done %i steps out of %i.\n',t, timeObj.N_time);
-else
-  fprintf('Ran for the full time %.1f\n',timeObj.t_tot);
-end
 % Create vector of recorded times
 jrec = jrec - 1;
 TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
+%If something broke, return zeros. Else, return the goods
+if shitIsFucked
+  fprintf('Density is either negative or not conserved.\n');
+  fprintf('I have done %i steps out of %i with %d jrecs\n',t, timeObj.N_time,jrec);
+elseif steadyState
+  fprintf('Things are going steady if you know what I mean.\n');
+  fprintf('I have done %i steps out of %i with %d jrecs\n',t, timeObj.N_time,jrec);
+else
+  fprintf('Ran for the full time %.1f with %d jrecs\n',timeObj.t_tot,jrec);
+end
 % Save useful info
 denRecObj.didIrun      = 1;
 denRecObj.DidIBreak    = shitIsFucked;
