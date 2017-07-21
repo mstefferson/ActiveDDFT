@@ -38,6 +38,8 @@ try
       rhoInit  = runSave.rhoInit;
       gridObj  = runSave.gridObj;
       n1 = systemObj.n1; n2 = systemObj.n2; n3 = systemObj.n3;
+      l1 = systemObj.l1;
+      l2 = systemObj.l2;
       % Build phi3D once
       [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
       cosPhi3d = cos(phi3D);
@@ -95,6 +97,9 @@ try
       OpSave.NOP_rec  = zeros(n1, n2, numPoints);
       OpSave.NOPx_rec = zeros(n1, n2, numPoints);
       OpSave.NOPy_rec = zeros(n1, n2, numPoints);
+      OpSave.aveC_rec = zeros(1,numPoints);
+      OpSave.aveN_rec = zeros(1,numPoints);
+      OpSave.aveP_rec = zeros(1,numPoints);
       % Analyze chucks in parallel
       % Break it into chunks
       numChunks = timeObj.N_chunks;
@@ -108,6 +113,9 @@ try
       NOP_rec  = zeros(n1, n2,  sizeChunk);
       NOPx_rec = zeros(n1, n2,  sizeChunk);
       NOPy_rec = zeros(n1, n2,  sizeChunk);
+      aveC_rec = zeros(1,sizeChunk);
+      aveP_rec = zeros(1,sizeChunk);
+      aveN_rec = zeros(1,sizeChunk);
       % print some things
       fprintf('totPoints = %d, numChunks = %d, sizeChunk = %d\n',...
         totRec, numChunks, sizeChunk);
@@ -120,15 +128,19 @@ try
         ind = ind( ind > 0 );
         % Temp variables
         DenRecTemp = runSave.Den_rec(:,:,:,ind);
-        TimeRecVecTemp = OpTimeRecVec(ind);
+        timeRecVecTemp = OpTimeRecVec(ind);
         if length(ind) ~= sizeChunk
-          C_rec    = zeros(n1, n2,  length(ind) );
-          POP_rec  = zeros(n1, n2,  length(ind) );
-          POPx_rec = zeros(n1, n2,  length(ind) );
-          POPy_rec = zeros(n1, n2,  length(ind) );
-          NOP_rec  = zeros(n1, n2,  length(ind) );
-          NOPx_rec = zeros(n1, n2,  length(ind) );
-          NOPy_rec = zeros(n1, n2,  length(ind));
+          lInd = length(ind);
+          C_rec    = zeros(n1, n2,  lInd );
+          POP_rec  = zeros(n1, n2,  lInd );
+          POPx_rec = zeros(n1, n2,  lInd );
+          POPy_rec = zeros(n1, n2,  lInd );
+          NOP_rec  = zeros(n1, n2,  lInd );
+          NOPx_rec = zeros(n1, n2,  lInd );
+          NOPy_rec = zeros(n1, n2,  lInd);
+          aveC_rec = zeros(1,lInd);
+          aveP_rec = zeros(1,lInd);
+          aveN_rec = zeros(1,lInd);
         end
         % Make sure it isn't zero of infinite
         if isfinite(DenRecTemp); notInf = 1; else; notInf = 0; end
@@ -137,7 +149,7 @@ try
           parfor kk = 1:length(ind)
             %Calculate
             [OPObjTemp] = CPNrecMaker(n1,n2,...
-              TimeRecVecTemp(kk), DenRecTemp(:,:,:,kk),...
+              timeRecVecTemp(kk), DenRecTemp(:,:,:,kk),...
               phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
             % Store
             C_rec(:,:,kk) = OPObjTemp.C_rec;
@@ -147,6 +159,9 @@ try
             NOP_rec(:,:,kk) = OPObjTemp.NOP_rec;
             NOPx_rec(:,:,kk) = OPObjTemp.NOPx_rec;
             NOPy_rec(:,:,kk) = OPObjTemp.NOPy_rec;
+            aveC_rec(kk) = OPObjTemp.aveC_rec;
+            aveP_rec(kk) = OPObjTemp.aveP_rec;
+            aveN_rec(kk) = OPObjTemp.aveN_rec;
           end % parloop
         else
           fprintf('Density contains NAN, INF, or zeros. Not analyzing \n')
@@ -160,6 +175,9 @@ try
           OpSave.NOP_rec(:,:,ind)  = NOP_rec;
           OpSave.NOPx_rec(:,:,ind) = NOPx_rec;
           OpSave.NOPy_rec(:,:,ind) = NOPy_rec;
+          OpSave.aveC_rec(1,ind) = aveC_rec;
+          OpSave.aveP_rec(1,ind) = aveP_rec;
+          OpSave.aveN_rec(1,ind) = aveN_rec;
         else
           OpSave.C_rec    = C_rec;
           OpSave.POP_rec  = POP_rec;
@@ -168,6 +186,9 @@ try
           OpSave.NOP_rec  = NOP_rec;
           OpSave.NOPx_rec = NOPx_rec;
           OpSave.NOPy_rec = NOPy_rec;
+          OpSave.aveC_rec = aveC_rec;
+          OpSave.aveP_rec = aveP_rec;
+          OpSave.aveN_rec = aveN_rec;
         end
       end %loop over chunks
       % Distribution slice

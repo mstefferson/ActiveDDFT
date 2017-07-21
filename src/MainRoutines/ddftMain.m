@@ -247,7 +247,10 @@ try
       opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
       opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
       opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-    end
+      opSave.aveC_rec = zeros(1,2);
+      opSave.aveP_rec = zeros(1,2);
+      opSave.aveN_rec = zeros(1,2);
+   end
     % Break it into chunks
     numChunks = timeObj.N_chunks;
     sizeChunk = floor( totRec/ numChunks );
@@ -258,31 +261,35 @@ try
     end
     for i = 1:numChunks
       if i ~= numChunks
-        Ind =  (i-1) * sizeChunk + 1: i * sizeChunk;
+        currInd =  (i-1) * sizeChunk + 1: i * sizeChunk;
       else
         if numChunks == 1
-          Ind = 1:totRec;
+          currInd = 1:totRec;
         else
-          Ind = (i-1) * sizeChunk:totRec;
+          currInd = (i-1) * sizeChunk:totRec;
         end
       end
       % Make the records
       [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
-        opTimeRecVec(Ind), runSave.Den_rec(:,:,:,Ind) ,...
+        opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       % Save it
-      opSave.C_rec(:,:,Ind) = OPObjTemp.C_rec;
+      opSave.C_rec(:,:,currInd) = OPObjTemp.C_rec;
       if systemObj.n3 > 1
-        opSave.POP_rec(:,:,Ind) = OPObjTemp.POP_rec;
-        opSave.POPx_rec(:,:,Ind) = OPObjTemp.POPx_rec;
-        opSave.POPy_rec(:,:,Ind) = OPObjTemp.POPy_rec;
-        opSave.NOP_rec(:,:,Ind) = OPObjTemp.NOP_rec;
-        opSave.NOPx_rec(:,:,Ind) = OPObjTemp.NOPx_rec;
-        opSave.NOPy_rec(:,:,Ind) = OPObjTemp.NOPy_rec;
+        opSave.POP_rec(:,:,currInd) = OPObjTemp.POP_rec;
+        opSave.POPx_rec(:,:,currInd) = OPObjTemp.POPx_rec;
+        opSave.POPy_rec(:,:,currInd) = OPObjTemp.POPy_rec;
+        opSave.NOP_rec(:,:,currInd) = OPObjTemp.NOP_rec;
+        opSave.NOPx_rec(:,:,currInd) = OPObjTemp.NOPx_rec;
+        opSave.NOPy_rec(:,:,currInd) = OPObjTemp.NOPy_rec;
+        opSave.aveC_rec(1,currInd) = OPObjTemp.aveC_rec;
+        opSave.aveP_rec(1,currInd) = OPObjTemp.aveP_rec;
+        opSave.aveN_rec(1,currInd) = OPObjTemp.aveN_rec;
       end
     end % loop over chunks
     % fix size
-    opSave.C_rec    = opSave.C_rec(:,:,1:totRec);
+    opSave.C_rec = opSave.C_rec(:,:,1:totRec);
+    opSave.aveC_rec = opSave.aveC_rec(1,1:totRec);
     if systemObj.n3 > 1
       opSave.POP_rec  = opSave.POP_rec(:,:,1:totRec);
       opSave.POPx_rec = opSave.POPx_rec(:,:,1:totRec);
@@ -290,6 +297,8 @@ try
       opSave.NOP_rec  = opSave.NOP_rec(:,:,1:totRec);
       opSave.NOPx_rec = opSave.NOPx_rec(:,:,1:totRec);
       opSave.NOPy_rec = opSave.NOPy_rec(:,:,1:totRec);
+      opSave.aveP_rec = opSave.aveP_rec(1,1:totRec);
+      opSave.aveN_rec = opSave.aveN_rec(1,1:totRec);
     end
     if flags.MakeMovies
       OPobj.OpTimeRecVec = opTimeRecVec;
