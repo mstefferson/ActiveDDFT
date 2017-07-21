@@ -78,7 +78,9 @@ for ii = 1:n1
     delta2( ii, jj ) = trapz_periodic( phi, ...
       trapz_periodic( phi, intOverRprime2, 1 ), 2 );
   end
-  fprintf('%f percent done\n', 100*ii/n1)
+  if mod( ii, round( n1 / 100 )  )
+    fprintf('%f percent done\n', 100*ii/n1)
+  end
 end
 % Normalization
 nParticles = trapz_periodic( x1, trapz_periodic( x2, trapz_periodic( phi, rho, 3 ), 2 ), 1 );
@@ -116,50 +118,7 @@ end
 if plotflag
   % plot p0
   ttlstr = '$$g_0(x,y)$$';
-  pairDistPlot( pDist0RotCenter, l2, l1, ttlstr)
-  % plot the three pair distributions
-  figure()
-  % g0
-  maxVal = max(pDist0(:));
-  minVal = min( min(pDist0(:)), 0 );
-  ax0 = subplot(1,3,1);
-  ax0.FontSize = fontSize;
-  imagesc( x1, x2, pDist0RotCenter );
-  title('$$g_0(x,y)$$')
-  axis square
-  xlabel('$$x$$'); ylabel('$$y$$')
-  ax0.XLim = [-xLim xLim];
-  ax0.YLim = [-yLim yLim];
-  ax0.CLim = [minVal maxVal];
-  ax0.YDir = 'normal';
-  colorbar;
-  % g1 (polar)
-  ax1 = subplot(1,3,2);
-  maxVal = max(pDist1(:));
-  minVal = min( min(pDist1(:)), 0 );
-  ax1.FontSize = fontSize;
-  imagesc( x1, x2, pDist1RotCenter );
-  title('$$ g_1(x,y) $$')
-  axis square
-  xlabel('$$x$$'); ylabel('$$y$$')
-  ax1.XLim = [-xLim xLim];
-  ax1.YLim = [-yLim yLim];
-  ax1.CLim = [minVal maxVal];
-  ax1.YDir = 'normal';
-  colorbar;
-  % g2 (nem)
-  maxVal = max(pDist2(:));
-  minVal = min( min(pDist2(:)), 0 );
-  ax2 = subplot(1,3,3);
-  ax2.FontSize = fontSize;
-  imagesc( x1, x2, pDist2RotCenter );
-  title('$$ g_2 (x,y) $$')
-  axis square
-  xlabel('$$x$$'); ylabel('$$y$$')
-  ax2.XLim = [-xLim xLim];
-  ax2.YLim = [-yLim yLim];
-  ax2.CLim = [minVal maxVal];
-  ax2.YDir = 'normal';
-  colorbar;
+  pairDistPlotSingle( pDist0RotCenter, l2, l1, ttlstr);
+  % plot the three order parameter distribution functions
+  pairDistPlotOps( pDist0RotCenter, pDist1RotCenter, pDist2RotCenter, l2, l1)
 end
-
