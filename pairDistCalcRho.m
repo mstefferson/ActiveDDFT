@@ -42,6 +42,12 @@ allInds3 = 1:n3;
 mayerInds1 = [0:n1/2 -n1/2+1:1:-1];
 mayerInds2 = [0:n2/2 -n2/2+1:1:-1];
 mayerInds3 = [0:n3/2 -n3/2+1:1:-1];
+% take the cos once
+cosPhiMayInds = cos(mayerInds3);
+cosSqrPhiMayInds = cos(mayerInds3).^2;
+% track progress
+ticId = tic;
+trackProgMod =  ceil( n1 / 100);
 % calculate the pair dist
 for ii = 1:n1
   % set x
@@ -56,19 +62,19 @@ for ii = 1:n1
     % integrate of r' each u and u+u'.
     for mm = 1:n3
       phi1Temp = mayerInds3(mm);
+      cosPhiTemp = cosPhiMayInds(mm);
+      cosSqrPhiTemp = cosSqrPhiMayInds(mm);
       shiftInds3 = mod( (phi1Temp-1) +  allInds3 - 1, n3 ) + 1;
       allInds3mm = allInds3(mm);
       for nn = 1:n3
         shiftInds3nn = shiftInds3(nn);
-        mat2Intdelta0 =  rho( shiftInds1, shiftInds2, shiftInds3nn ) .* rho(allInds1, allInds2, allInds3mm );
-        mat2Intdelta1 =  cos(phi1Temp) * rho( shiftInds1, shiftInds2, shiftInds3nn ) .* rho(allInds1, allInds2, allInds3mm );
-        mat2Intdelta2 =  cos(phi1Temp)^2 * rho( shiftInds1, shiftInds2, shiftInds3nn ) .* rho(allInds1, allInds2, allInds3mm );
-        tempInt0 = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta0, 2 ), 1);
-        tempInt1 = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta1, 2 ), 1);
-        tempInt2 = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta2, 2 ), 1);
-        intOverRprime0(nn,mm) = expV( ii, jj, allInds3(nn), shiftInds3(mm) ) .* tempInt0 ;
-        intOverRprime1(nn,mm) = expV( ii, jj, allInds3(nn), shiftInds3(mm) ) .* tempInt1 ;
-        intOverRprime2(nn,mm) = expV( ii, jj, allInds3(nn), shiftInds3(mm) ) .* tempInt2 ;
+        mat2Intdelta0 =  expV( ii, jj, allInds3(nn), shiftInds3(mm) ) .* ...
+          rho( shiftInds1, shiftInds2, shiftInds3nn ) .* rho(allInds1, allInds2, allInds3mm );
+        mat2Intdelta1 =  cosPhiTemp * mat2Intdelta0;
+        mat2Intdelta2 =  cosSqrPhiTemp * mat2Intdelta0;
+        intOverRprime0(nn,mm) = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta0, 2 ), 1);
+        intOverRprime1(nn,mm)= trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta1, 2 ), 1);
+        intOverRprime2(nn,mm) = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta2, 2 ), 1);
       end
     end
     delta0( ii, jj ) = trapz_periodic( phi, ...
@@ -78,10 +84,12 @@ for ii = 1:n1
     delta2( ii, jj ) = trapz_periodic( phi, ...
       trapz_periodic( phi, intOverRprime2, 1 ), 2 );
   end
-  if mod( ii, round( n1 / 100 )  )
+  if mod( ii, trackProgMod  ) == 0
     fprintf('%f percent done\n', 100*ii/n1)
   end
 end
+timeRun = toc(ticId);
+fprintf('runtime: %.1f sec\n', timeRun);
 % Normalization
 nParticles = trapz_periodic( x1, trapz_periodic( x2, trapz_periodic( phi, rho, 3 ), 2 ), 1 );
 V = l1 .* l2;
