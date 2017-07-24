@@ -17,8 +17,9 @@
 function [denRecObj,rho]  = ...
   denEvolverFTDiagOp(rho,systemObj,particleObj,...
   timeObj,gridObj,diffObj,interObj,flags,lfid)
-%
+% globals
 global runSave
+% where you at
 fprintf(lfid,'In body of code\n');
 %Set N since it used so frequently
 n1  = systemObj.n1;

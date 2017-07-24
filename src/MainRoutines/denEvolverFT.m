@@ -24,8 +24,9 @@
 %
 function [denRecObj, rho] = denEvolverFT(...
   rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
-%
+% global
 global runSave
+% where you at
 fprintf(lfid,'In body of code\n');
 %Set N since it used so frequently
 n1  = systemObj.n1;

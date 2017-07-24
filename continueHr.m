@@ -1,4 +1,6 @@
 function [denRecObj] = continueHr()
+  % some global
+  global runSave
 try
   % Add Subroutine path
   currentDir = pwd;
