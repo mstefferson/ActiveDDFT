@@ -2,6 +2,9 @@ function [denRecObj] = continueHr()
   % some global
   global runSave
 try
+  dateTime =  datestr(now);
+  fprintf('Starting RunHardRod: %s\n', dateTime);
+  ticID = tic;
   % Add Subroutine path
   currentDir = pwd;
   addpath( genpath( [currentDir '/src'] ) );
@@ -378,4 +381,11 @@ if flags.Verbose
   fprintf('Leaving Main for t%d.%d\n', ...
     runObj.trialID, runObj.runID);
 end
-end % End HR2DrotVgrExeMain.m
+runTime = toc(ticID);
+dateTime =  datestr(now);
+runHr = floor( runTime / 3600); runTime = runTime - runHr*3600;
+runMin = floor( runTime / 60);  runTime = runTime - runMin*60;
+runSec = floor(runTime);
+fprintf('RunTime: %.2d:%.2d:%.2d (hr:min:sec)\n', runHr, runMin,runSec);
+fprintf('Finished RunHardRod: %s\n', dateTime);
+end
