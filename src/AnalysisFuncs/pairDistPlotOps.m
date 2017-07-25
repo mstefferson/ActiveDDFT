@@ -1,3 +1,4 @@
+% pairDistPlotOps( pDist0, pDist1, pDist2, lR, lC)
 % plot the three order parameter pair distribution functions
 % g0, g1, g2. Make sure to pass the rotated and centered or it's
 % going to look strange.

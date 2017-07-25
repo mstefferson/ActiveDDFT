@@ -1,3 +1,6 @@
+% pairDistPlotSingle( pDist, lR, lC, ttlstr)
+% Plot a single order parameter and a slice through x = 0 and y = 0
+%
 function pairDistPlotSingle( pDist, lR, lC, ttlstr)
   [nR, nC] = size(pDist);
   % set some things
