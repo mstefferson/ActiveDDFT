@@ -1,8 +1,7 @@
 % patchruns( dir1, dir2 )
 % patch together runs dir1, dir2 in runOPfiles
-function patchruns
-dir1 = 'Hr_rods_mayer_diag1_N161616_ls1010_bc0.35_vD0_IC1_SM6_t03.07/';
-dir2 = 'Hr_rods_mayer_diag1_N161616_ls1010_bc0.35_vD0_IC1_SM6_t03.08/';
+function patchopruns(dir1,dir2)
+% patch the dirs together
 dirPatched = [dir1(1:end-1) dir2( strfind(dir2,'_t'):end-1) '_patched/'];
 % patched files
 path2dir = [ 'runOPfiles/' dirPatched ];
@@ -30,6 +29,7 @@ load( param2load );
 runFile1 = matfile( run2load, 'Writable', true);
 opFile1 = matfile( op2load, 'Writable', true );
 % store some parameters
+denRecObj = runFile1.denRecObj;
 checkParamVec1 = [systemObj.n1 systemObj.n2 systemObj.n3 ...
   systemObj.l1 systemObj.l2 systemObj.bc particleObj.vD  ];
 nt1 = length( denRecObj.TimeRecVec );
@@ -39,7 +39,7 @@ tRec1 = timeObj.t_rec;
 tTot1 = timeObj.t_tot;
 timeRecVec1 = denRecObj.TimeRecVec;
 simTime1 = denRecObj.simTime;
-totRunTime1 = runTime.tot;
+% totRunTime1 = runTime.tot;
 runTime1 = denRecObj.runTime;
 rhoInit1 = rhoInit;
 % grab file 2
@@ -80,7 +80,7 @@ if proceed
   denRecObjPatch = denRecObj;
   denRecObjPatch.TimeRecVec = [ timeRecVec1 (tTot1 + denRecObj.TimeRecVec(2:end) ) ];
   denRecObjPatch.simTime = denRecObjPatch.simTime + simTime1;
-  runTime.tot = runTime.tot + totRunTime1;
+%   runTime.tot = runTime.tot + totRunTime1;
   denRecObjPatch.runTime = denRecObjPatch.runTime + runTime1;
   % store param patched as param 2
   paramFilePatch.systemObj = systemObj;
@@ -98,7 +98,7 @@ if proceed
   runFilePatch.rhoInit = rhoInit1;
   runFilePatch.flags = flags;
   runFilePatch.timeObj = timeObjPatch;
-  runFilePatch.runTime = runTime;
+%   runFilePatch.runTime = runTime;
   runFilePatch.gridObj = runFile2.gridObj;
   runFilePatch.denRecObj = denRecObjPatch;
   % Allocate
@@ -158,6 +158,7 @@ if proceed
     opFilePatch.aveP_rec(1,ii) = pAveTemp;
     opFilePatch.aveN_rec(1,ii) = nAveTemp;
     opFilePatch.distSlice_rec(:,ii) = distSliceTemp;
+    fprintf('%.1f done', ii / (nt1+nt2-1) );
   end %loop over time
   opFilePatch.OpTimeRecVec = denRecObjPatch.TimeRecVec;
   % rhoFinal
