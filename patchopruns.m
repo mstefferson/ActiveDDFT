@@ -120,6 +120,7 @@ if proceed
   % track which file to save from
   runFileTemp =  runFile1;
   opFileTemp =  opFile1;
+  fprintf('Starting patch\n')
   for ii = 1:nt1+nt2-1
     if ii < nt1+1
       ind = ii;
@@ -158,7 +159,7 @@ if proceed
     opFilePatch.aveP_rec(1,ii) = pAveTemp;
     opFilePatch.aveN_rec(1,ii) = nAveTemp;
     opFilePatch.distSlice_rec(:,ii) = distSliceTemp;
-    fprintf('%.1f done', ii / (nt1+nt2-1) );
+    fprintf('%.2f done\n', ii / (nt1+nt2-1) );
   end %loop over time
   opFilePatch.OpTimeRecVec = denRecObjPatch.TimeRecVec;
   % rhoFinal
@@ -169,6 +170,7 @@ if proceed
   movefile(runFilePatchName, path2dir);
   movefile(opFilePatchName, path2dir);
   movefile(rhoFinalFilePatchName, path2dir);
+  fprintf('Runs are patched!!!');
 end % if proceed
 end % function
 
