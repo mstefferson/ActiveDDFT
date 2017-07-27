@@ -33,13 +33,12 @@ denRecObj = runFile1.denRecObj;
 checkParamVec1 = [systemObj.n1 systemObj.n2 systemObj.n3 ...
   systemObj.l1 systemObj.l2 systemObj.bc particleObj.vD  ];
 nt1 = length( denRecObj.TimeRecVec );
-% nt1op = length( opFile1.OpTimeRecVec );
 dt1 = timeObj.dt;
 tRec1 = timeObj.t_rec;
 tTot1 = timeObj.t_tot;
 timeRecVec1 = denRecObj.TimeRecVec;
 simTime1 = denRecObj.simTime;
-% totRunTime1 = runTime.tot;
+totRunTime1 = runTime.tot;
 runTime1 = denRecObj.runTime;
 rhoInit1 = rhoInit;
 % grab file 2
@@ -66,7 +65,6 @@ runFile2 = matfile( run2load, 'Writable', true );
 opFile2 = matfile( op2load, 'Writable', true );
 rhoFinalFile2 = matfile( rhoFinal2load, 'Writable', true );
 proceed = checkSameParameters( checkParamVec1, checkParamVec2 );
-% keyboard
 if proceed
   timeObjPatch = timeObj;
   timeObjPatch.dt1 = dt1;
@@ -80,7 +78,7 @@ if proceed
   denRecObjPatch = denRecObj;
   denRecObjPatch.TimeRecVec = [ timeRecVec1 (tTot1 + denRecObj.TimeRecVec(2:end) ) ];
   denRecObjPatch.simTime = denRecObjPatch.simTime + simTime1;
-%   runTime.tot = runTime.tot + totRunTime1;
+  runTime.tot = runTime.tot + totRunTime1;
   denRecObjPatch.runTime = denRecObjPatch.runTime + runTime1;
   % store param patched as param 2
   paramFilePatch.systemObj = systemObj;
@@ -98,7 +96,7 @@ if proceed
   runFilePatch.rhoInit = rhoInit1;
   runFilePatch.flags = flags;
   runFilePatch.timeObj = timeObjPatch;
-%   runFilePatch.runTime = runTime;
+  runFilePatch.runTime = runTime;
   runFilePatch.gridObj = runFile2.gridObj;
   runFilePatch.denRecObj = denRecObjPatch;
   % Allocate
@@ -170,7 +168,7 @@ if proceed
   movefile(runFilePatchName, path2dir);
   movefile(opFilePatchName, path2dir);
   movefile(rhoFinalFilePatchName, path2dir);
-  fprintf('Runs are patched!!!');
+  fprintf('Runs are patched!!!\n\n');
 end % if proceed
 end % function
 
