@@ -98,7 +98,7 @@ else
   interObj.long = particleObj.interLr;
   numPotentials = length( interObj.long );
   interObj.anyInter = 1;
-  fprintf('Long interactions %s\n', interObj.long);
+  fprintf('Long interactions\n');
   % Scale
   interObj.muMfScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
     (systemObj.n1 * systemObj.n2 * systemObj.n3);
@@ -110,25 +110,30 @@ else
   % add the potenials, v
   v = 0;
   for ii = 1:numPotentials
-    if strcmp( interObj.long{ii}, 'softshoulder2d' )
+    % soft shoulder 2D
+    if strcmp( interObj.long{ii}, 'ss2d' )
+      fprintf('Long interactions %s, soft shoulder 2d\n', interObj.long{ii});
       interObj.longId(ii) = 1;
-      % build soft should potential
-      [vTemp] = softShoulder2D( interObj.lrEs1(ii), interObj.lrEs2(ii), ...
+      % build potential
+      [vTemp] = softShoulder2d( interObj.lrEs1(ii), interObj.lrEs2(ii), ...
         interObj.lrLs1(ii), interObj.lrLs2(ii), ...
         systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
-      v = v + reshape( vTemp, [n1 n2 1] );
+      v = v + reshape( vTemp, [systemObj.n1 systemObj.n2 1] );
     end
-    if strcmp( interObj.long, 'polaralign2d' ) )
+    % polar align 2D
+    if strcmp( interObj.long{ii}, 'pa2d' ) 
+      fprintf('Long interactions %s, polar align 2d\n', interObj.long{ii});
       interObj.longId(ii) = 2;
-      % build soft should potential
-      [vTemp] = polarAlign( interObj.lrEs1(ii),  systemObj.n3, systemObj.l3 );
-      v = v + reshape( vTemp, [1, 1, n3] );
+      % build potential
+      [vTemp] = polarAlign2d( interObj.lrEs1(ii),  systemObj.n3, systemObj.l3 );
+      v = v + reshape( vTemp, [1, 1, systemObj.n3] );
     end
-    if strcmp( interObj.long, 'polaraligngauss2d' )
-      interObj.longSpec = 'disksSoft';
+    % polar alig gauss 2D
+    if strcmp( interObj.long{ii}, 'pag2d' )
+      fprintf('Long interactions %s, polar align gauss 2d\n', interObj.long{ii});
       interObj.longId(ii) = 3;
-      % build soft should potential
-      [vTemp] = polarAlignGaussian( interObj.lrEs1(ii), interObj.lrLs1(ii), systemObj.n3, systemObj.l3 );
+      % build potential
+      [vTemp] = polarAlignGaussian2d( interObj.lrEs1(ii), interObj.lrLs1(ii), systemObj.n3, systemObj.l3 );
       v = v + vTemp;
     end
   end % loop over potentials
@@ -149,7 +154,9 @@ else
   else
     interObj.ind3 = 1:systemObj.n3;
   end
-  keyboard
+  % store it
+  interObj.v = v;
+  interObj.vFt = fftshift( fftn( v ) );
 end % long range interaction
 % External potentional
 if isempty(particleObj.externalPot)

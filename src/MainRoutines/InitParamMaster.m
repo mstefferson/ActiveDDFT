@@ -27,7 +27,7 @@ particleMaster.mob  = 1; % mobility
 particleMaster.type = 'rods'; % rods, disks, spheres 
 particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
 %  Long range interaction type in MF: 
-% softshoulder2d, polaralign2d, polaraligngauss2d
+% ss2d (softshoulder2d), pa2d (polaralign2d), pag2d (polaraligngauss2d)
 % different cells are different runs
 particleMaster.interLr = {}; 
 particleMaster.lrLs1 = { [particleMaster.lMaj] }; % Long range length scale 1
