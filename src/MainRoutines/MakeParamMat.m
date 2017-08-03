@@ -33,20 +33,20 @@ else
 end
 % long range interaction parameters
 if isempty( particleObj.interLr )
-  lrL1 = 0;
-  lrL2 = 0;
-  lrE1 = 0;
-  lrE2 = 0;
+  lrL1id = 1;
+  lrL2id = 1;
+  lrE1id = 1;
+  lrE2id = 1;
 else
-  lrL1 = particleObj.lrLs1;
-  lrL2 = particleObj.lrLs2;
-  lrE1 = particleObj.lrEs1;
-  lrE2 = particleObj.lrEs2;
+  lrL1id = 1:length(particleObj.lrLs1);
+  lrL2id = 1:length(particleObj.lrLs2);
+  lrE1id = 1:length(particleObj.lrEs1);
+  lrE2id = 1:length(particleObj.lrEs2);
 end
 % Create parameter matrix using combvec
 paramMat = combvec( n1, n2, n3, l1, l2, particleObj.vD, systemObj.bc, ...
   rhoInit.IntCond, flags.StepMeth, runID, ...
-  lrL1, lrL2, lrE1, lrE2);
+  lrL1id, lrL2id, lrE1id, lrE2id);
 % get number of runs
 numRuns = size( paramMat, 2 );% Fix all Ns the same and ls
 if flags.AllNsSame

@@ -93,43 +93,63 @@ if isempty(particleObj.interLr)
   interObj.long = 'none';
   fprintf('No long range interactions\n');
 else 
+  % store some things
   interObj.longFlag = 1;
   interObj.long = particleObj.interLr;
+  numPotentials = length( interObj.long );
   interObj.anyInter = 1;
   fprintf('Long interactions %s\n', interObj.long);
   % Scale
   interObj.muMfScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
     (systemObj.n1 * systemObj.n2 * systemObj.n3);
-  % rods
-  if  strcmp( particleObj.type, 'rods' ) 
-    interObj.longFlag = 0;
-    interObj.long = 'none';
-    fprintf('No long range interactions written for rods\n')
-  % disks
-  elseif  strcmp( particleObj.type, 'disks' ) 
-    if strcmp( interObj.long, 'softshoulder' )
-      interObj.longSpec = 'disksSoft';
-      interObj.longId = 1;
-      % scales
-      interObj.lrLs1 = particleObj.lrLs1;
-      interObj.lrLs2 = particleObj.lrLs2;
-      interObj.lrEs1 = particleObj.lrEs1;
-      interObj.lrEs2 = particleObj.lrEs1;
+  % factors
+  interObj.lrLs1 = particleObj.lrLs1;
+  interObj.lrLs2 = particleObj.lrLs2;
+  interObj.lrEs1 = particleObj.lrEs1;
+  interObj.lrEs2 = particleObj.lrEs1;
+  % add the potenials, v
+  v = 0;
+  for ii = 1:numPotentials
+    if strcmp( interObj.long{ii}, 'softshoulder2d' )
+      interObj.longId(ii) = 1;
       % build soft should potential
-      [~, interObj.vFt] = softShoulder2D( interObj.lrEs1, interObj.lrEs2, ...
-        interObj.lrLs1, interObj.lrLs2, ...
+      [vTemp] = softShoulder2D( interObj.lrEs1(ii), interObj.lrEs2(ii), ...
+        interObj.lrLs1(ii), interObj.lrLs2(ii), ...
         systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
+      v = v + reshape( vTemp, [n1 n2 1] );
     end
-  % spheres
-  elseif strcmp( particleObj.type, 'spheres' )
-    interObj.longFlag = 0;
-    interObj.long = 'none';
-    fprintf('No long range interactions written for spheres\n')
-    fprintf('No long range interactions\n');
+    if strcmp( interObj.long, 'polaralign2d' ) )
+      interObj.longId(ii) = 2;
+      % build soft should potential
+      [vTemp] = polarAlign( interObj.lrEs1(ii),  systemObj.n3, systemObj.l3 );
+      v = v + reshape( vTemp, [1, 1, n3] );
+    end
+    if strcmp( interObj.long, 'polaraligngauss2d' )
+      interObj.longSpec = 'disksSoft';
+      interObj.longId(ii) = 3;
+      % build soft should potential
+      [vTemp] = polarAlignGaussian( interObj.lrEs1(ii), interObj.lrLs1(ii), systemObj.n3, systemObj.l3 );
+      v = v + vTemp;
+    end
+  end % loop over potentials
+  % get vFt and find shape
+  [vn1, vn2, vn3] = size( v );
+  if vn1 == 1
+    interObj.ind1 = systemObj.n1/2 + 1;
   else
-    fprintf('Cannot find particle type\n');
-    error('Cannot find particle type\n');
-  end % particle type
+    interObj.ind1 = 1:systemObj.n1;
+  end
+  if vn2 == 1
+    interObj.ind2 = systemObj.n2/2 + 1;
+  else
+    interObj.ind2 = 1:systemObj.n2;
+  end
+  if vn3 == 1
+    interObj.ind3 = systemObj.n3/2 + 1;
+  else
+    interObj.ind3 = 1:systemObj.n3;
+  end
+  keyboard
 end % long range interaction
 % External potentional
 if isempty(particleObj.externalPot)

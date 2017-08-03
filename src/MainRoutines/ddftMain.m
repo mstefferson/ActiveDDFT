@@ -49,10 +49,10 @@ try
   timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
   % long range stuff
   if ~isempty( particleObj.interLr )
-    particleObj.lrLs1 = paramVec(11); % Long range length scale 1
-    particleObj.lrLs2 = paramVec(12); % Long range length scale 2
-    particleObj.lrEs1 = paramVec(13); % Long range energy scale 1
-    particleObj.lrEs2 = paramVec(14); % Long range energy scale 2
+    particleObj.lrLs1 = particleObj.lrLs1{paramVec(11)}; % Long range length scale 1
+    particleObj.lrLs2 = particleObj.lrLs2{paramVec(12)}; % Long range length scale 2
+    particleObj.lrEs1 = particleObj.lrEs1{paramVec(13)}; % Long range energy scale 1
+    particleObj.lrEs2 = particleObj.lrEs2{paramVec(14)}; % Long range energy scale 2
   end
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
