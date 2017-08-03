@@ -136,21 +136,30 @@ else
       [vTemp] = polarAlignGaussian2d( interObj.lrEs1(ii), interObj.lrLs1(ii), systemObj.n3, systemObj.l3 );
       v = v + vTemp;
     end
+    % decaying exponential 2D
+    if strcmp( interObj.long{ii}, 'de2d' )
+      fprintf('Long interactions %s, decaying exponential 2d\n', interObj.long{ii});
+      interObj.longId(ii) = 4;
+      % build potential
+      [vTemp] = decayexp2d( interObj.lrEs1(ii), interObj.lrLs1(ii), ...
+      systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2);
+      v = v + vTemp;
+    end
   end % loop over potentials
   % get vFt and find shape
   [vn1, vn2, vn3] = size( v );
   if vn1 == 1
-    interObj.ind1 = systemObj.n1/2 + 1;
+    interObj.ind1 = floor(systemObj.n1/2) + 1;
   else
     interObj.ind1 = 1:systemObj.n1;
   end
   if vn2 == 1
-    interObj.ind2 = systemObj.n2/2 + 1;
+    interObj.ind2 = floor(systemObj.n2/2) + 1;
   else
     interObj.ind2 = 1:systemObj.n2;
   end
   if vn3 == 1
-    interObj.ind3 = systemObj.n3/2 + 1;
+    interObj.ind3 = floor(systemObj.n3/2) + 1;
   else
     interObj.ind3 = 1:systemObj.n3;
   end
