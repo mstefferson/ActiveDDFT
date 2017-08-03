@@ -28,6 +28,7 @@ particleMaster.type = 'rods'; % rods, disks, spheres
 particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
 %  Long range interaction type in MF: 
 % ss2d (softshoulder2d), pa2d (polaralign2d), pag2d (polaraligngauss2d)
+% de2d (decay exponential)
 % different cells are different runs
 particleMaster.interLr = {}; 
 particleMaster.lrLs1 = { [particleMaster.lMaj] }; % Long range length scale 1

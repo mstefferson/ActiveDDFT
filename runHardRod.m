@@ -67,8 +67,8 @@ if flagMaster.AllNsSame == 1
     Nvec = unique( [systemMaster.n1 systemMaster.n2] );
     systemMaster.n1 = Nvec;  systemMaster.n2 = Nvec;
   else
-  Nvec = unique( [systemMaster.n1 systemMaster.n2 systemMaster.n3] );
-  systemMaster.n1 = Nvec;  systemMaster.n2 = Nvec;   systemMaster.n3 = Nvec;
+    Nvec = unique( [systemMaster.n1 systemMaster.n2 systemMaster.n3] );
+    systemMaster.n1 = Nvec;  systemMaster.n2 = Nvec;   systemMaster.n3 = Nvec;
   end
 end
 % Make OP if making movies
@@ -141,9 +141,9 @@ interLr = particleObj.interLr;
 fprintf('Starting loop over runs\n');
 ticID = tic;
 if numRuns > 1
-%   parobj = gcp;
-%   fprintf('I have hired %d workers\n',parobj.NumWorkers);
-  for ii = 1:numRuns
+  parobj = gcp;
+  fprintf('I have hired %d workers\n',parobj.NumWorkers);
+  parfor ii = 1:numRuns
     % Assign parameters
     paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
       paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
@@ -158,7 +158,7 @@ if numRuns > 1
           '2il' num2str( lrL2{ paramLrL2(ii) }( nn ), '%.2f_' ) ...
           '1ie' num2str( lrE1{ paramLrE1(ii) }( nn ), '%.2f_' ) ...
           '2ie' num2str( lrE2{ paramLrE2(ii) }( nn ), '%.2f_' ) ];
-          lrStr =  [lrStr lrStrTemp];
+        lrStr =  [lrStr lrStrTemp];
       end
     end
     % Name the file
@@ -170,7 +170,7 @@ if numRuns > 1
       '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
       '_t' num2str( trial,'%.2d' ) '.' num2str( paramrun(ii), '%.2d' ) '.mat' ];
     fprintf('\nStarting %s \n', filename);
-   [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
+    [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
       runObj, timeObj, rhoInit, flags );
     fprintf('Finished %s \n', filename);
   end
@@ -180,19 +180,19 @@ else
   paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
     paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
     paramSM(ii) paramrun(ii) paramLrL1(ii) paramLrL2(ii) paramLrE1(ii) paramLrE2(ii) ];
-    % long range string
-    lrStr = [];
-    if ~isempty( interLr )
-      lrStr = '_';
-      for nn = 1:length( interLr )
-        lrStrTemp = [ interLr{nn} '_'  ...
-          '1il' num2str( lrL1{ paramLrL1(ii) }( nn ), '%.2f_' ) ...
-          '2il' num2str( lrL2{ paramLrL2(ii) }( nn ), '%.2f_' ) ...
-          '1ie' num2str( lrE1{ paramLrE1(ii) }( nn ), '%.2f_' ) ...
-          '2ie' num2str( lrE2{ paramLrE2(ii) }( nn ), '%.2f_' ) ];
-          lrStr =  [lrStr lrStrTemp];
-      end
+  % long range string
+  lrStr = [];
+  if ~isempty( interLr )
+    lrStr = '_';
+    for nn = 1:length( interLr )
+      lrStrTemp = [ interLr{nn} '_'  ...
+        '1il' num2str( lrL1{ paramLrL1(ii) }( nn ), '%.2f_' ) ...
+        '2il' num2str( lrL2{ paramLrL2(ii) }( nn ), '%.2f_' ) ...
+        '1ie' num2str( lrE1{ paramLrE1(ii) }( nn ), '%.2f_' ) ...
+        '2ie' num2str( lrE2{ paramLrE2(ii) }( nn ), '%.2f_' ) ];
+      lrStr =  [lrStr lrStrTemp];
     end
+  end
   % Name the file
   filename = [ 'Hr' ptype, interHb, lrStr,  externalPot, ...
     'diag' num2str( diagOp ) ...

@@ -250,7 +250,7 @@ try
       opSave.aveC_rec = zeros(1,2);
       opSave.aveP_rec = zeros(1,2);
       opSave.aveN_rec = zeros(1,2);
-   end
+    end
     % Break it into chunks
     numChunks = timeObj.N_chunks;
     sizeChunk = floor( totRec/ numChunks );
