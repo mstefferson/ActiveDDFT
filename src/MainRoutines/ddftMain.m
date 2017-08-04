@@ -271,10 +271,11 @@ try
       end
       % Make the records
       [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
-        opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
+        systemObj.n3, opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       % Save it
       opSave.C_rec(:,:,currInd) = OPObjTemp.C_rec;
+      opSave.aveC_rec(1,currInd) = OPObjTemp.aveC_rec;
       if systemObj.n3 > 1
         opSave.POP_rec(:,:,currInd) = OPObjTemp.POP_rec;
         opSave.POPx_rec(:,:,currInd) = OPObjTemp.POPx_rec;
