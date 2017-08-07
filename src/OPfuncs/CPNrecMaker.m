@@ -1,5 +1,5 @@
 function [orderParamObj] = ...
-    CPNrecMaker(n1,n2,timeRecVec,Density_rec,...
+    CPNrecMaker(n1,n2,n3,timeRecVec,Density_rec,...
     phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d )
 
 % Number of frames and time vec
@@ -32,8 +32,13 @@ for ii = 1:nFrames
     phi,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
   % calculate aveages
   aveC = trapz_periodic( trapz_periodic( real(C), 2), 1 ) ./ nSqr;
-  aveP = trapz_periodic( trapz_periodic( real(POP), 2), 1 ) ./ nSqr;
-  aveN = trapz_periodic( trapz_periodic( real(NOP), 2), 1 ) ./ nSqr;
+  if n3 > 1
+    aveP = trapz_periodic( trapz_periodic( real(POP), 2), 1 ) ./ nSqr;
+    aveN = trapz_periodic( trapz_periodic( real(NOP), 2), 1 ) ./ nSqr;
+  else
+    aveP = 0;
+    aveN = 0;
+  end
   % store it
   orderParamObj.C_rec(:,:,ii) = real(C);
   orderParamObj.POP_rec(:,:,ii)    = real(POP);

@@ -45,9 +45,10 @@ if interObj.hardId == 2 % spt
   end
 end
 % Interactions: long range
-if interObj.longId == 1 % mean field
-  [muExFt] =  muExCalcMfFt( rho_FT(:,:,interObj.k3ind0), interObj.vFt, systemObj, interObj.muMfScale );
-  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
+if interObj.longFlag  % mean field
+  [muExFt] =  muExCalcMfFt( rho_FT(interObj.ind1,interObj.ind2,interObj.ind3),...
+  interObj.vFt, systemObj, interObj.muMfScale );
+  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, interObj);
   GammaCube_FT = GammaCube_FT + GammaExCube_FT;
 end
 % driving

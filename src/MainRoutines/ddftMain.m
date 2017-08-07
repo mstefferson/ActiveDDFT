@@ -49,10 +49,10 @@ try
   timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
   % long range stuff
   if ~isempty( particleObj.interLr )
-    particleObj.lrLs1 = paramVec(11); % Long range length scale 1
-    particleObj.lrLs2 = paramVec(12); % Long range length scale 2
-    particleObj.lrEs1 = paramVec(13); % Long range energy scale 1
-    particleObj.lrEs2 = paramVec(14); % Long range energy scale 2
+    particleObj.lrLs1 = particleObj.lrLs1{paramVec(11)}; % Long range length scale 1
+    particleObj.lrLs2 = particleObj.lrLs2{paramVec(12)}; % Long range length scale 2
+    particleObj.lrEs1 = particleObj.lrEs1{paramVec(13)}; % Long range energy scale 1
+    particleObj.lrEs2 = particleObj.lrEs2{paramVec(14)}; % Long range energy scale 2
   end
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
@@ -250,7 +250,7 @@ try
       opSave.aveC_rec = zeros(1,2);
       opSave.aveP_rec = zeros(1,2);
       opSave.aveN_rec = zeros(1,2);
-   end
+    end
     % Break it into chunks
     numChunks = timeObj.N_chunks;
     sizeChunk = floor( totRec/ numChunks );
@@ -271,10 +271,11 @@ try
       end
       % Make the records
       [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
-        opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
+        systemObj.n3, opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       % Save it
       opSave.C_rec(:,:,currInd) = OPObjTemp.C_rec;
+      opSave.aveC_rec(1,currInd) = OPObjTemp.aveC_rec;
       if systemObj.n3 > 1
         opSave.POP_rec(:,:,currInd) = OPObjTemp.POP_rec;
         opSave.POPx_rec(:,:,currInd) = OPObjTemp.POPx_rec;
