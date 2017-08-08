@@ -3,7 +3,7 @@
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
 function [NegDivFluxEx_FT] = ...
-  dRhoIntCalcMu(rho,muExFt,systemObj, diffObj, interObj)
+  dRhoIntCalcMu(rho,dMu,systemObj, diffObj, interObj)
 % Allocate and calulate
 n3 = systemObj.n3;
 [n1mu,n2mu,n3mu] = size(muExFt);
@@ -18,15 +18,9 @@ else
   jInd_m2 = 1;
   jInd_p2 = 1;
 end
-%Takes its derivative in k-space, product in real, then back to k-space
-ik1 = diffObj.ik1rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
-ik2 = diffObj.ik2rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
-ik3 = diffObj.ik3rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
 % coordinate 1
 if n1mu > 1
-  dMuEx_dx1_FT   = ik1 .*  muExFt; % derivative of mu in k space
-  dMuEx_dx1   =  real(ifftn(ifftshift(dMuEx_dx1_FT))); % back to real
-  jx1 = - rho .* dMuEx_dx1;    %Flux in the x1 direction with isostropic diffusion
+  jx1 = - rho .* dMu.dx1;    %Flux in the x1 direction with isostropic diffusion
   jx1_FT = fftshift(fftn(jx1)); % FFT 
   if diffObj.Ani == 0
     NegDivFluxEx_FT(:,:,jInd) = ...
@@ -40,9 +34,7 @@ if n1mu > 1
 end
 % coordinate 2
 if n2mu > 1
-  dMuEx_dx2_FT   = ik2 .*  muExFt;
-  dMuEx_dx2   =  real(ifftn(ifftshift(dMuEx_dx2_FT)));
-  jx2 = - rho .* dMuEx_dx2;    %Flux in the x2 direction with isostropic diffusion
+  jx2 = - rho .* dMu.dx2;    %Flux in the x2 direction with isostropic diffusion
   jx2_FT = fftshift(fftn(jx2));
   if diffObj.Ani == 0
     NegDivFluxEx_FT(:,:,jInd) = NegDivFluxEx_FT(:,:,jInd) + ...
@@ -60,9 +52,7 @@ if n2mu > 1
 end
 % coordinate 3
 if n3mu > 1
-  dMuEx_dx3_FT = ik3 .*  muExFt;
-  dMuEx_dx3 =  real(ifftn(ifftshift(dMuEx_dx3_FT)));
-  jx3 = - rho .* dMuEx_dx3;  %Flux in the angular direction with isostropic diffusion
+  jx3 = - rho .* dM.dx3;  %Flux in the angular direction with isostropic diffusion
   jx3_FT = fftshift(fftn(jx3));
   NegDivFluxEx_FT = NegDivFluxEx_FT ...
     - ik3 .* diffObj.Mob_rot .* jx3_FT;

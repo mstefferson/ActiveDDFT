@@ -176,4 +176,25 @@ else
   interObj.extFlag = 1;
   interObj.ext = particleObj.externalPot;
   fprintf('External %s\n', interObj.ext);
+  if strcmp( interObj.ext, 'linV1' )
+    x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
+    [interObj.v, interObj.vFt] = linearV( particleObj.exEs1, x );
+    dV.f1 = dVCalc(interObj.vFt, systemObj, diffObj, interObj);
+  end
+  if strcmp( interObj.ext, 'linV1' )
+    x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
+    [interObj.v, interObj.vFt, dv] = linearV( particleObj.exEs1, x );
+    dV.dx1 =  dv;
+    dV.dx2 =  0;
+    dV.dx3 =  0;
+  end
+  if strcmp( interObj.ext, 'quadV1' )
+    x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
+    [interObj.v, interObj.vFt, dv] = linearV( particleObj.exEs1, x );
+    dV.dx1 =  dv;
+    dV.dx2 =  0;
+    dV.dx3 =  0;
+  end
+  interObj.dV = dV;
+  keyboard
 end
