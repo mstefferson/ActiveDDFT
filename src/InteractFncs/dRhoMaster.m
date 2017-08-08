@@ -12,11 +12,12 @@ if interObj.hardId == 1 % mayers
     % calculate excess chemical potential
     muExFt = muExCalcMayerLF(rho_FT, interObj.FmFt, systemObj,...
       interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
-    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
+    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, interObj );
   end
   if interObj.typeId == 2 % disks
-    muExFt = muExCalcVc2Ft( rho_FT(:,:,interObj.k3ind0), interObj.FmFt, systemObj, interObj.muMayerScale );
-    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj );
+    muExFt = muExCalcVc2Ft( rho_FT(:,:,interObj.k3ind0), interObj.FmFt, ...
+      systemObj, interObj.muMayerScale );
+    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, interObj );
   end
 end
 % spt
