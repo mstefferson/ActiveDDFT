@@ -8,17 +8,12 @@ whatBroke = [];
 % Interactions: short range
 % mayers
 if interObj.hardId == 1 % mayers
-  if interObj.typeId == 1 % rods
-    % calculate excess chemical potential
-    muExFt = muExCalcMayerLF(rho_FT, interObj.FmFt, systemObj,...
-      interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
-    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, interObj );
-  end
-  if interObj.typeId == 2 % disks
-    muExFt = muExCalcVc2Ft( rho_FT(:,:,interObj.k3ind0), interObj.FmFt, ...
-      systemObj, interObj.muMayerScale );
-    GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, interObj );
-  end
+  % calculate excess chemical potential
+  muExFt = muExCalcMayerLF(rho_FT(interObj.srInd1,interObj.srInd2,interObj.srInd3),...
+  interObj.FmFt, systemObj,...
+    interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
+  GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, ...
+    interObj.srInd1, interObj.srInd2, interObj.srInd3);
 end
 % spt
 if interObj.hardId == 2 % spt
@@ -47,9 +42,10 @@ if interObj.hardId == 2 % spt
 end
 % Interactions: long range
 if interObj.longFlag  % mean field
-  [muExFt] =  muExCalcMfFt( rho_FT(interObj.ind1,interObj.ind2,interObj.ind3),...
+  [muExFt] =  muExCalcMfFt( rho_FT(interObj.lrInd1,interObj.lrInd2,interObj.lrInd3),...
   interObj.vFt, systemObj, interObj.muMfScale );
-  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, interObj);
+  GammaExCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, ...
+    interObj.lrInd1, interObj.lrInd2, interObj.lrInd3);
   GammaCube_FT = GammaCube_FT + GammaExCube_FT;
 end
 % driving

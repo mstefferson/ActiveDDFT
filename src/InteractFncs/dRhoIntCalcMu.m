@@ -3,7 +3,7 @@
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
 function [NegDivFluxEx_FT] = ...
-  dRhoIntCalcMu(rho,muExFt,systemObj, diffObj, interObj)
+  dRhoIntCalcMu(rho,muExFt,systemObj, diffObj, ind1, ind2, ind3)
 % Allocate and calulate
 n3 = systemObj.n3;
 [n1mu,n2mu,n3mu] = size(muExFt);
@@ -19,9 +19,9 @@ else
   jInd_p2 = 1;
 end
 %Takes its derivative in k-space, product in real, then back to k-space
-ik1 = diffObj.ik1rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
-ik2 = diffObj.ik2rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
-ik3 = diffObj.ik3rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
+ik1 = diffObj.ik1rep3( ind1, ind2, ind3 );
+ik2 = diffObj.ik2rep3( ind1, ind2, ind3 );
+ik3 = diffObj.ik3rep3( ind1, ind2, ind3 );
 % coordinate 1
 if n1mu > 1
   dMuEx_dx1_FT   = ik1 .*  muExFt; % derivative of mu in k space

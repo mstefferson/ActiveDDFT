@@ -37,12 +37,18 @@ else
       interObj.muMayerInds = 1:systemObj.n3;
       interObj.muMayerMinusInds = [1 systemObj.n3:-1:2];
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
+      interObj.srInd1 = 1:systemObj.n1;
+      interObj.srInd2 = 1:systemObj.n2;
+      interObj.srInd3 = 1:systemObj.n3;
     else
       fprintf('Cannot find hard rod interactions\n')
     end
   % disks
   elseif strcmp( particleObj.type, 'disks' ) 
     interObj.typeId = 2;
+    interObj.srInd1 = 1:systemObj.n1;
+    interObj.srInd2 = 1:systemObj.n2;
+    interObj.srInd3 = floor(systemObj.n3 / 2) + 1;
     % mayer
     if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'disksMayer';
@@ -68,6 +74,9 @@ else
     % spheres
   elseif strcmp( particleObj.type, 'spheres' )
     interObj.typeId = 3;
+    interObj.srInd1 = 1:systemObj.n1;
+    interObj.srInd2 = 1:systemObj.n2;
+    interObj.srInd3 = 1:systemObj.n3;
     % mayer
     if strcmp( interObj.hard, 'mayer' )
       interObj.hardSpec = 'spheresMayer';
@@ -87,12 +96,12 @@ else
   end % particle type
 end % short range interactions
 % Long range interactions
-if isempty(particleObj.interLr)
+if isempty(particleObj.interLr) || strcmp( particleObj.interLr{1}, '' )
   interObj.longFlag = 0;
   interObj.longId = 0;
   interObj.long = 'none';
   fprintf('No long range interactions\n');
-else 
+else
   % store some things
   interObj.longFlag = 1;
   interObj.long = particleObj.interLr;
@@ -149,19 +158,19 @@ else
   % get vFt and find shape
   [vn1, vn2, vn3] = size( v );
   if vn1 == 1
-    interObj.ind1 = floor(systemObj.n1/2) + 1;
+    interObj.lrInd1 = floor(systemObj.n1/2) + 1;
   else
-    interObj.ind1 = 1:systemObj.n1;
+    interObj.lrInd1 = 1:systemObj.n1;
   end
   if vn2 == 1
-    interObj.ind2 = floor(systemObj.n2/2) + 1;
+    interObj.lrInd2 = floor(systemObj.n2/2) + 1;
   else
-    interObj.ind2 = 1:systemObj.n2;
+    interObj.lrInd2 = 1:systemObj.n2;
   end
   if vn3 == 1
-    interObj.ind3 = floor(systemObj.n3/2) + 1;
+    interObj.lrInd3 = floor(systemObj.n3/2) + 1;
   else
-    interObj.ind3 = 1:systemObj.n3;
+    interObj.lrInd3 = 1:systemObj.n3;
   end
   % store it
   interObj.v = v;
