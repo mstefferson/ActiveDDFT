@@ -173,37 +173,31 @@ else
     interObj.lrInd3 = 1:systemObj.n3;
   end
   % store it
-  interObj.v = v;
-  interObj.vFt = fftshift( fftn( v ) );
+  interObj.vInt = v;
+  interObj.vIntFt = fftshift( fftn( v ) );
 end % long range interaction
 % External potentional
-if isempty(particleObj.externalPot)
+keyboard
+if isempty(particleObj.externalPot{1})
   interObj.extFlag = 0;
   interObj.ext = 'none';
   fprintf('No external potential\n');
 else
   interObj.extFlag = 1;
-  interObj.ext = particleObj.externalPot;
+  interObj.ext = particdcleObj.externalPot{1};
   fprintf('External %s\n', interObj.ext);
   if strcmp( interObj.ext, 'linV1' )
     x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
-    [interObj.v, interObj.vFt] = linearV( particleObj.exEs1, x );
-    dV.f1 = dVCalc(interObj.vFt, systemObj, diffObj, interObj);
-  end
-  if strcmp( interObj.ext, 'linV1' )
-    x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
-    [interObj.v, interObj.vFt, dv] = linearV( particleObj.exEs1, x );
-    dV.dx1 =  dv;
-    dV.dx2 =  0;
-    dV.dx3 =  0;
+    [interObj.vExt, interObj.vExtFt] = linearV( particleObj.exEs1{1}, x );
+    dV.f1 = dVCalc(interObj.vExtFt, systemObj, diffObj, interObj);
   end
   if strcmp( interObj.ext, 'quadV1' )
     x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
-    [interObj.v, interObj.vFt, dv] = linearV( particleObj.exEs1, x );
+    [interObj.vExt, interObj.vExtFt, dv] = linearV( particleObj.exEs1{1}, x );
     dV.dx1 =  dv;
     dV.dx2 =  0;
     dV.dx3 =  0;
   end
-  interObj.dV = dV;
-  keyboard
+  interObj.dVExt = dV;
+%   keyboard
 end

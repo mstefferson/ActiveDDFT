@@ -5,14 +5,14 @@
 % dV.fx2 = dV/dx2
 % dV.fx3 = dV/dx3
 
-function [dV] = dVCalc(vFt,systemObj, diffObj, interObj)
+function [dV] = dVCalc(vFt,systemObj, diffObj, ind1, ind2, ind3)
 % Allocate and calulate
 n3 = systemObj.n3;
 [n1v,n2v,n3v] = size(vFt);
 %Takes its derivative in k-space, product in real, then back to k-space
-ik1 = diffObj.ik1rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
-ik2 = diffObj.ik2rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
-ik3 = diffObj.ik3rep3( interObj.ind1, interObj.ind2, interObj.ind3 );
+ik1 = diffObj.ik1rep3( ind1, ind2, ind3 );
+ik2 = diffObj.ik2rep3( ind1, ind2, ind3 );
+ik3 = diffObj.ik3rep3( ind1, ind2, ind3 );
 % coordinate 1
 if n1v > 1
   dVdx1Ft   = ik1 .*  vFt; % derivative of v in k space

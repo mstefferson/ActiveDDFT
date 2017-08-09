@@ -3,7 +3,8 @@
 % orientation. Program handles interactions using DDFT
 
 function  [ denRecObj ] = ...
-  ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, rhoInit, flags )
+  ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, ...
+  rhoInit, flags, externalPot )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 % some global
@@ -54,6 +55,10 @@ try
     particleObj.lrEs1 = particleObj.lrEs1{paramVec(13)}; % Long range energy scale 1
     particleObj.lrEs2 = particleObj.lrEs2{paramVec(14)}; % Long range energy scale 2
   end
+  % external pot
+  keyboard
+  particleObj.externalPot = externalPot;
+  keyboard
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];

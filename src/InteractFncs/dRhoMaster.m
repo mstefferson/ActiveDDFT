@@ -12,8 +12,9 @@ if interObj.hardId == 1 % mayers
   muExFt = muExCalcMayerLF(rho_FT(interObj.srInd1,interObj.srInd2,interObj.srInd3),...
   interObj.FmFt, systemObj,...
     interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
-  GammaCube_FT = dRhoIntCalcMu( rho, muExFt, systemObj, diffObj, ...
-    interObj.srInd1, interObj.srInd2, interObj.srInd3);
+  dMu = dVCalc(muExFt, systemObj, diffObj, ...
+    interObj.srInd1, interObj.srInd2, interObj.srInd3 );
+  GammaCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj );
 end
 % spt
 if interObj.hardId == 2 % spt
@@ -37,15 +38,17 @@ if interObj.hardId == 2 % spt
     else
       [muExFt] = muExDisksSPT(nu);
     end
-    dMu = dVCalc(muExFt, systemObj, diffObj, interObj);
-    GammaCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj, interObj );
+    dMu = dVCalc(muExFt, systemObj, diffObj, ...
+      interObj.srInd1, interObj.srInd2, interObj.srInd3);
+    GammaCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj);
   end
 end
 % Interactions: long range
 if interObj.longFlag  % mean field
   [muExFt] =  muExCalcMfFt( rho_FT(interObj.lrInd1,interObj.lrInd2,interObj.lrInd3),...
-  interObj.vFt, systemObj, interObj.muMfScale );
-  dMu = dVCalc(muExFt, systemObj, diffObj, interObj)
+  interObj.vIntFt, systemObj, interObj.muMfScale );
+  dMu = dVCalc(muExFt, systemObj, diffObj, ...
+    interObj.lrInd1, interObj.lrInd2, interObj.lrInd3);
   GammaExCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj);
   GammaCube_FT = GammaCube_FT + GammaExCube_FT;
 end
@@ -58,6 +61,6 @@ if flags.Drive && flags.DiagLop
 end
 % external potential
 if interObj.extFlag
-  GammaExCube_FT = dRhoIntCalcMu( rho, interObj.dV, systemObj, diffObj, interObj);
+  GammaExCube_FT = dRhoIntCalcMu( rho, interObj.dVExt, systemObj, diffObj, interObj);
   GammaCube_FT = GammaCube_FT + GammaPotCube_FT;
 end

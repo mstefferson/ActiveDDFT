@@ -3,10 +3,10 @@
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
 function [NegDivFluxEx_FT] = ...
-  dRhoIntCalcMu(rho,dMu,systemObj, diffObj)
+  dRhoIntCalcMu(rho, dMu,systemObj, diffObj)
 % Allocate and calulate
 n3 = systemObj.n3;
-[n1mu,n2mu,n3mu] = size(muExFt);
+[n1mu,n2mu,n3mu] = size(dMu);
 NegDivFluxEx_FT = zeros( systemObj.n1, systemObj.n2, n3 );
 % Do it all with indexing
 if  n3 > 1 

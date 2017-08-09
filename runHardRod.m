@@ -98,7 +98,7 @@ if isempty(particleObj.interHb); interHb = '';
 else; interHb = ['_' particleObj.interHb]; end
 if isempty(particleObj.interLr); interLr = ''; end
 if isempty(particleObj.externalPot); externalPot = '';
-else; externalPot = ['_' particleObj.externalPot]; end
+else; externalPot = ['_' particleObj.externalPot{1}]; end
 % Print what you are doing
 if diagOp  == 1
   fprintf('Diagonal operator (cube) \n')
@@ -120,8 +120,10 @@ end
 % Display everythin
 disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
 % Make paramMat
+fprintf('Building external potential \n' )
+potObj=  potRunManager( particleObj.externalPot )
 fprintf('Building parameter mat \n');
-[paramMat, numRuns] = MakeParamMat( systemObj, particleObj, runObj, rhoInit, flags );
+[paramMat, numRuns] = MakeParamMat( systemObj, particleObj, runObj, rhoInit, potObj.inds, flags );
 fprintf('Executing %d runs \n\n', numRuns);
 % For some reason, param_mat gets "sliced". Create vectors to get arround
 paramn1  = paramMat(1,:); paramn2  = paramMat(2,:);
@@ -131,6 +133,10 @@ parambc  = paramMat(7,:); paramIC  = paramMat(8,:);
 paramSM  = paramMat(9,:); paramrun = paramMat(10,:);
 paramLrL1  = paramMat(11,:); paramLrL2 = paramMat(12,:);
 paramLrE1  = paramMat(13,:); paramLrE2 = paramMat(14,:);
+paramMatExtInds = paramMat(15,:);
+% external cells
+extParam = potObj.param;
+extStr = potObj.str;
 % store long range interaction cells
 lrL1 = particleObj.lrLs1;
 lrL2 = particleObj.lrLs2;
@@ -141,9 +147,9 @@ interLr = particleObj.interLr;
 fprintf('Starting loop over runs\n');
 ticID = tic;
 if numRuns > 1
-  parobj = gcp;
-  fprintf('I have hired %d workers\n',parobj.NumWorkers);
-  parfor ii = 1:numRuns
+  %parobj = gcp;
+  %fprintf('I have hired %d workers\n',parobj.NumWorkers);
+  for ii = 1:numRuns
     % Assign parameters
     paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
       paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
@@ -162,7 +168,7 @@ if numRuns > 1
       end
     end
     % Name the file
-    filename = [ 'Hr' ptype, interHb, lrStr,  externalPot, ...
+    filename = [ 'Hr' ptype, interHb, lrStr,  extStr(ii), ...
       'diag' num2str( diagOp ) ...
       '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
       '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
@@ -171,7 +177,7 @@ if numRuns > 1
       '_t' num2str( trial,'%.2d' ) '.' num2str( paramrun(ii), '%.2d' ) '.mat' ];
     fprintf('\nStarting %s \n', filename);
     [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-      runObj, timeObj, rhoInit, flags );
+      runObj, timeObj, rhoInit, flags, extParam{ii} );
     fprintf('Finished %s \n', filename);
   end
 else
@@ -194,7 +200,7 @@ else
     end
   end
   % Name the file
-  filename = [ 'Hr' ptype, interHb, lrStr,  externalPot, ...
+  filename = [ 'Hr' ptype, interHb, lrStr,  extStr{ii}, ...
     'diag' num2str( diagOp ) ...
     '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
     '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
@@ -202,8 +208,9 @@ else
     '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
     '_t' num2str( trial,'%.2d' ) '.' num2str( paramrun(ii), '%.2d' ) '.mat' ];
   fprintf('\nStarting %s \n', filename);
+  keyboard
   [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-    runObj, timeObj, rhoInit, flags );
+    runObj, timeObj, rhoInit, flags, extParam{ii} );
   fprintf('Finished %s \n', filename);
 end
 runTime = toc(ticID);
