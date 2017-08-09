@@ -177,27 +177,31 @@ else
   interObj.vIntFt = fftshift( fftn( v ) );
 end % long range interaction
 % External potentional
-keyboard
-if isempty(particleObj.externalPot{1})
+if isempty(particleObj.externalPot)
   interObj.extFlag = 0;
   interObj.ext = 'none';
   fprintf('No external potential\n');
 else
   interObj.extFlag = 1;
-  interObj.ext = particdcleObj.externalPot{1};
-  fprintf('External %s\n', interObj.ext);
-  if strcmp( interObj.ext, 'linV1' )
-    x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
-    [interObj.vExt, interObj.vExtFt] = linearV( particleObj.exEs1{1}, x );
-    dV.f1 = dVCalc(interObj.vExtFt, systemObj, diffObj, interObj);
-  end
-  if strcmp( interObj.ext, 'quadV1' )
-    x = reshape( gridObj.x1, [ systemObj.n1, 1 ] );
-    [interObj.vExt, interObj.vExtFt, dv] = linearV( particleObj.exEs1{1}, x );
-    dV.dx1 =  dv;
-    dV.dx2 =  0;
-    dV.dx3 =  0;
+  interObj.anyInter = 1;
+  numExternalPots = length( particleObj.externalPot );
+  interObj.externalPot = cell(numExternalPots,1);
+  % reinitialize
+  v = 0;
+  dV.dx1 = 0;
+  dV.dx2 = 0;
+  dV.dx3 = 0;
+  for ii = 1:numExternalPots
+    currPot = particleObj.externalPot{ii};
+    if strcmp( currPot{1}, 'linV1' )
+      fprintf('External %s along dim %d\n', currPot{1}, currPot{2}(1) );
+      vTemp = LinearVClass( currPot{1}, currPot{2}(1), currPot{2}(2), gridObj.x1 );
+      interObj.externalV{ii} = vTemp;
+      v = v + vTemp.VvReshape;
+      dV.dx1 = dV.dx1 + vTemp.DvDx1;
+      dV.dx2 = dV.dx2 + vTemp.DvDx2;
+      dV.dx3 = dV.dx3 + vTemp.DvDx3;
+    end
   end
   interObj.dVExt = dV;
-%   keyboard
 end

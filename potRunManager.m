@@ -20,7 +20,7 @@ if numPot
   end
   % put transpose in cell
   [ numRuns, ~] = size(paramMat');
-  potInds = 1:length(numRuns);
+  potInds = 1:numRuns;
   paramSepCell = mat2cell( paramMat', ones(1, numRuns), potInputs );
   % Reallocate
   runTemp = cell( numPot, 1);
@@ -44,4 +44,3 @@ end
 potObj.param = potParams;
 potObj.str = potStr;
 potObj.inds = potInds;
-

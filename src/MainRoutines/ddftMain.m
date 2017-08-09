@@ -56,9 +56,7 @@ try
     particleObj.lrEs2 = particleObj.lrEs2{paramVec(14)}; % Long range energy scale 2
   end
   % external pot
-  keyboard
   particleObj.externalPot = externalPot;
-  keyboard
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];

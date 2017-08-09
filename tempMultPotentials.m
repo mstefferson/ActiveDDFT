@@ -1,7 +1,7 @@
 pot = { {'pot1', [1.1, 2.1 3.1], 4.1}; ...
   {'pot2', 1.2, [2.2 3.2], 4.2};...
   {'pot3', [5.3 6.3] } };
-pot = {  };
+% pot = {  };
 if ~isempty(pot)
   numPot = length(pot);
   potInputs = zeros( 1, numPot );

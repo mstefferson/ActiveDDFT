@@ -61,6 +61,6 @@ if flags.Drive && flags.DiagLop
 end
 % external potential
 if interObj.extFlag
-  GammaExCube_FT = dRhoIntCalcMu( rho, interObj.dVExt, systemObj, diffObj, interObj);
+  GammaPotCube_FT = dRhoIntCalcMu( rho, interObj.dVExt, systemObj, diffObj);
   GammaCube_FT = GammaCube_FT + GammaPotCube_FT;
 end
