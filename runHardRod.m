@@ -97,8 +97,6 @@ ptype = ['_' particleObj.type];
 if isempty(particleObj.interHb); interHb = '';
 else; interHb = ['_' particleObj.interHb]; end
 if isempty(particleObj.interLr); interLr = ''; end
-if isempty(particleObj.externalPot); externalPot = '';
-else; externalPot = ['_' particleObj.externalPot{1}]; end
 % Print what you are doing
 if diagOp  == 1
   fprintf('Diagonal operator (cube) \n')
@@ -117,15 +115,16 @@ if length( particleObj.interLr ) ~= length( particleObj.lrLs1{1} )
   fprintf('Long range parameters not set correctly\n');
   error('Long range parameters not set correctly');
 end
-% Display everythin
-disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
 % Make paramMat
 fprintf('Building external potential \n' )
-potObj=  potRunManager( particleObj.externalPot );
+[potObj, particleObj.externalV] = ...
+  potRunManager( particleObj.externalV, [systemObj.n1 systemObj.n2 systemObj.n3] );
 fprintf('Building parameter mat \n');
 [paramMat, numRuns] = ...
   MakeParamMat( systemObj, particleObj, runObj, rhoInit, potObj.inds, flags );
 fprintf('Executing %d runs \n\n', numRuns);
+% Display everythin
+disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
 % For some reason, param_mat gets "sliced". Create vectors to get arround
 paramn1  = paramMat(1,:); paramn2  = paramMat(2,:);
 paramn3  = paramMat(3,:); paraml1  = paramMat(4,:);
@@ -201,7 +200,7 @@ else
     end
   end
   % Name the file
-  filename = [ 'Hr' ptype, interHb, lrStr,  extStr(paramMatExtInds(ii)), ...
+  filename = [ 'Hr' ptype, interHb, lrStr,  extStr{paramMatExtInds(ii)}, ...
     'diag' num2str( diagOp ) ...
     '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
     '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...

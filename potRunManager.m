@@ -1,4 +1,7 @@
-function [potObj] =  potRunManager( pot )
+function [potObj, pot] =  potRunManager( pot, nVec )
+% Checking potential
+pot = checkPotentialDim( pot, nVec );
+% Build potObj
 numPot = length(pot);
 if numPot
   % Allocate
@@ -44,3 +47,15 @@ end
 potObj.param = potParams;
 potObj.str = potStr;
 potObj.inds = potInds;
+
+% check potential
+function pot = checkPotentialDim( pot, nVec )
+for ii = 1:length(pot)
+  currPot = pot{ii};
+  if nVec( currPot{2}(1) ) == 1
+    fprintf('Deleting potential %s wrong dimension %d\n',...
+      currPot{1}, currPot{2}(1) );
+    pot{ii} = [];
+  end
+end
+pot = pot( ~cellfun('isempty', pot) );

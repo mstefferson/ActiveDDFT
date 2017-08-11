@@ -4,7 +4,7 @@
 
 function  [ denRecObj ] = ...
   ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, ...
-  rhoInit, flags, externalPot )
+  rhoInit, flags, externalV )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 % some global
@@ -56,7 +56,7 @@ try
     particleObj.lrEs2 = particleObj.lrEs2{paramVec(14)}; % Long range energy scale 2
   end
   % external pot
-  particleObj.externalPot = externalPot;
+  particleObj.externalV = externalV;
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];

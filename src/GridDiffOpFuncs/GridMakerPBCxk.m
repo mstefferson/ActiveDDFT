@@ -8,16 +8,16 @@ dx1   = l1/n1;
 dx2   = l2/n2;
 dx3 = l3/n3;
 % Make vectors and grids
-gridObj.x1 = ( 0: dx1 : l1 - dx1 );
-gridObj.x2 = ( 0: dx2 : l2 - dx2 );
-gridObj.x3 = ( 0: dx3: (l3 - dx3) );
+gridObj.x1 = dx1 * ( -n1/2: n1/2 - 1 );
+gridObj.x2 = dx2 * ( -n2/2: n2/2 - 1 );
+gridObj.x3 = dx3 * ( -n3/2: n3/2 - 1 );
 % Make k-space spacings
 dk1 = 2*pi/l1;
 dk2 = 2*pi/l2;
 dk3 = 2*pi/l3; %  = 1
 % Make k vectors and grids
-k1_max = pi/dx1; %Maximum spatial k-vector allowed by grid
-k2_max = pi/dx2; %Maximum spatial k-vector allowed by grid
+k1_max = pi / dx1; %Maximum spatial k-vector allowed by grid
+k2_max = pi / dx2; %Maximum spatial k-vector allowed by grid
 k3_max = pi / dx3; %Maximum angular k-vector
 % For generalization purposes, handle N = 1 cases differently.
 if n1 == 1

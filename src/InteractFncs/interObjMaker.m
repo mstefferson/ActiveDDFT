@@ -22,7 +22,7 @@ else
   interObj.hard = particleObj.interHb;
   interObj.anyInter = 1;
   % rods
-  if  strcmp( particleObj.type, 'rods' ) 
+  if  strcmp( particleObj.type, 'rods' )
     interObj.typeId = 1;
     % mayer
     if strcmp( interObj.hard, 'mayer' )
@@ -43,8 +43,8 @@ else
     else
       fprintf('Cannot find hard rod interactions\n')
     end
-  % disks
-  elseif strcmp( particleObj.type, 'disks' ) 
+    % disks
+  elseif strcmp( particleObj.type, 'disks' )
     interObj.typeId = 2;
     interObj.srInd1 = 1:systemObj.n1;
     interObj.srInd2 = 1:systemObj.n2;
@@ -60,7 +60,7 @@ else
       interObj.muMayerScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
         (systemObj.n1 * systemObj.n2 * systemObj.n3);
       fprintf('%s hard %s\n', interObj.hard, particleObj.type);
-    % scaled particle theory
+      % scaled particle theory
     elseif strcmp( interObj.hard, 'spt' )
       interObj.hardSpec = 'disksSpt';
       interObj.hardId = 2;
@@ -130,7 +130,7 @@ else
       v = v + reshape( vTemp, [systemObj.n1 systemObj.n2 1] );
     end
     % polar align 2D
-    if strcmp( interObj.long{ii}, 'pa2d' ) 
+    if strcmp( interObj.long{ii}, 'pa2d' )
       fprintf('Long interactions %s, polar align 2d\n', interObj.long{ii});
       interObj.longId(ii) = 2;
       % build potential
@@ -151,7 +151,7 @@ else
       interObj.longId(ii) = 4;
       % build potential
       [vTemp] = decayexp2d( interObj.lrEs1(ii), interObj.lrLs1(ii), ...
-      systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2);
+        systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2);
       v = v + vTemp;
     end
   end % loop over potentials
@@ -177,31 +177,47 @@ else
   interObj.vIntFt = fftshift( fftn( v ) );
 end % long range interaction
 % External potentional
-if isempty(particleObj.externalPot)
+if isempty(particleObj.externalV)
   interObj.extFlag = 0;
   interObj.ext = 'none';
   fprintf('No external potential\n');
 else
   interObj.extFlag = 1;
   interObj.anyInter = 1;
-  numExternalPots = length( particleObj.externalPot );
-  interObj.externalPot = cell(numExternalPots,1);
+  numexternalVs = length( particleObj.externalV );
+  interObj.externalV = cell(numexternalVs,1);
+  nVec = [systemObj.n1 systemObj.n2 systemObj.n3];
   % reinitialize
   v = 0;
   dV.dx1 = 0;
   dV.dx2 = 0;
   dV.dx3 = 0;
-  for ii = 1:numExternalPots
-    currPot = particleObj.externalPot{ii};
-    if strcmp( currPot{1}, 'linV1' )
-      fprintf('External %s along dim %d\n', currPot{1}, currPot{2}(1) );
-      vTemp = LinearVClass( currPot{1}, currPot{2}(1), currPot{2}(2), gridObj.x1 );
-      interObj.externalV{ii} = vTemp;
-      v = v + vTemp.VvReshape;
-      dV.dx1 = dV.dx1 + vTemp.DvDx1;
-      dV.dx2 = dV.dx2 + vTemp.DvDx2;
-      dV.dx3 = dV.dx3 + vTemp.DvDx3;
+  for ii = 1:numexternalVs
+    currPot = particleObj.externalV{ii};
+    fprintf('External %s along dim %d\n', currPot{1}, currPot{2}(1) );
+    if strcmp( currPot{1}, 'linV' )
+      % run a check just in case
+      if nVec( currPot{2}(1) ) > 1
+        vTemp = LinearVClass( currPot{1}, currPot{2}(1), currPot{2}(2), gridObj.x1 );
+        interObj.externalV{ii} = vTemp;
+        v = v + vTemp.VvReshape;
+        dV.dx1 = dV.dx1 + vTemp.DvDx1;
+        dV.dx2 = dV.dx2 + vTemp.DvDx2;
+        dV.dx3 = dV.dx3 + vTemp.DvDx3;
+      end
+    elseif strcmp( currPot{1}, 'quadV' )
+      % run a check just in case
+      if nVec( currPot{2}(1) ) > 1
+        vTemp = QuadVClass( currPot{1}, currPot{2}(1), currPot{2}(2), gridObj.x1 );
+        interObj.externalV{ii} = vTemp;
+        v = v + vTemp.VvReshape;
+        dV.dx1 = dV.dx1 + vTemp.DvDx1;
+        dV.dx2 = dV.dx2 + vTemp.DvDx2;
+        dV.dx3 = dV.dx3 + vTemp.DvDx3;
+      end
+    else
+      fprintf('Not building potential, dimension not available\n' );
     end
-  end
+  end % for loop
   interObj.dVExt = dV;
-end
+end % external

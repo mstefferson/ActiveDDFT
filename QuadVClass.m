@@ -1,8 +1,8 @@
-classdef LinearVClass
+classdef QuadVClass
   properties
     Str = '';
     Dim = 0;
-    A = 1;
+    K = 1;
     Length = 1;
     Xv = [];
     Vv = [];
@@ -16,12 +16,12 @@ classdef LinearVClass
   
   methods
     % Constructor
-    function obj = LinearVClass( str, dim, a, x )
+    function obj = QuadVClass( str, dim, k, x )
       if nargin == 4
         obj.Str = str;
         obj.Length = length(x);
         obj.Dim = dim;
-        obj.A = a;
+        obj.K = k;
         obj.Xv = x;
         % reshape inds
         if dim == 1
@@ -41,12 +41,12 @@ classdef LinearVClass
     end
     % make V
     function obj = makeV(obj)
-      obj.Vv = obj.A * obj.Xv;
+      obj.Vv = 1 / 2 .* obj.K .* obj.Xv .^ 2;
       obj.VvReshape = reshape( obj.Vv, obj.ReshapeInds ) ;
     end
     % make Derivative
     function obj = makeDerivative(obj)
-      dv = obj.A * ones( 1, obj.Length );
+      dv = obj.K.* obj.Xv;
       obj.Dv = dv;
       if obj.Dim == 1
         obj.DvDx1 = reshape( dv, obj.ReshapeInds );

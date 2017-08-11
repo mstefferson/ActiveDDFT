@@ -35,9 +35,9 @@ particleMaster.lrLs1 = { [particleMaster.lMaj] }; % Long range length scale 1
 particleMaster.lrLs2 = { [ 0 ] }; % Long range length scale 2
 particleMaster.lrEs1 = { [ 1 ] }; % Long range energy scale 1
 particleMaster.lrEs2 = { [ 0 ] }; % Long range energy scale 2
-% External potential: 
-% {'linV1', a}
-particleMaster.externalPot = {''}; % External potential 
+% External potential (cell of cells): 
+%  { {'linV', dim, a}, {'quadV', dim, a} }
+particleMaster.externalV = {''}; % External potential 
 %%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)
 systemMaster.n2 = [64]; % Gridpoints in y dir (vec) 

@@ -2,7 +2,8 @@
 %
 % Description: Creates a parameter matrix that is used by RunHardRod
 
-function [paramMat, numRuns] = MakeParamMat( systemObj, particleObj, runObj, rhoInit, externPotInds, flags )
+function [paramMat, numRuns] = MakeParamMat( systemObj, particleObj, ...
+  runObj, rhoInit, potInds, flags )
 
 % Create Paramater matrix
 % paramMat columns: (n1, n2, n3, l1, l2, vD, bc, IC, SM, runID)
@@ -44,10 +45,9 @@ else
   lrE2id = 1:length(particleObj.lrEs2);
 end
 % Create parameter matrix using combvec
-[potObj] =  potRunManager( particleObj.externalPot );
 paramMat = combvec( n1, n2, n3, l1, l2, particleObj.vD, systemObj.bc, ...
   rhoInit.IntCond, flags.StepMeth, runID, ...
-  lrL1id, lrL2id, lrE1id, lrE2id, potObj.inds);
+  lrL1id, lrL2id, lrE1id, lrE2id, potInds);
 % get number of runs
 numRuns = size( paramMat, 2 );% Fix all Ns the same and ls
 if flags.AllNsSame
