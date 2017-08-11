@@ -11,6 +11,10 @@ function [interObj] = interObjMaker( particleObj, systemObj, gridObj )
 interObj.anyInter = 0;
 % save k3 index
 interObj.k3ind0 = floor( systemObj.n3 / 2 ) + 1;
+% flags
+interObj.dv1Flag = 0;
+interObj.dv2Flag = 0;
+interObj.dv3Flag = 0;
 % Short range interactions
 if isempty(particleObj.interHb)
   interObj.hardFlag = 0;
@@ -24,8 +28,16 @@ else
   % rods
   if  strcmp( particleObj.type, 'rods' )
     interObj.typeId = 1;
+    % flags/inds
+    interObj.dv1Flag = 1;
+    interObj.dv2Flag = 1;
+    interObj.dv3Flag = 1;
+    interObj.srInd1 = 1:systemObj.n1;
+    interObj.srInd2 = 1:systemObj.n2;
+    interObj.srInd3 = 1:systemObj.n3;
     % mayer
     if strcmp( interObj.hard, 'mayer' )
+      fprintf('%s hard %s\n', interObj.hard, particleObj.type);
       interObj.hardSpec = 'rodsMayer';
       interObj.hardId = 1;
       % grab lap frame mayer function
@@ -36,15 +48,14 @@ else
         (systemObj.n1 * systemObj.n2 * systemObj.n3 ^ 2);
       interObj.muMayerInds = 1:systemObj.n3;
       interObj.muMayerMinusInds = [1 systemObj.n3:-1:2];
-      fprintf('%s hard %s\n', interObj.hard, particleObj.type);
-      interObj.srInd1 = 1:systemObj.n1;
-      interObj.srInd2 = 1:systemObj.n2;
-      interObj.srInd3 = 1:systemObj.n3;
     else
       fprintf('Cannot find hard rod interactions\n')
     end
     % disks
   elseif strcmp( particleObj.type, 'disks' )
+    % flags/inds
+    interObj.dv1Flag = 1;
+    interObj.dv2Flag = 1;
     interObj.typeId = 2;
     interObj.srInd1 = 1:systemObj.n1;
     interObj.srInd2 = 1:systemObj.n2;
@@ -74,6 +85,10 @@ else
     % spheres
   elseif strcmp( particleObj.type, 'spheres' )
     interObj.typeId = 3;
+    % flags/inds
+    interObj.dv1Flag = 1;
+    interObj.dv2Flag = 1;
+    interObj.dv3Flag = 1;
     interObj.srInd1 = 1:systemObj.n1;
     interObj.srInd2 = 1:systemObj.n2;
     interObj.srInd3 = 1:systemObj.n3;
@@ -161,16 +176,19 @@ else
     interObj.lrInd1 = floor(systemObj.n1/2) + 1;
   else
     interObj.lrInd1 = 1:systemObj.n1;
+    interObj.dv1Flag = 1;
   end
   if vn2 == 1
     interObj.lrInd2 = floor(systemObj.n2/2) + 1;
   else
     interObj.lrInd2 = 1:systemObj.n2;
+    interObj.dv2Flag = 1;
   end
   if vn3 == 1
     interObj.lrInd3 = floor(systemObj.n3/2) + 1;
   else
     interObj.lrInd3 = 1:systemObj.n3;
+    interObj.dv3Flag = 1;
   end
   % store it
   interObj.vInt = v;
@@ -220,4 +238,15 @@ else
     end
   end % for loop
   interObj.dVExt = dV;
+  if currPot{2}(1)  == 1
+    interObj.dv1Flag = 1;
+  end
+  if currPot{2}(1)  == 2
+    interObj.dv2Flag = 1;
+  end
+  if currPot{2}(1)  == 3
+    interObj.dv3Flag = 1;
+  end
+    
+
 end % external

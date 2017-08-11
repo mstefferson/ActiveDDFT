@@ -3,10 +3,10 @@
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
 function [NegDivFluxEx_FT] = ...
-  dRhoIntCalcMu(rho, dMu,systemObj, diffObj)
+  dRhoIntCalcMu(rho, dMu, systemObj, diffObj, interObj)
 % Allocate and calulate
 n3 = systemObj.n3;
-[n1mu,n2mu,n3mu] = size(dMu);
+% bug dMu does not have a size
 NegDivFluxEx_FT = zeros( systemObj.n1, systemObj.n2, n3 );
 % Do it all with indexing
 if  n3 > 1 
@@ -19,7 +19,7 @@ else
   jInd_p2 = 1;
 end
 % coordinate 1
-if n1mu > 1
+if interObj.dv1Flag
   jx1 = - rho .* dMu.dx1;    %Flux in the x1 direction with isostropic diffusion
   jx1_FT = fftshift(fftn(jx1)); % FFT 
   if diffObj.Ani == 0
@@ -33,7 +33,7 @@ if n1mu > 1
   end
 end
 % coordinate 2
-if n2mu > 1
+if interObj.dv2Flag
   jx2 = - rho .* dMu.dx2;    %Flux in the x2 direction with isostropic diffusion
   jx2_FT = fftshift(fftn(jx2));
   if diffObj.Ani == 0
@@ -51,7 +51,7 @@ if n2mu > 1
   end
 end
 % coordinate 3
-if n3mu > 1
+if interObj.dv3Flag
   jx3 = - rho .* dM.dx3;  %Flux in the angular direction with isostropic diffusion
   jx3_FT = fftshift(fftn(jx3));
   NegDivFluxEx_FT = NegDivFluxEx_FT ...

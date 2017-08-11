@@ -25,9 +25,6 @@ if interObj.hardFlag
     muExFt = muExCalcMayerLF(rho_FT(interObj.srInd1,interObj.srInd2,interObj.srInd3),...
     interObj.FmFt, systemObj,...
       interObj.muMayerScale, interObj.muMayerInds, interObj.muMayerMinusInds);
-    %dMu = dVCalc(muExFt, systemObj, diffObj, ...
-      %interObj.srInd1, interObj.srInd2, interObj.srInd3 );
-    %GammaCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj );
   elseif interObj.hardId == 2 % spt
     if interObj.typeId == 2 % disks
       if systemObj.n3 == 1
@@ -49,9 +46,6 @@ if interObj.hardFlag
       else
         [muExFt] = muExDisksSPT(nu);
       end
-      %dMu = dVCalc(muExFt, systemObj, diffObj, ...
-        %interObj.srInd1, interObj.srInd2, interObj.srInd3);
-      %GammaCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj);
     end
   else 
     fprintf('Cannot find hardID\n');
@@ -70,23 +64,14 @@ if interObj.longFlag  % mean field
   interObj.vIntFt, systemObj, interObj.muMfScale );
   dMu = dVCalc(muExFt, systemObj, diffObj, ...
     interObj.lrInd1, interObj.lrInd2, interObj.lrInd3);
-  %GammaExCube_FT = dRhoIntCalcMu( rho, dMu, systemObj, diffObj);
-  %GammaCube_FT = GammaCube_FT + GammaExCube_FT;
   dVmaster.dx1 = dMu.dx1  + interObj.dVExt.dx1;
   dVmaster.dx2 = dMu.dx2  + interObj.dVExt.dx2;
   dVmaster.dx3 = dMu.dx2  + interObj.dVExt.dx3;
 end
-% external potential
-if interObj.extFlag
-  %GammaPotCube_FT = dRhoIntCalcMu( rho, interObj.dVExt, systemObj, diffObj);
-  %GammaCube_FT = GammaCube_FT + GammaPotCube_FT;
-end
-
 % calculate gamma once
 if calcGamma
-  GammaCube_FT = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj);
+  GammaCube_FT = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
 end
-
 % driving
 if flags.Drive && flags.DiagLop
   GammaDrCube_FT  = ...
