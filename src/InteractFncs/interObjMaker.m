@@ -111,7 +111,7 @@ else
   end % particle type
 end % short range interactions
 % Long range interactions
-if isempty(particleObj.interLr) || strcmp( particleObj.interLr{1}, '' )
+if isempty(particleObj.interactLrV)
   interObj.longFlag = 0;
   interObj.longId = 0;
   interObj.long = 'none';
@@ -119,33 +119,32 @@ if isempty(particleObj.interLr) || strcmp( particleObj.interLr{1}, '' )
 else
   % store some things
   interObj.longFlag = 1;
-  interObj.long = particleObj.interLr;
-  numPotentials = length( interObj.long );
+  numPotentials = length( particleObj.interactLrV );
   interObj.anyInter = 1;
   fprintf('Long interactions\n');
   % Scale
   interObj.muMfScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
     (systemObj.n1 * systemObj.n2 * systemObj.n3);
-  % factors
-  interObj.lrLs1 = particleObj.lrLs1;
-  interObj.lrLs2 = particleObj.lrLs2;
-  interObj.lrEs1 = particleObj.lrEs1;
-  interObj.lrEs2 = particleObj.lrEs1;
   % add the potenials, v
   v = 0;
+  keyboard
   for ii = 1:numPotentials
+    currPot = particleObj.interactLrV{ii};
+    fprintf('Interaction %s along dim %d\n', currPot{1});
     % soft shoulder 2D
-    if strcmp( interObj.long{ii}, 'ss2d' )
-      fprintf('Long interactions %s, soft shoulder 2d\n', interObj.long{ii});
-      interObj.longId(ii) = 1;
+    if strcmp( currPot{1}, 'ss2d' )
       % build potential
-      [vTemp] = softShoulder2d( interObj.lrEs1(ii), interObj.lrEs2(ii), ...
-        interObj.lrLs1(ii), interObj.lrLs2(ii), ...
+      vTemp = SoftShoulderClass( currPot{1}, ...
+        currPot{2}(1), currPot{2}(2), currPot{2}(3),currPot{2}(4),...
         systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
-      v = v + reshape( vTemp, [systemObj.n1 systemObj.n2 1] );
+      interObj.interactLrV{ii} = vTemp;
+      %[vTemp] = softShoulder2d( interObj.lrEs1(ii), interObj.lrEs2(ii), ...
+        %interObj.lrLs1(ii), interObj.lrLs2(ii), ...
+        %systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
+      v = v + reshape( vTemp.Vv, [systemObj.n1 systemObj.n2 1] );
     end
     % polar align 2D
-    if strcmp( interObj.long{ii}, 'pa2d' )
+    if strcmp( currPot{1}, 'pa2d' )
       fprintf('Long interactions %s, polar align 2d\n', interObj.long{ii});
       interObj.longId(ii) = 2;
       % build potential

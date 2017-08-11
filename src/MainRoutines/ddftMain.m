@@ -4,7 +4,7 @@
 
 function  [ denRecObj ] = ...
   ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, ...
-  rhoInit, flags, externalV )
+  rhoInit, flags, interactLrV, externalV )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 % some global
@@ -48,13 +48,8 @@ try
   timeObj.scaleDt = scaleDt;
   timeObj.dt_orig = dtOrig;
   timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
-  % long range stuff
-  if ~isempty( particleObj.interLr )
-    particleObj.lrLs1 = particleObj.lrLs1{paramVec(11)}; % Long range length scale 1
-    particleObj.lrLs2 = particleObj.lrLs2{paramVec(12)}; % Long range length scale 2
-    particleObj.lrEs1 = particleObj.lrEs1{paramVec(13)}; % Long range energy scale 1
-    particleObj.lrEs2 = particleObj.lrEs2{paramVec(14)}; % Long range energy scale 2
-  end
+  % interact pot
+  particleObj.interactLrV = interactLrV;
   % external pot
   particleObj.externalV = externalV;
   % Set-up save paths, file names, and matfile

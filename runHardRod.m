@@ -96,7 +96,6 @@ trial = runObj.trialID;
 ptype = ['_' particleObj.type];
 if isempty(particleObj.interHb); interHb = '';
 else; interHb = ['_' particleObj.interHb]; end
-if isempty(particleObj.interLr); interLr = ''; end
 % Print what you are doing
 if diagOp  == 1
   fprintf('Diagonal operator (cube) \n')
@@ -110,18 +109,19 @@ if flags.rndStrtUpSeed
 else
   fprintf('Using MATLABs original seed\n');
 end
-% Make sure long range sizes are correct
-if length( particleObj.interLr ) ~= length( particleObj.lrLs1{1} )
-  fprintf('Long range parameters not set correctly\n');
-  error('Long range parameters not set correctly');
-end
-% Make paramMat
+% external potentials
 fprintf('Building external potential \n' )
-[potObj, particleObj.externalV] = ...
-  potRunManager( particleObj.externalV, [systemObj.n1 systemObj.n2 systemObj.n3] );
+nVec = [systemObj.n1 systemObj.n2 systemObj.n3];
+[ particleObj.externalV] = ...
+  checkExtVDim( particleObj.externalV, nVec );
+[externVObj] = potRunManager( particleObj.externalV );
+% mean field interactions
+[interactLrVObj] = potRunManager( particleObj.interactLrV );
+% Make paramMat
 fprintf('Building parameter mat \n');
 [paramMat, numRuns] = ...
-  MakeParamMat( systemObj, particleObj, runObj, rhoInit, potObj.inds, flags );
+  MakeParamMat( systemObj, particleObj, runObj, rhoInit, externVObj.inds, ...
+  interactLrVObj.inds, flags );
 fprintf('Executing %d runs \n\n', numRuns);
 % Display everythin
 disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
@@ -130,19 +130,14 @@ paramn1  = paramMat(1,:); paramn2  = paramMat(2,:);
 paramn3  = paramMat(3,:); paraml1  = paramMat(4,:);
 paraml2  = paramMat(5,:); paramvD  = paramMat(6,:);
 parambc  = paramMat(7,:); paramIC  = paramMat(8,:);
-paramSM  = paramMat(9,:); paramrun = paramMat(10,:);
-paramLrL1  = paramMat(11,:); paramLrL2 = paramMat(12,:);
-paramLrE1  = paramMat(13,:); paramLrE2 = paramMat(14,:);
-paramMatExtInds = paramMat(15,:);
-% external cells
-extParam = potObj.param;
-extStr = potObj.str;
-% store long range interaction cells
-lrL1 = particleObj.lrLs1;
-lrL2 = particleObj.lrLs2;
-lrE1 = particleObj.lrEs1;
-lrE2 = particleObj.lrEs2;
-interLr = particleObj.interLr;
+paramSM  = paramMat(9,:); paramRun = paramMat(10,:);
+paramInteractInds = paramMat(11,:);
+paramExtInds = paramMat(12,:);
+% potentials cells
+extParam = externVObj.param;
+extStr = externVObj.str;
+interactParam = interactLrVObj.param;
+interactStr = externVObj.str;
 % Loops over all run
 fprintf('Starting loop over runs\n');
 ticID = tic;
@@ -153,64 +148,42 @@ if numRuns > 1
     % Assign parameters
     paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
       paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
-      paramSM(ii) paramrun(ii) paramLrL1(ii) paramLrL2(ii) paramLrE1(ii) paramLrE2(ii) ];
-    % long range string
-    lrStr = [];
-    if ~isempty( interLr )
-      lrStr = '_';
-      for nn = 1:length( interLr )
-        lrStrTemp = [ interLr{nn} '_'  ...
-          '1il' num2str( lrL1{ paramLrL1(ii) }( nn ), '%.2f_' ) ...
-          '2il' num2str( lrL2{ paramLrL2(ii) }( nn ), '%.2f_' ) ...
-          '1ie' num2str( lrE1{ paramLrE1(ii) }( nn ), '%.2f_' ) ...
-          '2ie' num2str( lrE2{ paramLrE2(ii) }( nn ), '%.2f_' ) ];
-        lrStr =  [lrStr lrStrTemp];
-      end
-    end
+      paramSM(ii)  paramRun(ii)];
     % Name the file
-    filename = [ 'Hr' ptype, interHb, lrStr,  extStr{paramMatExtInds(ii)}, ...
+    filename = [ 'Hr' ptype, interHb, ...
+    interactStr{paramInteractInds(ii)},  extStr{paramExtInds(ii)}, ...
       'diag' num2str( diagOp ) ...
       '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
       '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
       '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
       '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
-      '_t' num2str( trial,'%.2d' ) '.' num2str( paramrun(ii), '%.2d' ) '.mat' ];
+      '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
     fprintf('\nStarting %s \n', filename);
     [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-      runObj, timeObj, rhoInit, flags, extParam{paramMatExtInds(ii)} );
+      runObj, timeObj, rhoInit, flags, ...
+      interactParam{paramInteractInds(ii)},extParam{paramExtInds(ii)} );
     fprintf('Finished %s \n', filename);
   end
 else
   ii = 1;
-  % Assign parameters
-  paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
-    paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
-    paramSM(ii) paramrun(ii) paramLrL1(ii) paramLrL2(ii) paramLrE1(ii) paramLrE2(ii) ];
-  % long range string
-  lrStr = [];
-  if ~isempty( interLr )
-    lrStr = '_';
-    for nn = 1:length( interLr )
-      lrStrTemp = [ interLr{nn} '_'  ...
-        '1il' num2str( lrL1{ paramLrL1(ii) }( nn ), '%.2f_' ) ...
-        '2il' num2str( lrL2{ paramLrL2(ii) }( nn ), '%.2f_' ) ...
-        '1ie' num2str( lrE1{ paramLrE1(ii) }( nn ), '%.2f_' ) ...
-        '2ie' num2str( lrE2{ paramLrE2(ii) }( nn ), '%.2f_' ) ];
-      lrStr =  [lrStr lrStrTemp];
-    end
-  end
-  % Name the file
-  filename = [ 'Hr' ptype, interHb, lrStr,  extStr{paramMatExtInds(ii)}, ...
-    'diag' num2str( diagOp ) ...
-    '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
-    '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
-    '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
-    '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
-    '_t' num2str( trial,'%.2d' ) '.' num2str( paramrun(ii), '%.2d' ) '.mat' ];
-  fprintf('\nStarting %s \n', filename);
-  [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-    runObj, timeObj, rhoInit, flags, extParam{paramMatExtInds(ii)} );
-  fprintf('Finished %s \n', filename);
+    % Assign parameters
+    paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
+      paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
+      paramSM(ii)  paramRun(ii) ];
+    % Name the file
+    filename = [ 'Hr' ptype, interHb, ...
+    interactStr{paramInteractInds(ii)},  extStr{paramExtInds(ii)}, ...
+      'diag' num2str( diagOp ) ...
+      '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
+      '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
+      '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
+      '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
+      '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
+    fprintf('\nStarting %s \n', filename);
+    [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
+      runObj, timeObj, rhoInit, flags, ...
+      interactParam{paramInteractInds(ii)},extParam{paramExtInds(ii)} );
+    fprintf('Finished %s \n', filename);
 end
 runTime = toc(ticID);
 dateTime =  datestr(now);

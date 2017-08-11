@@ -27,14 +27,16 @@ particleMaster.mob  = 1; % mobility
 particleMaster.type = 'rods'; % rods, disks, spheres 
 particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
 %  Long range interaction type in MF: 
-% ss2d (softshoulder2d), pa2d (polaralign2d), pag2d (polaraligngauss2d)
-% de2d (decay exponential)
+% {'ss2d', es1, es2, lr1, lr2}  (softshoulder2d), 
+% {'pa2d', es1} (polaralign2d), 
+% {'pa2d', es1, ls1} (polaraligngauss2d), 
+% {'de2d', es1, ls1} (decay exponential)
 % different cells are different runs
-particleMaster.interLr = {''}; 
-particleMaster.lrLs1 = { [particleMaster.lMaj] }; % Long range length scale 1
-particleMaster.lrLs2 = { [ 0 ] }; % Long range length scale 2
-particleMaster.lrEs1 = { [ 1 ] }; % Long range energy scale 1
-particleMaster.lrEs2 = { [ 0 ] }; % Long range energy scale 2
+particleMaster.interactLrV = {''}; 
+%particleMaster.lrLs1 = { [particleMaster.lMaj] }; % Long range length scale 1
+%particleMaster.lrLs2 = { [ 0 ] }; % Long range length scale 2
+%particleMaster.lrEs1 = { [ 1 ] }; % Long range energy scale 1
+%particleMaster.lrEs2 = { [ 0 ] }; % Long range energy scale 2
 % External potential (cell of cells): 
 %  { {'linV', dim, a}, {'quadV', dim, a} }
 particleMaster.externalV = {''}; % External potential 
