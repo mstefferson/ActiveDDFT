@@ -36,8 +36,8 @@ else
 end
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
-  Density_rec       = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
-  DensityFT_rec      = zeros( n1, n2, n3, timeObj.N_recChunk );   % Store k-space amplitdues
+  Density_rec = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
+  DensityFT_rec = zeros( n1, n2, n3, timeObj.N_recChunk );   % Store k-space amplitdues
 else
   Density_rec = 0;
   DensityFT_rec = 0;
@@ -66,6 +66,8 @@ if interObj.anyInter || flags.Drive
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags, ...
     interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
 else
+  shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
+  whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaCube_FT = zeros( n1, n2, n3);
 end
 % Take the first step- Euler. Element by element mulitplication

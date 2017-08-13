@@ -53,9 +53,9 @@ if interObj.hardFlag
   end
   dMu = dVCalc(muExFt, systemObj, diffObj, ...
     interObj.srInd1, interObj.srInd2, interObj.srInd3);
-  dVmaster.dx1 = dMu.dx1  + interObj.dVExt.dx1;
-  dVmaster.dx2 = dMu.dx2  + interObj.dVExt.dx2;
-  dVmaster.dx3 = dMu.dx2  + interObj.dVExt.dx3;
+  dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
+  dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
+  dVmaster.dx3 = dMu.dx2  + dVmaster.dx3;
 end % hard
 % Interactions: long range
 if interObj.longFlag  % mean field
@@ -64,9 +64,9 @@ if interObj.longFlag  % mean field
   interObj.vIntFt, systemObj, interObj.muMfScale );
   dMu = dVCalc(muExFt, systemObj, diffObj, ...
     interObj.lrInd1, interObj.lrInd2, interObj.lrInd3);
-  dVmaster.dx1 = dMu.dx1  + interObj.dVExt.dx1;
-  dVmaster.dx2 = dMu.dx2  + interObj.dVExt.dx2;
-  dVmaster.dx3 = dMu.dx2  + interObj.dVExt.dx3;
+  dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
+  dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
+  dVmaster.dx3 = dMu.dx2  + dVmaster.dx3;
 end
 % calculate gamma once
 if calcGamma

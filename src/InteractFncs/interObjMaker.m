@@ -127,10 +127,9 @@ else
     (systemObj.n1 * systemObj.n2 * systemObj.n3);
   % add the potenials, v
   v = 0;
-  keyboard
   for ii = 1:numPotentials
     currPot = particleObj.interactLrV{ii};
-    fprintf('Interaction %s along dim %d\n', currPot{1});
+    fprintf('Interaction %s along dim \n', currPot{1});
     % soft shoulder 2D
     if strcmp( currPot{1}, 'ss2d' )
       % build potential
@@ -138,35 +137,35 @@ else
         currPot{2}(1), currPot{2}(2), currPot{2}(3),currPot{2}(4),...
         systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
       interObj.interactLrV{ii} = vTemp;
-      %[vTemp] = softShoulder2d( interObj.lrEs1(ii), interObj.lrEs2(ii), ...
-        %interObj.lrLs1(ii), interObj.lrLs2(ii), ...
-        %systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
-      v = v + reshape( vTemp.Vv, [systemObj.n1 systemObj.n2 1] );
+      v = v + reshape( vTemp.V, vTemp.ReshapeInds );
     end
     % polar align 2D
     if strcmp( currPot{1}, 'pa2d' )
-      fprintf('Long interactions %s, polar align 2d\n', interObj.long{ii});
-      interObj.longId(ii) = 2;
       % build potential
-      [vTemp] = polarAlign2d( interObj.lrEs1(ii),  systemObj.n3, systemObj.l3 );
-      v = v + reshape( vTemp, [1, 1, systemObj.n3] );
+      vTemp = PolarAlignClass( currPot{1}, ...
+        currPot{2}(1), systemObj.n3, systemObj.l3);
+      interObj.interactLrV{ii} = vTemp;
+      v = v + reshape( vTemp.V, vTemp.ReshapeInds );
     end
-    % polar alig gauss 2D
-    if strcmp( interObj.long{ii}, 'pag2d' )
-      fprintf('Long interactions %s, polar align gauss 2d\n', interObj.long{ii});
-      interObj.longId(ii) = 3;
+    % polar align 2D
+    if strcmp( currPot{1}, 'pag2d' )
       % build potential
-      [vTemp] = polarAlignGaussian2d( interObj.lrEs1(ii), interObj.lrLs1(ii), systemObj.n3, systemObj.l3 );
-      v = v + vTemp;
+      vTemp = PolarAlignGaussClass( currPot{1}, ...
+        currPot{2}(1), currPot{2}(2),...
+        systemObj.n1, systemObj.n2, systemObj.n3, ...
+        systemObj.l1, systemObj.l2, systemObj.l3);
+      interObj.interactLrV{ii} = vTemp;
+      v = v + vTemp.V;
     end
     % decaying exponential 2D
-    if strcmp( interObj.long{ii}, 'de2d' )
-      fprintf('Long interactions %s, decaying exponential 2d\n', interObj.long{ii});
-      interObj.longId(ii) = 4;
+    if strcmp( currPot{1}, 'de2d' )
       % build potential
-      [vTemp] = decayexp2d( interObj.lrEs1(ii), interObj.lrLs1(ii), ...
-        systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2);
-      v = v + vTemp;
+      vTemp = DecayExpClass( currPot{1}, ...
+        currPot{2}(1), currPot{2}(2), ...
+        systemObj.n1, systemObj.n2, ...
+        systemObj.l1, systemObj.l2 );
+      interObj.interactLrV{ii} = vTemp;
+      v = v + reshape( vTemp.V, vTemp.ReshapeInds );
     end
   end % loop over potentials
   % get vFt and find shape
@@ -246,6 +245,4 @@ else
   if currPot{2}(1)  == 3
     interObj.dv3Flag = 1;
   end
-    
-
 end % external

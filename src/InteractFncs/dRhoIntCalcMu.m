@@ -52,8 +52,8 @@ if interObj.dv2Flag
 end
 % coordinate 3
 if interObj.dv3Flag
-  jx3 = - rho .* dM.dx3;  %Flux in the angular direction with isostropic diffusion
+  jx3 = - rho .* dMu.dx3;  %Flux in the angular direction with isostropic diffusion
   jx3_FT = fftshift(fftn(jx3));
   NegDivFluxEx_FT = NegDivFluxEx_FT ...
-    - ik3 .* diffObj.Mob_rot .* jx3_FT;
+    - diffObj.ik3rep3 .* diffObj.Mob_rot .* jx3_FT;
 end

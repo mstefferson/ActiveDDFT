@@ -63,6 +63,8 @@ if interObj.anyInter
     interObj, systemObj, diffObj, particleObj );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
+  shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
+  whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaExVec_FT = zeros(N3,1);
 end
 % Take first step- Euler

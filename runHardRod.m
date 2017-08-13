@@ -114,6 +114,8 @@ fprintf('Building external potential \n' )
 nVec = [systemObj.n1 systemObj.n2 systemObj.n3];
 [ particleObj.externalV] = ...
   checkExtVDim( particleObj.externalV, nVec );
+[ particleObj.interactLrV] = ...
+  checkInteractVDim( particleObj.interactLrV, systemObj.n3 );
 [externVObj] = potRunManager( particleObj.externalV );
 % mean field interactions
 [interactLrVObj] = potRunManager( particleObj.interactLrV );

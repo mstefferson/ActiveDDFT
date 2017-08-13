@@ -1,35 +1,35 @@
 classdef SoftShoulderClass
   properties
     Str = '';
-    Eps = 1;
-    A = 1;
-    R = 1;
-    Rs = 1;
+    Es1 = 1;
+    Es2 = 1;
+    Ls1 = 1;
+    Ls2 = 1;
     Length = 1;
-    ReshapeInds = [1 1 1];
-    Vv = [];
-    VvFt = [];
+    V = [];
+    VFt = [];
+    ReshapeInds = [ 1 1 1];
   end
   
   methods
     % Constructor
-    function obj = SoftShoulderClass( str, epsilon, a, R, Rs, n1, l1, n2, l2 )
+    function obj = SoftShoulderClass( str, es1, es2, ls1, ls2, n1, l1, n2, l2 )
       if nargin == 9
         obj.Str = str;
-        obj.Eps = epsilon;
-        obj.A = a;
-        obj.R = R;
-        obj.Rs = Rs;
+        obj.Es1 = es1;
+        obj.Es2 = es2;
+        obj.Ls1 = ls1;
+        obj.Ls2 = ls2;
+        obj.ReshapeInds = [ n1, n2, 1];
         % make potenials
-        keyboard
-        [obj.Vv, obj.VvFt] = obj.makeV( epsilon, a, R, Rs, n1, l1, n2, l2 );
+        [obj] = obj.makeV( n1, l1, n2, l2 );
       else
         fprintf('Error: incorrect number of inputs in constructor\n');
         error('Error: incorrect number of inputs in constructor')
       end
     end
     % make V
-    function [v, vFt] = makeV( epsilon, a, R, Rs, n1, l1, n2, l2 )
+    function [obj] = makeV( obj, n1, l1, n2, l2 )
       % Calcualte distances
       dx1    = l1/n1;
       dx2    = l2/n2;
@@ -38,18 +38,12 @@ classdef SoftShoulderClass
       [x2m, x1m] = meshgrid( x2, x1 );
       r2 = x1m .^ 2 + x2m .^ 2;
       r8 = r2 .^ 4;
-      R8 = R ^ 8;
-      Rs8 = Rs ^ 8;
+      R8 = obj.Ls1 ^ 8;
+      Rs8 = obj.Ls2 ^ 8;
       % soft shoulder potential
-      v = epsilon .* (  exp( - r8 ./ R8 ) + a .* exp( -r8 ./ Rs8 ) );
+      obj.V = obj.Es1 .* (  exp( - r8 ./ R8 ) + obj.Es2 .* exp( -r8 ./ Rs8 ) );
       % FT
-      vFt = fftshift( fftn( v ) );
+      obj.VFt = fftshift( fftn( obj.V ) );
     end
   end
 end %class
-
-
-
-
-
-
