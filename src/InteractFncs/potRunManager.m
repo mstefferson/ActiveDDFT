@@ -33,6 +33,8 @@ if numPot
       runTemp{jj} = { names{jj} paramSepCell{ii,jj} };
       strTemp = [  strTemp names{jj} num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
     end
+    % fix str
+    strTemp(end) = [];
     potParams{ii} = runTemp;
     potStr{ii} = strTemp;
   end 

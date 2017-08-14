@@ -66,7 +66,7 @@ if interObj.longFlag  % mean field
     interObj.lrInd1, interObj.lrInd2, interObj.lrInd3);
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
-  dVmaster.dx3 = dMu.dx2  + dVmaster.dx3;
+  dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
 end
 % calculate gamma once
 if calcGamma
@@ -79,4 +79,5 @@ if flags.Drive && flags.DiagLop
     cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
   GammaCube_FT = GammaCube_FT + GammaDrCube_FT;
 end
+
 

@@ -6,11 +6,15 @@ colormap( viridis );
 nFrames = length(TimeRec);
 n1 = length(x);
 n2 = length(y);
-l1 = x(end) + x(2);
-l2 = y(end) + y(2);
+l1 = x(end) - 2*x(1) + x(2);
+l2 = y(end) - 2*y(1) + y(2);
 % Find ticks
-xTick = [0 l1/2 l1];
-yTick = [0 l2/2 l2];
+xTick = round( [-l1/4 0 l1/4] );
+yTick = round( [-l2/4 0 l2/4] );
+xLim  = [x(1) x(end)];
+yLim  = [y(1) y(end)];
+% xLim = [-l1/2 l1/2];
+% yLim = [-l2/2 l2/2];
 % Set up a index vector so quiver is too crowded
 DivNumX = 8;
 DivNumY = 8;
@@ -49,14 +53,14 @@ if minC >= maxC
   maxC = 0.1;
 end
 axh1.CLim = 1 /pi * [minC maxC];
-axh1.XLim = [0 l1]; %row and columns are flipped
-axh1.YLim = [0 l2]; %row and columns are flipped
+% axh1.XLim = xLim; %row and columns are flipped
+% axh1.YLim = yLim; %row and columns are flipped
 axh1.YDir = 'rev';
-% axh1.YDir = 'normal';
-axh1.XTick = xTick;
 axh1.YTick = yTick;
-% wantedTickLabel =  axh1.YTickLabel;
-wantedTickLabel = flip( axh1.YTickLabel );
+axh1.YLim = yLim;
+axh1.XTick = xTick;
+axh1.XLim = xLim;
+wantedTickLabel =  num2cell( yTick ) ;
 axh1.YTickLabel =  wantedTickLabel;
 shading(axh1,'interp');
 xlabel(axh1,'x'); ylabel(axh1,'y') %rename x and y
@@ -68,10 +72,9 @@ h = colorbar('peer',axh2);
 h.TickLabelInterpreter = 'latex';
 axh2.NextPlot = 'replaceChildren';
 axh2.CLim = [0 1];
-axh2.XLim = [0 l1]; %row and columns are flipped
-axh2.YLim = [0 l2]; %row and columns are flipped
+axh2.XLim = xLim; %row and columns are flipped
+axh2.YLim = yLim; %row and columns are flipped
 axh2.YDir = 'rev';
-% axh2.YDir = 'normal';
 axh2.XTick = xTick;
 axh2.YTick = yTick;
 axh2.YTickLabel =  wantedTickLabel;
@@ -90,7 +93,7 @@ if maxDist <= 0
 end
 axh3.NextPlot = 'replaceChildren';
 axh3.YLim = [0 maxDist];
-axh3.XLim = [0 2*pi];
+axh3.XLim = [phi(1) phi(end)];
 axis square
 xlabel('$$\phi$$'); ylabel('f($$\phi$$)')
 % Nematic order
@@ -100,9 +103,8 @@ h = colorbar('peer',axh4);
 h.TickLabelInterpreter = 'latex';
 axh4.NextPlot = 'replaceChildren';
 axh4.CLim = [0 1];
-axh4.XLim = [0 l1]; %row and columns are flipped
-axh4.YLim = [0 l2]; %row and columns are flipped
-% axh4.YDir = 'normal';
+axh4.XLim = xLim; %row and columns are flipped
+axh4.YLim = yLim; %row and columns are flipped
 axh4.YDir = 'rev';
 axh4.XTick = xTick;
 axh4.YTick = yTick;
@@ -121,7 +123,6 @@ nemTempY = OP.NOPy_rec(SubIndX,SubIndY,:);
 maxNem = max( max( max( OP.NOP_rec(SubIndX,SubIndY,:) ) ) );
 nemTempX = nemTempX .* OP.NOP_rec(SubIndX,SubIndY,:) ./ maxNem;
 nemTempY = nemTempY .* OP.NOP_rec(SubIndX,SubIndY,:) ./ maxNem;
-% keyboard
 % loop over frames
 try
 vec2loop = 1:nFrames;
@@ -129,8 +130,10 @@ vec2loop = 1:nFrames;
     % Concentration
     subplot(axh1);
     cla(axh1);
-    imagesc(axh1, x, y, rot90( OP.C_rec(:,:,ii) ) ./ pi);
+    imagesc(axh1, y, x, 1 / pi * rot90( OP.C_rec(:,:,ii) ) );
     TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
+    wantedTickLabel = flip( axh1.YTickLabel );
+    axh1.YTickLabel =  wantedTickLabel;
     title(axh1,TitlStr);
     pause(0.001);
     drawnow;

@@ -234,15 +234,15 @@ else
     else
       fprintf('Not building potential, dimension not available\n' );
     end
+    if currPot{2}(1)  == 1
+      interObj.dv1Flag = 1;
+    end
+    if currPot{2}(1)  == 2
+      interObj.dv2Flag = 1;
+    end
+    if currPot{2}(1)  == 3
+      interObj.dv3Flag = 1;
+    end
   end % for loop
   interObj.dVExt = dV;
-  if currPot{2}(1)  == 1
-    interObj.dv1Flag = 1;
-  end
-  if currPot{2}(1)  == 2
-    interObj.dv2Flag = 1;
-  end
-  if currPot{2}(1)  == 3
-    interObj.dv3Flag = 1;
-  end
 end % external
