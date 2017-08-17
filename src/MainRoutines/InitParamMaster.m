@@ -32,14 +32,10 @@ particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
 % {'pa2d', es1, ls1} (polaraligngauss2d), 
 % {'de2d', es1, ls1} (decay exponential)
 % different cells are different runs
-particleMaster.interactLrV = {''}; 
-%particleMaster.lrLs1 = { [particleMaster.lMaj] }; % Long range length scale 1
-%particleMaster.lrLs2 = { [ 0 ] }; % Long range length scale 2
-%particleMaster.lrEs1 = { [ 1 ] }; % Long range energy scale 1
-%particleMaster.lrEs2 = { [ 0 ] }; % Long range energy scale 2
+particleMaster.interactLrV = {}; 
 % External potential (cell of cells): 
-%  { {'linV', dim, a}, {'quadV', dim, a} }
-particleMaster.externalV = {''}; % External potential 
+%  { {'linV', dim, a}, {'quadV', dim, a}, {'nemV', es1} }
+particleMaster.externalV = {}; % External potential 
 %%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)
 systemMaster.n2 = [64]; % Gridpoints in y dir (vec) 

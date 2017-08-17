@@ -129,7 +129,7 @@ else
   v = 0;
   for ii = 1:numPotentials
     currPot = particleObj.interactLrV{ii};
-    fprintf('Interaction %s along dim \n', currPot{1});
+    fprintf('Interaction %s \n', currPot{1});
     % soft shoulder 2D
     if strcmp( currPot{1}, 'ss2d' )
       % build potential
@@ -210,29 +210,56 @@ else
   dV.dx3 = 0;
   for ii = 1:numexternalVs
     currPot = particleObj.externalV{ii};
-    fprintf('External %s along dim %d\n', currPot{1}, currPot{2}(1) );
-    if strcmp( currPot{1}, 'linV' )
+    fprintf('External %s\n', currPot{1} );
+    addPot = 0;
+    posVecs = cell(3,1);
+    posVecs{1} = gridObj.x1;
+    posVecs{2} = gridObj.x2;
+    posVecs{3} = gridObj.x3;
+    if strcmp( currPot{1}, 'linV' ) % linear
       % run a check just in case
       if nVec( currPot{2}(1) ) > 1
-        vTemp = LinearVClass( currPot{1}, currPot{2}(1), currPot{2}(2), gridObj.x1 );
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = LinearVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), posVecs{ currPot{2}(1) } );
         interObj.externalV{ii} = vTemp;
-        v = v + vTemp.VvReshape;
-        dV.dx1 = dV.dx1 + vTemp.DvDx1;
-        dV.dx2 = dV.dx2 + vTemp.DvDx2;
-        dV.dx3 = dV.dx3 + vTemp.DvDx3;
+        addPot = 1;
       end
     elseif strcmp( currPot{1}, 'quadV' )
-      % run a check just in case
+      % run a dim check just in case
       if nVec( currPot{2}(1) ) > 1
-        vTemp = QuadVClass( currPot{1}, currPot{2}(1), currPot{2}(2), gridObj.x1 );
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = QuadVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), posVecs{ currPot{2}(1) } );
         interObj.externalV{ii} = vTemp;
-        v = v + vTemp.VvReshape;
-        dV.dx1 = dV.dx1 + vTemp.DvDx1;
-        dV.dx2 = dV.dx2 + vTemp.DvDx2;
-        dV.dx3 = dV.dx3 + vTemp.DvDx3;
+        addPot = 1;
+      end
+    elseif strcmp( currPot{1}, 'nemV' ) % nematic
+      % run a dim check just in case
+      if nVec( 3 ) > 1
+        vTemp = NematicExternalVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), gridObj.x3 );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+        interObj.dv3Flag = 1;
+      end
+    elseif strcmp( currPot{1}, 'polV' ) % polar
+      % run a dim check just in case
+      if nVec( 3 ) > 1
+        vTemp = PolarExternalVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), gridObj.x3 );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+        interObj.dv3Flag = 1;
       end
     else
-      fprintf('Not building potential, dimension not available\n' );
+      fprintf('Not building potential, potential not available\n' );
+    end
+    if addPot 
+      v = v + vTemp.VvReshape;
+      dV.dx1 = dV.dx1 + vTemp.DvDx1;
+      dV.dx2 = dV.dx2 + vTemp.DvDx2;
+      dV.dx3 = dV.dx3 + vTemp.DvDx3;
     end
     if currPot{2}(1)  == 1
       interObj.dv1Flag = 1;
