@@ -152,9 +152,28 @@ try
       end % plotMax
       % crystal peaks
       if plotCrystal
+        plotConfirm = 0;
         nFrames = length(OPobj.OpTimeRecVec);
-        if strcmp( particleObj.interLr, 'softshoulder' ) && nFrames > 1
-          % get concentration in k space
+        if isfield(particleObj, 'interLr')
+          if strcmp( particleObj.interLr, 'softshoulder') && nFrames > 1
+            plotConfirm = 1;
+            lrEs1 = particleObj.lrEs1;
+            lrEs2 = particleObj.lrEs2;
+            lrLs1 = particleObj.lrLs1;
+            lrLs2 = particleObj.lrLs2;
+          end
+        elseif isfield(particleObj, 'interactLrV')
+          for jj = 1:length(particleObj.interactLrV)
+            if strcmp( particleObj.interactLrV{jj}{1}, 'ss2d' ) && nFrames > 1
+              plotConfirm = 1;
+              lrEs1 = particleObj.interactLrV{jj}{2}(1);
+              lrEs2 = particleObj.interactLrV{jj}{2}(2);
+              lrLs1 = particleObj.interactLrV{jj}{2}(3);
+              lrLs2 = particleObj.interactLrV{jj}{2}(4);
+            end
+          end
+        end
+        if plotConfirm == 1
           if systemObj.n3 == 1
             cFt = reshape( runSave.DenFT_rec(:,:,1,1:nFrames) , ...
               [systemObj.n1, systemObj.n2, nFrames ] );
@@ -167,7 +186,7 @@ try
             cFinal = opSave.C_rec(:,:,end);
           end
           plotCrystalPeaks( cFt, cFinal, gridObj.k1, gridObj.k2, ...
-            OPobj.OpTimeRecVec, systemObj, particleObj, 1 );
+            OPobj.OpTimeRecVec, systemObj, lrEs1, lrEs2, lrLs1, lrLs2, 1 );
           movefile( 'kAmps*', dirFullPath );
         end
       end % plot Crystal
