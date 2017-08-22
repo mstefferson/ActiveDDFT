@@ -45,7 +45,6 @@ try
   if exist(dirName,'dir') == 0
     mkdir(dirName);
   end
-  %dirName = denRecObj.dirName;
   % get run time
   timeObjCont = timeObj;
   ntCompleted = size( runSave.Den_rec, 4 );
@@ -81,24 +80,30 @@ try
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
   % Run the main code
   tBodyID      = tic;
-  if flags.DiagLop == 1
-    [denRecObj, rho]  = denEvolverFTDiagOp(...
-      rho, systemObj, particleObj, timeObjCont, gridObj, ...
-      diffObj, interObj, flags, lfid);
+  if ntCompleted < timeObj.N_rec
+    fprintf('Continue run over time\n');
+    if flags.DiagLop == 1
+      [denRecObj, rho]  = denEvolverFTDiagOp(...
+        rho, systemObj, particleObj, timeObjCont, gridObj, ...
+        diffObj, interObj, flags, lfid);
+    else
+      [denRecObj, rho]  = denEvolverFT(...
+        rho, systemObj, particleObj, timeObjCont, gridObj, ...
+        diffObj, interObj, flags, lfid);
+    end
+    % Save it
+    if flags.SaveMe
+      paramSave.denRecObj = denRecObj;
+      runSave.denRecObj   = denRecObj;
+      rhoFinalSave.rho   = rho;
+    end
   else
-    [denRecObj, rho]  = denEvolverFT(...
-      rho, systemObj, particleObj, timeObjCont, gridObj, ...
-      diffObj, interObj, flags, lfid);
+    fprintf('Run over time finished. Just need ops\n');
+    denRecObj = paramSave.denRecObj;
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
   denRecObj.dirName = dirName;
-  % Save it
-  if flags.SaveMe
-    paramSave.denRecObj = denRecObj;
-    runSave.denRecObj   = denRecObj;
-    rhoFinalSave.rho   = rho;
-  end
   if flags.Verbose
     fprintf('Ran Main Body t%d_%d: %.3g \n', ...
       runObj.trialID, runObj.runID, bodyRunTime);
@@ -168,7 +173,7 @@ try
         end
       end
       % Make the records
-      [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
+      [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2, systemObj.n3,...
         opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
       % Save it
