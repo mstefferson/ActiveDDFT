@@ -1,16 +1,34 @@
-function [potObj] =  potRunManager( pot )
+function [potObj] =  potRunManager( pot, interactPotFlag )
 % Build potObj
 numPot = length(pot);
 if numPot
+  % number of strings
   % Allocate
   potInputs = zeros( 1, numPot );
   names = cell( 1, numPot );
+  correlation = cell( 1, numPot );
   for ii = 1:numPot
     potTemp = pot{ii};
-    potInputs(ii) = length(potTemp) - 1;
-    paramSingMat = potTemp{2};
     names{ii} = potTemp{1};
-    for jj = 3:potInputs(ii)+1
+    % if no correlation function given, assume MF
+    if interactPotFlag
+      if isstr(potTemp{2})
+        strNum = 2;
+        paramInd = 3;
+        correlation{ii} = potTemp{2};
+      else
+        correlation{ii} = 'mf';
+        strNum = 1;
+        paramInd = 2;
+      end
+    else
+      strNum = 1;
+      paramInd = 2;
+    end
+    % take care of parameters
+    potInputs(ii) = length(potTemp) - strNum;
+    paramSingMat = potTemp{paramInd};
+    for jj = paramInd+1:length(potTemp)
       paramSingMat = combvec(paramSingMat,potTemp{jj});
     end
     if ii == 1
@@ -30,8 +48,13 @@ if numPot
   for ii = 1:numRuns
     strTemp = ['_'];
     for jj = 1:numPot
-      runTemp{jj} = { names{jj} paramSepCell{ii,jj} };
-      strTemp = [  strTemp names{jj} num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
+      if interactPotFlag
+        runTemp{jj} = { names{jj}, correlation{jj}, paramSepCell{ii,jj} };
+        strTemp = [  strTemp names{jj} correlation{jj} num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
+      else
+        runTemp{jj} = { names{jj}, paramSepCell{ii,jj} };
+        strTemp = [  strTemp names{jj}  num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
+      end
     end
     % fix str
     strTemp(end) = [];

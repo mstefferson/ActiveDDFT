@@ -60,8 +60,8 @@ end % hard
 % Interactions: long range
 if interObj.longFlag  % mean field
   calcGamma = 1;
-  [muExFt] =  muExCalcMfFt( rho_FT(interObj.lrInd1,interObj.lrInd2,interObj.lrInd3),...
-  interObj.vIntFt, systemObj, interObj.muMfScale );
+  [muExFt] =  muExCalcPDirCorrFt( rho_FT(interObj.lrInd1,interObj.lrInd2,interObj.lrInd3),...
+  interObj.c2Ft, systemObj, interObj.muMfScale );
   dMu = dVCalc(muExFt, systemObj, diffObj, ...
     interObj.lrInd1, interObj.lrInd2, interObj.lrInd3);
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;

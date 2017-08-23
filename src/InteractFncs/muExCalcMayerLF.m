@@ -1,6 +1,6 @@
 % [MuEx_FT] = muExCalcMayerLF(rhoFt,vFt,systemObj,scaleFact)
 %
-% Description: Calculates the excess chemical potential using mean field
+% Description: Calculates the excess chemical potential from Mayer
 %
 % Called by: dRhoMaster
 % Excess chemical potential in position space is a convolution. In k-space, it is a

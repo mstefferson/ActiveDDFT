@@ -27,15 +27,16 @@ particleMaster.mob  = 1; % mobility
 particleMaster.type = 'rods'; % rods, disks, spheres 
 particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
 %  Long range interaction type in MF: 
-% {'ss2d', es1, es2, lr1, lr2}  (softshoulder2d), 
-% {'pa2d', es1} (polaralign2d), 
-% {'pa2d', es1, ls1} (polaraligngauss2d), 
-% {'de2d', es1, ls1} (decay exponential)
+% {'ss', 'mf/vir', es1, es2, lr1, lr2}  (softshoulder2d), 
+% {'pa', 'mf/vir', es1} (polaralign2d), 
+% {'pag', 'mf/vir', es1, ls1} (polaraligngauss2d), 
+% {'de', 'mf/vir', es1, ls1} (decay exponential)
+% {'gauss', 'mf/vir', es1, ls1} (gaussian)
 % different cells are different runs
-particleMaster.interactLrV = {}; 
+particleMaster.interactLrV = { }; 
 % External potential (cell of cells): 
 %  { {'linV', dim, a}, {'quadV', dim, a}, {'nemV', es1, phase} }
-particleMaster.externalV = {}; % External potential 
+particleMaster.externalV = { }; % External potential 
 %%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)
 systemMaster.n2 = [64]; % Gridpoints in y dir (vec) 

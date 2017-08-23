@@ -118,67 +118,74 @@ if isempty(particleObj.interactLrV)
   interObj.longId = 0;
   interObj.long = 'none';
 else
+  strInd = 1;
+  corrInd = 2;
+  paramInd = 3;
   % store some things
   numPotentials = length( particleObj.interactLrV );
   % Scale
   interObj.muMfScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
     (systemObj.n1 * systemObj.n2 * systemObj.n3);
-  % add the potenials, v
+  % add the potenials, c2
+  c2 = 0;
   v = 0;
   for ii = 1:numPotentials
+    foundV = 0;
     currPot = particleObj.interactLrV{ii};
     % soft shoulder 2D
-    if strcmp( currPot{1}, 'ss2d' )
-      interObj.anyInter = 1;
-      interObj.longFlag = 1;
-      fprintf('Long interactions %s\n', currPot{1});
+    if strcmp( currPot{strInd}, 'ss' )
+      foundV = 1;
       % build potential
-      vTemp = SoftShoulderClass( currPot{1}, ...
-        currPot{2}(1), currPot{2}(2), currPot{2}(3),currPot{2}(4),...
-        systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
-      interObj.interactLrV{ii} = vTemp;
-      v = v + reshape( vTemp.V, vTemp.ReshapeInds );
+      vTemp = SoftShoulderClass( currPot{strInd}, currPot{corrInd},...
+        currPot{paramInd}(1), currPot{paramInd}(2), currPot{paramInd}(3),currPot{paramInd}(4),...
+        systemObj.tmp, systemObj.n1, systemObj.l1, systemObj.n2, systemObj.l2 );
     end
-    % polar align 2D
-    if strcmp( currPot{1}, 'pa2d' )
-      interObj.anyInter = 1;
-      interObj.longFlag = 1;
-      fprintf('Long interactions %s\n', currPot{1});
+    % polar align
+    if strcmp( currPot{strInd}, 'pa' )
+      foundV = 1;
       % build potential
-      vTemp = PolarAlignClass( currPot{1}, ...
-        currPot{2}(1), systemObj.n3, systemObj.l3);
-      interObj.interactLrV{ii} = vTemp;
-      v = v + reshape( vTemp.V, vTemp.ReshapeInds );
+      vTemp = PolarAlignClass( currPot{strInd}, currPot{corrInd},...
+        currPot{paramInd}(1),  systemObj.tmp, systemObj.n3, systemObj.l3);
     end
-    % polar align 2D
-    if strcmp( currPot{1}, 'pag2d' )
-      interObj.anyInter = 1;
-      interObj.longFlag = 1;
-      fprintf('Long interactions %s\n', currPot{1});
+    % polar align gaussian drop off
+    if strcmp( currPot{strInd}, 'pag' )
+      foundV = 1;
       % build potential
-      vTemp = PolarAlignGaussClass( currPot{1}, ...
-        currPot{2}(1), currPot{2}(2),...
-        systemObj.n1, systemObj.n2, systemObj.n3, ...
+      vTemp = PolarAlignGaussClass( currPot{strInd}, currPot{corrInd},...
+        currPot{paramInd}(1), currPot{paramInd}(2),...
+        systemObj.tmp, systemObj.n1, systemObj.n2, systemObj.n3, ...
         systemObj.l1, systemObj.l2, systemObj.l3);
-      interObj.interactLrV{ii} = vTemp;
-      v = v + vTemp.V;
     end
     % decaying exponential 2D
-    if strcmp( currPot{1}, 'de2d' )
+    if strcmp( currPot{strInd}, 'de' )
+      foundV = 1;
+      % build potential
+      vTemp = DecayExpClass( currPot{strInd}, currPot{corrInd},...
+        currPot{paramInd}(1), currPot{paramInd}(2), ...
+        systemObj.tmp, systemObj.n1, systemObj.n2, ...
+        systemObj.l1, systemObj.l2 );
+    end
+    % gaussian 
+    if strcmp( currPot{strInd}, 'gauss' )
+      foundV = 1;
+      % build potential
+      vTemp = PolarAlignGaussClass( currPot{strInd}, currPot{corrInd},...
+        currPot{paramInd}(1), currPot{paramInd}(2),...
+        systemObj.tmp, systemObj.n1, systemObj.n2, systemObj.n3, ...
+        systemObj.l1, systemObj.l2, systemObj.l3);
+    end
+    if foundV
       interObj.anyInter = 1;
       interObj.longFlag = 1;
-      fprintf('Long interactions %s\n', currPot{1});
-      % build potential
-      vTemp = DecayExpClass( currPot{1}, ...
-        currPot{2}(1), currPot{2}(2), ...
-        systemObj.n1, systemObj.n2, ...
-        systemObj.l1, systemObj.l2 );
+      fprintf('Long inter %s using %s correlations\n', ...
+        currPot{strInd}, currPot{corrInd});
       interObj.interactLrV{ii} = vTemp;
       v = v + reshape( vTemp.V, vTemp.ReshapeInds );
+      c2 = c2 + reshape( vTemp.C2, vTemp.ReshapeInds );
     end
   end % loop over potentials
   % get vFt and find shape
-  [vn1, vn2, vn3] = size( v );
+  [vn1, vn2, vn3] = size( c2 );
   if vn1 == 1
     interObj.lrInd1 = floor(systemObj.n1/2) + 1;
   else
@@ -198,8 +205,9 @@ else
     interObj.dv3Flag = 1;
   end
   % store it
-  interObj.vInt = v;
-  interObj.vIntFt = fftshift( fftn( v ) );
+  interObj.v = v;
+  interObj.c2 = c2;
+  interObj.c2Ft = fftshift( fftn( c2 ) );
 end % long range interaction
 % External potentional
 if isempty(particleObj.externalV)

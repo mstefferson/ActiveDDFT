@@ -116,9 +116,9 @@ nVec = [systemObj.n1 systemObj.n2 systemObj.n3];
   checkExtVDim( particleObj.externalV, nVec );
 [ particleObj.interactLrV] = ...
   checkInteractVDim( particleObj.interactLrV, systemObj.n3 );
-[externVObj] = potRunManager( particleObj.externalV );
+[externVObj] = potRunManager( particleObj.externalV, 0 );
 % mean field interactions
-[interactLrVObj] = potRunManager( particleObj.interactLrV );
+[interactLrVObj] = potRunManager( particleObj.interactLrV, 1 );
 % Make paramMat
 fprintf('Building parameter mat \n');
 [paramMat, numRuns] = ...
