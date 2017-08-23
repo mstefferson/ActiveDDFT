@@ -9,6 +9,9 @@
 function [interObj] = interObjMaker( particleObj, systemObj, gridObj )
 % Store interactions in interobj
 interObj.anyInter = 0;
+interObj.hardFlag = 0;
+interObj.longFlag = 0;
+interObj.extFlag = 0;
 % save k3 index
 interObj.k3ind0 = floor( systemObj.n3 / 2 ) + 1;
 % flags
@@ -20,7 +23,6 @@ if isempty(particleObj.interHb)
   interObj.hardFlag = 0;
   interObj.hardId = 0;
   interObj.hard = 'none';
-  fprintf('No short interactions\n');
 else
   interObj.hardFlag = 1;
   interObj.hard = particleObj.interHb;
@@ -115,13 +117,9 @@ if isempty(particleObj.interactLrV)
   interObj.longFlag = 0;
   interObj.longId = 0;
   interObj.long = 'none';
-  fprintf('No long range interactions\n');
 else
   % store some things
-  interObj.longFlag = 1;
   numPotentials = length( particleObj.interactLrV );
-  interObj.anyInter = 1;
-  fprintf('Long interactions\n');
   % Scale
   interObj.muMfScale = (systemObj.l3 * systemObj.l1 * systemObj.l2) ./ ...
     (systemObj.n1 * systemObj.n2 * systemObj.n3);
@@ -129,9 +127,11 @@ else
   v = 0;
   for ii = 1:numPotentials
     currPot = particleObj.interactLrV{ii};
-    fprintf('Interaction %s \n', currPot{1});
     % soft shoulder 2D
     if strcmp( currPot{1}, 'ss2d' )
+      interObj.anyInter = 1;
+      interObj.longFlag = 1;
+      fprintf('Long interactions %s\n', currPot{1});
       % build potential
       vTemp = SoftShoulderClass( currPot{1}, ...
         currPot{2}(1), currPot{2}(2), currPot{2}(3),currPot{2}(4),...
@@ -141,6 +141,9 @@ else
     end
     % polar align 2D
     if strcmp( currPot{1}, 'pa2d' )
+      interObj.anyInter = 1;
+      interObj.longFlag = 1;
+      fprintf('Long interactions %s\n', currPot{1});
       % build potential
       vTemp = PolarAlignClass( currPot{1}, ...
         currPot{2}(1), systemObj.n3, systemObj.l3);
@@ -149,6 +152,9 @@ else
     end
     % polar align 2D
     if strcmp( currPot{1}, 'pag2d' )
+      interObj.anyInter = 1;
+      interObj.longFlag = 1;
+      fprintf('Long interactions %s\n', currPot{1});
       % build potential
       vTemp = PolarAlignGaussClass( currPot{1}, ...
         currPot{2}(1), currPot{2}(2),...
@@ -159,6 +165,9 @@ else
     end
     % decaying exponential 2D
     if strcmp( currPot{1}, 'de2d' )
+      interObj.anyInter = 1;
+      interObj.longFlag = 1;
+      fprintf('Long interactions %s\n', currPot{1});
       % build potential
       vTemp = DecayExpClass( currPot{1}, ...
         currPot{2}(1), currPot{2}(2), ...
@@ -194,9 +203,7 @@ else
 end % long range interaction
 % External potentional
 if isempty(particleObj.externalV)
-  interObj.extFlag = 0;
   interObj.ext = 'none';
-  fprintf('No external potential\n');
 else
   interObj.extFlag = 1;
   interObj.anyInter = 1;
@@ -255,7 +262,7 @@ else
     else
       fprintf('Not building potential, potential not available\n' );
     end
-    if addPot 
+    if addPot
       v = v + vTemp.VvReshape;
       dV.dx1 = dV.dx1 + vTemp.DvDx1;
       dV.dx2 = dV.dx2 + vTemp.DvDx2;
@@ -273,3 +280,7 @@ else
   end % for loop
   interObj.dVExt = dV;
 end % external
+% print it
+if interObj.hardFlag == 0; fprintf('No hard interactions\n'); end
+if interObj.longFlag == 0; fprintf('No long interactions\n'); end
+if interObj.extFlag == 0; fprintf('No external potentials\n'); end
