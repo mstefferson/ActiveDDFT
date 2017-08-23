@@ -173,6 +173,7 @@ try
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
     runSave.numSavedRhos = 1;
+    runSave.interObj = interObj;
     % Save params now
     paramSave.flags = flags;
     paramSave.particleObj = particleObj;

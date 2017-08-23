@@ -1,13 +1,14 @@
 % Plot k peaks vs time
-function plotCrystalPeaks( cFt, c, k1, k2, timeRec, systemObj, particleObj, saveMe)
+function plotCrystalPeaks( cFt, c, k1, k2, timeRec, systemObj, ...
+  lrEs1, lrEs2, lrLs1, lrLs2, saveMe)
 % add paths for now
 addpath( genpath( './src' ) )
 % square cFt
 cFt = abs( cFt ) .^ 2;
 % run dispererion
 paramVec = [ systemObj.n1, systemObj.n2, systemObj.l1, systemObj.l2, ...
-  particleObj.lrEs1, particleObj.lrEs2, ...
-  particleObj.lrLs1, particleObj.lrLs2, systemObj.c ];
+  lrEs1, lrEs2, ...
+  lrLs1, lrLs2, systemObj.c ];
 disper = dispersionSoftShoulder( paramVec, 1 );
 fig0 = gcf;
 % get size and center

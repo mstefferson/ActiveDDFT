@@ -79,5 +79,3 @@ if flags.Drive && flags.DiagLop
     cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
   GammaCube_FT = GammaCube_FT + GammaDrCube_FT;
 end
-
-
