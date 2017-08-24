@@ -2,11 +2,11 @@
 %
 % Takes all files in ./runOPfiles, makes movies, and moves them to analyzed
 function movieHardRod()
-plotMax = 1;
+plotMax = 0;
 plotSlice = 0;
 plotMovie = 1;
-plotAmp = 1;
-plotCrystal = 1;
+plotAmp = 0;
+plotCrystal = 0;
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 try
@@ -61,9 +61,13 @@ try
           movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
             systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
           % make movie
-          OPMovieMakerTgtherDirAvi(movStr,...
+%           OPMovieMakerTgtherDirAvi(movStr,...
+%             gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
+%             OPobj.distSlice_rec,OPobj.OpTimeRecVec);
+          keyboard
+          OPMovieMakerTgtherDirAviFix(movStr,...
             gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
-            OPobj.distSlice_rec,OPobj.OpTimeRecVec);
+            OPobj.distSlice_rec,OPobj.OpTimeRecVec, particleObj.b);
         else
           % Save Name
           movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
@@ -73,6 +77,8 @@ try
             gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
             OPobj.OpTimeRecVec);
         end
+        % move it
+        movefile([movStr '*'], dirFullPath);
       end % plotMov
       if plotAmp
         % Make amplitude plot
@@ -122,18 +128,17 @@ try
         figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
         movefile(figtl,[figtl2 '.fig'])
-        saveas(gcf, [figtl2 '.jpg'],'jpg')
+        saveas(gcf, [figtl2 '.jpg'],'jpg')   
+        movefile([figtl2 '*'], dirFullPath);
       end % plotAmp
       % Plot final slices of final order parameters
-      if plotSlice
-        if strcmp( particleObj.interHb, 'mayer' )
+      if plotSlice && strcmp( particleObj.interHb, 'mayer' )
           sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
             systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
           sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
             OPobj.NOP_rec(:,:,end), systemObj, ...
             gridObj, rhoFinal, sliceSaveTag )
           movefile([sliceSaveTag '*'], dirFullPath);
-        end
       end % plot slice
       % plot max OPs
       if plotMax
@@ -149,6 +154,8 @@ try
             systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
           plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
         end
+        % move it
+        movefile([maxSaveTag '*'], dirFullPath);
       end % plotMax
       % crystal peaks
       if plotCrystal
@@ -190,10 +197,6 @@ try
           movefile( 'kAmps*', dirFullPath );
         end
       end % plot Crystal
-      % move it avi and figs into directory
-      movefile([movStr '*'], dirFullPath);
-      movefile([figtl2 '*'], dirFullPath);
-      movefile([maxSaveTag '*'], dirFullPath);
       % move directory
       movefile(dirFullPath, ['./analyzedfiles/' dirTemp ] )
     end % loop over dir
