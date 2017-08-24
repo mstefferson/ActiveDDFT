@@ -2,20 +2,25 @@
 function OPMovieMakerTgtherDirAviFix(MovStr,x,y,phi,...
   OP,DistRec,TimeRec, cScale)
 % matlab calls rows y and I call rows x. Flip mine to malabs
-xT = x;
-x = y;
-y = xT;
+% xT = x;
+% x = y;
+% y = xT;
 % set colormap
+randFig = randi(10000);
+figure(randFig);
 colormap( viridis );
+close(randFig);
 % frames and things
 nFrames = length(TimeRec);
 nx = length(x);
 ny = length(y);
-l1 = x(end) - 2*x(1) + x(2);
-l2 = y(end) - 2*y(1) + y(2);
+lx = x(end) - 2*x(1) + x(2);
+ly = y(end) - 2*y(1) + y(2);
 % Find ticks
-xTick = round( [-l1/4 0 l1/4] );
-yTick = round( [-l2/4 0 l2/4] );
+xMid = x( nx/2 + 1);
+yMid = y( ny/2 + 1);
+xTick = [xMid-lx/4 xMid xMid+lx/4];
+yTick = [yMid-ly/4 yMid xMid+ly/4];
 xLim  = [x(1) x(end)];
 yLim  = [y(1) y(end)];
 % xLim = [-l1/2 l1/2];
@@ -25,10 +30,10 @@ DivNumX = 8;
 DivNumY = 8;
 DeltaX  = ceil(nx / DivNumX );
 DeltaY  = ceil(ny / DivNumY);
-% dir 1 = rows = y
-SubInd1 = 1:DeltaY:(ny + 1 - DeltaY);
-% dir 2 = columns = x
-SubInd2 = 1:DeltaX:(nx + 1 - DeltaX);
+% dir 1 = rows = x
+SubInd1 = 1:DeltaX:(nx + 1 - DeltaX);
+% dir 2 = columns = y
+SubInd2 = 1:DeltaY:(ny + 1 - DeltaX);
 % Set up figure, make it a square 0.8 of
 % smallest screen dimension
 ScreenSize = get(0,'screensize');
@@ -119,7 +124,8 @@ axh4.YTickLabel = wantedTickLabel;
 shading(axh4,'interp');
 xlabel(axh4,'x'); ylabel(axh4,'y') %rename x and y
 axis square
-% Scale polar order by it's max value to for it changes.
+% Scale order parameters by it's max value to for it changes.
+cTemp =  cScale * OP.C_rec;
 polarTempX = OP.POPx_rec(SubInd1,SubInd2,:);
 polarTempY = OP.POPy_rec(SubInd1,SubInd2,:);
 maxPolar = max( max( max( OP.POP_rec(SubInd1,SubInd2,:) ) ) );
@@ -130,31 +136,33 @@ nemTempY = OP.NOPy_rec(SubInd1,SubInd2,:);
 maxNem = max( max( max( OP.NOP_rec(SubInd1,SubInd2,:) ) ) );
 nemTempX = nemTempX .* OP.NOP_rec(SubInd1,SubInd2,:) ./ maxNem;
 nemTempY = nemTempY .* OP.NOP_rec(SubInd1,SubInd2,:) ./ maxNem;
+% These matrices will need to be transposed to correct for x and y
 % loop over frames
+keyboard
 try
 vec2loop = 1:nFrames;
   for ii = vec2loop
     % Concentration
     subplot(axh1);
     cla(axh1);
-    pcolor( axh1, x, y, cScale * OP.C_rec(:,:,ii) );
+    pcolor( axh1, x, y, cTemp(:,:,ii)' );
     shading interp
     TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
-    wantedTickLabel = flip( axh1.YTickLabel );
-    axh1.YTickLabel =  wantedTickLabel;
+    %wantedTickLabel = flip( axh1.YTickLabel );
+    %axh1.YTickLabel =  wantedTickLabel;
     title(axh1,TitlStr);
     pause(0.001);
     drawnow;
     % Polar order
     subplot(axh2);
     cla(axh2);
-    pcolor(axh2, x,y, OP.POP_rec(:,:,ii) );
+    pcolor(axh2, x, y, OP.POP_rec(:,:,ii)' );
     shading interp
     TitlStr = sprintf('Polar Order t = %.2f', TimeRec(ii));
     hold on
-    quiver(axh2, x(SubInd2), y(SubInd1),...
-      polarTempX(:,:,ii),...
-      polarTempY(:,:,ii), 0,'color',[1,1,1] );
+    quiver(axh2, x(SubInd1), y(SubInd2),...
+      polarTempX(:,:,ii)',...
+      polarTempY(:,:,ii)', 0,'color',[1,1,1] );
     title(axh2,TitlStr)
     pause(0.001);
     drawnow;
@@ -169,12 +177,12 @@ vec2loop = 1:nFrames;
     % Nematic order
     cla(axh4)
     subplot(axh4);
-    pcolor(axh4, x, y, OP.NOP_rec(:,:,ii) );
+    pcolor(axh4, x, y, OP.NOP_rec(:,:,ii)');
     shading interp
     TitlStr = sprintf('Nem. Order t = %.2f ', TimeRec(ii));
     hold on
-    quiver(axh4, x(SubInd2),y(SubInd1),...
-      nemTempX(:,:,ii), nemTempY(:,:,ii),0,...
+    quiver(axh4, x(SubInd1),y(SubInd2),...
+      nemTempX(:,:,ii)', nemTempY(:,:,ii)',0,...
       'color',[1,1,1],'ShowArrowHead','off','LineWidth',0.1);
     title(axh4,TitlStr)
     drawnow;
