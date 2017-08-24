@@ -37,12 +37,12 @@ classdef NematicExternalVClass
     end
     % make V
     function obj = makeV(obj)
-      obj.Vv = obj.Es1 * cos( obj.Xv + obj.Phase ) .^ 2;
+      obj.Vv = -obj.Es1 * cos( obj.Xv - obj.Phase ) .^ 2;
       obj.VvReshape = reshape( obj.Vv, obj.ReshapeInds ) ;
     end
     % make Derivative
     function obj = makeDerivative(obj)
-      dv = -obj.Es1 * cos( obj.Xv + obj.Phase ) .* sin( obj.Xv + obj.Phase );
+      dv = obj.Es1 * cos( obj.Xv - obj.Phase ) .* sin( obj.Xv - obj.Phase );
       obj.Dv = dv;
       obj.DvDx1 = 0;
       obj.DvDx2 = 0;
