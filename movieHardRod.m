@@ -5,6 +5,7 @@ function movieHardRod()
 plotMax = 0;
 plotSlice = 0;
 plotMovie = 1;
+sliceRho.plotInset = 0;
 plotAmp = 0;
 plotCrystal = 0;
 % use latex for plots
@@ -56,32 +57,29 @@ try
           OPobj.NOP_rec  = opSave.NOP_rec;
           OPobj.NOPx_rec = opSave.NOPx_rec;
           OPobj.NOPy_rec = opSave.NOPy_rec;
-          OPobj.distSlice_rec = opSave.distSlice_rec;
           % Save Name
           movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
             systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
-          % make movie
-          %           OPMovieMakerTgtherDirAvi(movStr,...
-          %             gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
-          %             OPobj.distSlice_rec,OPobj.OpTimeRecVec);
           % get slices
-          dotx1 = round( systemObj.n1/4 ); sliceRho.dotx1 = dotx1;
-          doty1 = round( 3 * systemObj.n2/4 ); sliceRho.doty1 = doty1;
-          dotx2 = round( systemObj.n1/2 ); sliceRho.dotx2 = dotx2;
-          doty2 = round( systemObj.n2/2 ); sliceRho.doty2 = doty2;
-          dotx3 = round( 3*systemObj.n1/4 ); sliceRho.dotx3 = dotx3;
-          doty3 = round( systemObj.n2/4 ); sliceRho.doty3 = doty3;
-          nFrames = length( OPobj.OpTimeRecVec ); sliceRho.nFrames = nFrames;
-          sliceRho.slice1 = reshape( runSave.Den_rec( dotx1, doty1, :, : ), ...
-            [ systemObj.n3 nFrames] );
-          sliceRho.slice2 = reshape( runSave.Den_rec( dotx2, doty2, :, : ), ...
-            [ systemObj.n3 nFrames] );
-          sliceRho.slice3 = reshape( runSave.Den_rec( dotx3, doty3, :, : ), ...
-            [ systemObj.n3 nFrames] );
-          OPMovieMakerTgtherDirAviFix(movStr,...
-            gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
+          if sliceRho.plotInset == 1
+            dotx1 = round( systemObj.n1/4 ); sliceRho.dotx1 = dotx1;
+            doty1 = round( 3 * systemObj.n2/4 ); sliceRho.doty1 = doty1;
+            dotx2 = round( systemObj.n1/2 ); sliceRho.dotx2 = dotx2;
+            doty2 = round( systemObj.n2/2 ); sliceRho.doty2 = doty2;
+            dotx3 = round( 3*systemObj.n1/4 ); sliceRho.dotx3 = dotx3;
+            doty3 = round( systemObj.n2/4 ); sliceRho.doty3 = doty3;
+            nFrames = length( OPobj.OpTimeRecVec ); sliceRho.nFrames = nFrames;
+            sliceRho.slice1 = reshape( runSave.Den_rec( dotx1, doty1, :, : ), ...
+              [ systemObj.n3 nFrames] );
+            sliceRho.slice2 = reshape( runSave.Den_rec( dotx2, doty2, :, : ), ...
+              [ systemObj.n3 nFrames] );
+            sliceRho.slice3 = reshape( runSave.Den_rec( dotx3, doty3, :, : ), ...
+              [ systemObj.n3 nFrames] );
+            sliceRho.phi = gridObj.x3;
+          end
+          OPMovieMakerTgtherDirAvi(movStr,...
+            gridObj.x1,gridObj.x2, OPobj,...
             OPobj.OpTimeRecVec, particleObj.b, sliceRho);
-          keyboard
         else
           % Save Name
           movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
