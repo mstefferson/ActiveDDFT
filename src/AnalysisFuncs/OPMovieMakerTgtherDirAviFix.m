@@ -1,6 +1,7 @@
 % Makes movie of OP vs time
 function OPMovieMakerTgtherDirAviFix(MovStr,x,y,phi,...
-  OP,DistRec,TimeRec, cScale)
+  OP,TimeRec, cScale, rhoSlice)
+plotInset = 1;
 % matlab calls rows y and I call rows x. Flip mine to malabs
 % xT = x;
 % x = y;
@@ -10,6 +11,8 @@ randFig = randi(10000);
 figure(randFig);
 colormap( viridis );
 close(randFig);
+% set up dots
+cMat = copper(3);
 % frames and things
 nFrames = length(TimeRec);
 nx = length(x);
@@ -36,10 +39,11 @@ SubInd1 = 1:DeltaX:(nx + 1 - DeltaX);
 SubInd2 = 1:DeltaY:(ny + 1 - DeltaX);
 % Set up figure, make it a square 0.8 of
 % smallest screen dimension
+%%
 ScreenSize = get(0,'screensize');
 ScreenWidth = ScreenSize(3); ScreenHeight = ScreenSize(4);
-FigWidth    = floor( ScreenWidth * .6 );
-FigHeight   =  floor( ScreenHeight * .8);
+FigWidth    = floor( ScreenWidth * .85 );
+FigHeight   =  floor( ScreenHeight * .40);
 FigPos      = [ floor( 0.5 * ( ScreenWidth - FigWidth ) ) ...
   floor( 0.5 * (ScreenHeight - FigHeight ) ) ...
   FigWidth FigHeight];
@@ -47,13 +51,17 @@ FigPos      = [ floor( 0.5 * ( ScreenWidth - FigWidth ) ) ...
 Fig = figure();
 Fig.WindowStyle = 'normal';
 Fig.Position = FigPos;
+%%
 %Initialize the movie structure
 Mov = VideoWriter(MovStr);
 Mov.FrameRate = 4;
 open(Mov);
+% set-up subplot
+numRow = 1;
+numCol = 3;
 % Concentration
 set(gcf,'renderer','zbuffer')
-axh1 = subplot(2,2,1); % Save the handle of the subplot
+axh1 = subplot(numRow,numCol,1); % Save the handle of the subplot
 axh1.TickLabelInterpreter = 'latex';
 h = colorbar('peer',axh1);
 h.TickLabelInterpreter = 'latex';
@@ -65,9 +73,6 @@ if minC >= maxC
   maxC = 0.1;
 end
 axh1.CLim = cScale * [minC maxC];
-% axh1.XLim = xLim; %row and columns are flipped
-% axh1.YLim = yLim; %row and columns are flipped
-%axh1.YDir = 'rev';
 axh1.YTick = yTick;
 axh1.YLim = yLim;
 axh1.XTick = xTick;
@@ -76,9 +81,39 @@ wantedTickLabel =  num2cell( yTick ) ;
 axh1.YTickLabel =  wantedTickLabel;
 shading(axh1,'interp');
 xlabel(axh1,'x'); ylabel(axh1,'y') %rename x and y
-axis square
+axis(axh1, 'square')
+if plotInset
+  % set-up inset
+  posVec = axh1.Position;
+  x0 = posVec(1);
+  y0 = posVec(2);
+  w0 = posVec(3);
+  h0 = posVec(4);
+  axLabColor = [0.85 0 0];
+  % Place second set of axes on same plot
+  x1 = x0 + w0 / (1.80);
+  y1 = y0 + h0 / (2.1);
+  w1 = w0 / (2.5);
+  h1 = h0 / (2.0);
+  axhinset = axes('Position', [x1 y1 w1 h1]);
+  axis square
+  posVec = axhinset.Position;
+  axhinset.Position = posVec ;
+  axhinset.XColor = axLabColor;
+  axhinset.YColor = axLabColor;
+  axhinset.XLabel.Color = axLabColor;
+  axhinset.YLabel.Color = axLabColor;
+  axhinset.YLabel.String = '$$ f ( \phi ) $$';
+  axhinset.XLabel.String = '$$ \phi $$';
+  yMinInset = ...
+    min( [ rhoSlice.slice1(:); rhoSlice.slice2(:); rhoSlice.slice3(:) ] );
+  yMaxInset = ...
+    max( [ rhoSlice.slice1(:); rhoSlice.slice2(:); rhoSlice.slice3(:) ] );
+  axhinset.YLim = [yMinInset yMaxInset];
+  axhinset.NextPlot = 'replaceChildren';
+end
 % Polar order
-axh2 = subplot(2,2,2); % Save the handle of the subplot
+axh2 = subplot(numRow,numCol,2); % Save the handle of the subplot
 axh2.TickLabelInterpreter = 'latex';
 h = colorbar('peer',axh2);
 h.TickLabelInterpreter = 'latex';
@@ -86,43 +121,27 @@ axh2.NextPlot = 'replaceChildren';
 axh2.CLim = [0 1];
 axh2.XLim = xLim; %row and columns are flipped
 axh2.YLim = yLim; %row and columns are flipped
-%axh2.YDir = 'rev';
 axh2.XTick = xTick;
 axh2.YTick = yTick;
 axh2.YTickLabel =  wantedTickLabel;
 shading(axh2,'interp');
 xlabel(axh2,'x'); ylabel(axh2,'y') %rename x and y
 axis square
-% Distribution
-axh3 = subplot(2,2,3); % Save the handle of the subplot
+% Nematic order
+axh3 = subplot(numRow,numCol,3); % Save the handle of the subplot
 axh3.TickLabelInterpreter = 'latex';
 h = colorbar('peer',axh3);
-h.Visible = 'off';
 h.TickLabelInterpreter = 'latex';
-maxDist = max(max( DistRec ) );
-if maxDist <= 0
-  maxDist = 0.1;
-end
 axh3.NextPlot = 'replaceChildren';
-axh3.YLim = [0 maxDist];
-axh3.XLim = [phi(1) phi(end)];
-axis square
-xlabel('$$\phi$$'); ylabel('f($$\phi$$)')
-% Nematic order
-axh4 = subplot(2,2,4); % Save the handle of the subplot
-axh4.TickLabelInterpreter = 'latex';
-h = colorbar('peer',axh4);
-h.TickLabelInterpreter = 'latex';
-axh4.NextPlot = 'replaceChildren';
-axh4.CLim = [0 1];
-axh4.XLim = xLim; %row and columns are flipped
-axh4.YLim = yLim; %row and columns are flipped
-%axh4.YDir = 'rev';
-axh4.XTick = xTick;
-axh4.YTick = yTick;
-axh4.YTickLabel = wantedTickLabel;
-shading(axh4,'interp');
-xlabel(axh4,'x'); ylabel(axh4,'y') %rename x and y
+axh3.CLim = [0 1];
+axh3.XLim = xLim; %row and columns are flipped
+axh3.YLim = yLim; %row and columns are flipped
+%axh3.YDir = 'rev';
+axh3.XTick = xTick;
+axh3.YTick = yTick;
+axh3.YTickLabel = wantedTickLabel;
+shading(axh3,'interp');
+xlabel(axh3,'x'); ylabel(axh3,'y') %rename x and y
 axis square
 % Scale order parameters by it's max value to for it changes.
 cTemp =  cScale * OP.C_rec;
@@ -138,22 +157,54 @@ nemTempX = nemTempX .* OP.NOP_rec(SubInd1,SubInd2,:) ./ maxNem;
 nemTempY = nemTempY .* OP.NOP_rec(SubInd1,SubInd2,:) ./ maxNem;
 % These matrices will need to be transposed to correct for x and y
 % loop over frames
-keyboard
+
 try
-vec2loop = 1:nFrames;
+  vec2loop = 1:nFrames;
   for ii = vec2loop
+    %%
+    keyboard
     % Concentration
     subplot(axh1);
     cla(axh1);
     pcolor( axh1, x, y, cTemp(:,:,ii)' );
     shading interp
     TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
-    %wantedTickLabel = flip( axh1.YTickLabel );
-    %axh1.YTickLabel =  wantedTickLabel;
     title(axh1,TitlStr);
+    if plotInset
+      hold(axh1,'on')
+      p = plot( axh1, x(rhoSlice.dotx1), y(rhoSlice.doty1),'x','MarkerSize',20 );
+      p.Color = cMat(1,:);
+      p = plot( axh1, x(rhoSlice.dotx2), y(rhoSlice.doty2),'x','MarkerSize',20 );
+      p.Color = cMat(2,:);
+      p = plot( axh1, x(rhoSlice.dotx3), y(rhoSlice.doty3),'x','MarkerSize',20 );
+      p.Color = cMat(3,:);
+      hold(axh1,'off')
+    end
+    % inset
+    if plotInset
+      cla(axhinset);
+      p = plot( axhinset, phi, rhoSlice.slice1(:,ii) );
+      hold( axhinset , 'on' )
+      p.Color = cMat(1,:);
+      p = plot( axhinset, phi, rhoSlice.slice2(:,ii) );
+      p.Color = cMat(2,:);
+      p = plot( axhinset, phi, rhoSlice.slice3(:,ii) );
+      hold( axhinset, 'off')
+      p.Color = cMat(3,:);
+      axhinset.XLim = [ phi(1) phi(end) ];
+      axhinset.Position = posVec ;
+      axhinset.XColor = axLabColor;
+      axhinset.YColor = axLabColor;
+      axhinset.XLabel.Color = axLabColor;
+      axhinset.YLabel.Color = axLabColor;
+      axhinset.YLabel.String = '$$ f ( \phi ) $$';
+      axhinset.XLabel.String = '$$ \phi $$';
+      axis( axhinset, 'square' )
+      axhinset.YLim = [yMinInset yMaxInset];
+    end
     pause(0.001);
     drawnow;
-    % Polar order
+    %% Polar order
     subplot(axh2);
     cla(axh2);
     pcolor(axh2, x, y, OP.POP_rec(:,:,ii)' );
@@ -164,27 +215,21 @@ vec2loop = 1:nFrames;
       polarTempX(:,:,ii)',...
       polarTempY(:,:,ii)', 0,'color',[1,1,1] );
     title(axh2,TitlStr)
-    pause(0.001);
+    pause(0.001)
     drawnow;
-    % Distribution
-    subplot(axh3);
-    plot( axh3, phi, DistRec(:,ii) );
-    TtlStr = sprintf('Distribution t = %.2f',...
-      TimeRec(ii));
-    title(axh3,TtlStr);
-    pause(0.001);
-    drawnow;
+    
+    %%
     % Nematic order
-    cla(axh4)
-    subplot(axh4);
-    pcolor(axh4, x, y, OP.NOP_rec(:,:,ii)');
+    cla(axh3)
+    subplot(axh3);
+    pcolor(axh3, x, y, OP.NOP_rec(:,:,ii)');
     shading interp
     TitlStr = sprintf('Nem. Order t = %.2f ', TimeRec(ii));
     hold on
-    quiver(axh4, x(SubInd1),y(SubInd2),...
+    quiver(axh3, x(SubInd1),y(SubInd2),...
       nemTempX(:,:,ii)', nemTempY(:,:,ii)',0,...
       'color',[1,1,1],'ShowArrowHead','off','LineWidth',0.1);
-    title(axh4,TitlStr)
+    title(axh3,TitlStr)
     drawnow;
     pause(0.001);
     % Fig.Position can drift. Has to do with capturing a figure
