@@ -1,5 +1,5 @@
 % Makes movie of OP vs time
-function OPMovieMakerTgtherDirAviFix(MovStr,x,y,...
+function OPMovieMakerTgtherDirAvi(MovStr,x,y,...
   OP,TimeRec, cScale, rhoSlice)
 % set colormap
 randFig = randi(10000);
@@ -58,11 +58,11 @@ axh1.TickLabelInterpreter = 'latex';
 h = colorbar('peer',axh1);
 h.TickLabelInterpreter = 'latex';
 axh1.NextPlot = 'replaceChildren';
-minC = min(min(min(OP.C_rec )));
-maxC = max(max(max(OP.C_rec)));
-if minC >= maxC
-  minC = 0;
+minC = min( OP.C_rec(:) );
+maxC = max( OP.C_rec(:) );
+if minC >= maxC -0.0001
   maxC = 1.1 .* minC ;
+  minC = 0.9 .* minC;
 end
 axh1.CLim = cScale * [minC maxC];
 axh1.YTick = yTick;

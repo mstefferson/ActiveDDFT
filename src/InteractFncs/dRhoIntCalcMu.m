@@ -9,7 +9,7 @@ n3 = systemObj.n3;
 % bug dMu does not have a size
 NegDivFluxEx_FT = zeros( systemObj.n1, systemObj.n2, n3 );
 % Do it all with indexing
-if  n3 > 1 
+if  n3 > 1
   jInd    = [ 1:n3 ];
   jInd_m2 = [ n3-1, n3,  1:(n3-2) ]; %m-2 coupling
   jInd_p2 = [ 3:n3, 1, 2 ]; %m+2 coupling
@@ -21,7 +21,7 @@ end
 % coordinate 1
 if interObj.dv1Flag
   jx1 = - rho .* dMu.dx1;    %Flux in the x1 direction with isostropic diffusion
-  jx1_FT = fftshift(fftn(jx1)); % FFT 
+  jx1_FT = fftshift(fftn(jx1)); % FFT
   if diffObj.Ani == 0
     NegDivFluxEx_FT(:,:,jInd) = ...
       diffObj.j1f_reps .* jx1_FT(:,:,jInd);

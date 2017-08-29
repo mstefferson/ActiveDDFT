@@ -173,7 +173,10 @@ try
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
     runSave.numSavedRhos = 1;
-    runSave.interObj = interObj;
+    % Clean up interObj before saving
+    if isfield( interObj, 'FmFt' )
+      runSave.interObj = rmfield(interObj, 'FmFt');
+    end
     % Save params now
     paramSave.flags = flags;
     paramSave.particleObj = particleObj;
@@ -225,21 +228,32 @@ try
     if denRecObj.DidIBreak == 0
       totRec = length( denRecObj.TimeRecVec );
       opTimeRecVec = denRecObj.TimeRecVec ;
-      opSave.OpTimeRecVec = opTimeRecVec;
     else %Don't incldue the blowed up denesity for movies. They don't like it.
       totRec = length( denRecObj.TimeRecVec ) - 1;
       opTimeRecVec = denRecObj.TimeRecVec(1:end-1) ;
-      opSave.OpTimeRecVec = opTimeRecVec;
     end
+    opSave.OpTimeRecVec = opTimeRecVec;
     % Set up saving
     opSave.C_rec    = zeros(systemObj.n1, systemObj.n2, 2);
     if systemObj.n3 > 1
       % Distribution slice
-      holdX = systemObj.n1 /2 + 1; % spatial pos placeholders
-      holdY = systemObj.n2 /2 + 1; % spatial pos placeholders
-      opSave.distSlice_rec = reshape( ...
-        runSave.Den_rec(holdX, holdY, : , 1:length(opTimeRecVec)),...
-        [systemObj.n3 length(opTimeRecVec)] );
+      % currently hardcode out inset
+      sliceRho.plotInset = 0;
+      dotx1 = round( systemObj.n1/4 ); sliceRho.dotx1 = dotx1;
+      doty1 = round( 3 * systemObj.n2/4 ); sliceRho.doty1 = doty1;
+      dotx2 = round( systemObj.n1/2 ); sliceRho.dotx2 = dotx2;
+      doty2 = round( systemObj.n2/2 ); sliceRho.doty2 = doty2;
+      dotx3 = round( 3*systemObj.n1/4 ); sliceRho.dotx3 = dotx3;
+      doty3 = round( systemObj.n2/4 ); sliceRho.doty3 = doty3;
+      nFrames = length( opTimeRecVec ); sliceRho.nFrames = nFrames;
+      sliceRho.slice1 = reshape( runSave.Den_rec( dotx1, doty1, :, 1:nFrames ), ...
+        [ systemObj.n3 nFrames] );
+      sliceRho.slice2 = reshape( runSave.Den_rec( dotx2, doty2, :, 1:nFrames ), ...
+        [ systemObj.n3 nFrames] );
+      sliceRho.slice3 = reshape( runSave.Den_rec( dotx3, doty3, :, 1:nFrames ), ...
+        [ systemObj.n3 nFrames] );
+      sliceRho.phi = gridObj.x3;
+      opSave.sliceRho = sliceRho;
       opSave.POP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
       opSave.POPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
       opSave.POPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
@@ -310,7 +324,6 @@ try
         OPobj.NOP_rec  = opSave.NOP_rec;
         OPobj.NOPx_rec = opSave.NOPx_rec;
         OPobj.NOPy_rec = opSave.NOPy_rec;
-        OPobj.distSlice_rec = opSave.distSlice_rec;
       end
     end
     % Now do it for steady state sol
@@ -357,8 +370,8 @@ try
           systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
         % Run function
         OPMovieMakerTgtherDirAvi(movStr,...
-          gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
-          OPobj.distSlice_rec,OPobj.OpTimeRecVec);
+          gridObj.x1,gridObj.x2, OPobj, ...
+          OPobj.OpTimeRecVec, particleObj.b, sliceRho);
       end
       movieSuccess = 1;
       % Move it
@@ -493,4 +506,4 @@ if flags.Verbose
   fprintf('Leaving Main for t%d.%d\n', ...
     runObj.trialID, runObj.runID);
 end
-end % End HR2DrotVgrExeMain.m
+end % End ddftMain

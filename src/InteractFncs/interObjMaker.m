@@ -18,6 +18,13 @@ interObj.k3ind0 = floor( systemObj.n3 / 2 ) + 1;
 interObj.dv1Flag = 0;
 interObj.dv2Flag = 0;
 interObj.dv3Flag = 0;
+% initialize ints
+interObj.srInd1 = [];
+interObj.srInd2 = [];
+interObj.srInd3 = [];
+interObj.lrInd1 = [];
+interObj.lrInd2 = [];
+interObj.lrInd3 = [];
 % Short range interactions
 if isempty(particleObj.interHb)
   interObj.hardFlag = 0;
@@ -165,7 +172,7 @@ else
         systemObj.tmp, systemObj.n1, systemObj.n2, ...
         systemObj.l1, systemObj.l2 );
     end
-    % gaussian 
+    % gaussian
     if strcmp( currPot{strInd}, 'gauss' )
       foundV = 1;
       % build potential
@@ -292,3 +299,7 @@ end % external
 if interObj.hardFlag == 0; fprintf('No hard interactions\n'); end
 if interObj.longFlag == 0; fprintf('No long interactions\n'); end
 if interObj.extFlag == 0; fprintf('No external potentials\n'); end
+% get ind
+interObj.intInd1 = unique( [interObj.lrInd1, interObj.srInd1] );
+interObj.intInd2 = unique( [interObj.lrInd2, interObj.srInd2] );
+interObj.intInd3 = unique( [interObj.lrInd3, interObj.srInd3] );
