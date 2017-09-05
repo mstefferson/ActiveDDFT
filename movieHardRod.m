@@ -1,7 +1,15 @@
 % movieHardRod
 %
 % Takes all files in ./runOPfiles, makes movies, and moves them to analyzed
-function movieHardRod()
+function movieHardRod(destinationDir)
+if nargin == 0
+  destinationDir = 'analyzedfiles/';
+else
+  if destinationDir(end) ~= '/'
+    destinationDir = [ destinationDir '/'];
+  end
+  destinationDir = [ 'analyzedfiles/' destinationDir ];
+end
 plotMax = 1;
 plotSlice = 0;
 plotMovie = 1;
@@ -16,6 +24,7 @@ try
   addpath( genpath( [currentDir '/src'] ) );
   %make output directories if they don't exist
   if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end
+  if exist(destinationDir,'dir') == 0; mkdir(destinationDir);end
   % see how many dirs to analyze
   dir2Analyze = dir( './runOPfiles/Hr_*');
   numDirs = length(dir2Analyze);
@@ -26,7 +35,7 @@ try
       % move into a dir
       dirTemp = dir2Analyze(ii).name;
       fprintf('Movies for %s\n', dirTemp);
-      dirFullPath = ['./runOPfiles/' dirTemp];
+      dirFullPath = ['runOPfiles/' dirTemp];
       % load things
       runFileName = [dirFullPath '/run_' dirTemp '.mat'];
       opFileName = [dirFullPath '/op_' dirTemp '.mat'];
@@ -57,8 +66,12 @@ try
           OPobj.NOP_rec  = opSave.NOP_rec;
           OPobj.NOPx_rec = opSave.NOPx_rec;
           OPobj.NOPy_rec = opSave.NOPy_rec;
-          sliceRho = opSave.sliceRho;
-          sliceRho.plotInset = plotInset;
+          if isfield(opSave, 'sliceRho')
+            sliceRho = opSave.sliceRho;
+            sliceRho.plotInset = plotInset;
+          else
+            sliceRho.plotInset = 0;
+          end
           % Save Name
           movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
             systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
@@ -66,6 +79,7 @@ try
           OPMovieMakerTgtherDirAvi(movStr,...
             gridObj.x1,gridObj.x2, OPobj,...
             OPobj.OpTimeRecVec, particleObj.b, sliceRho);
+        else
           % Save Name
           movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
             systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
@@ -195,7 +209,7 @@ try
         end
       end % plot Crystal
       % move directory
-      movefile(dirFullPath, ['./analyzedfiles/' dirTemp ] )
+      movefile(dirFullPath, [destinationDir  dirTemp] )
     end % loop over dir
   else
     fprintf('Nothing to make movies for \n');

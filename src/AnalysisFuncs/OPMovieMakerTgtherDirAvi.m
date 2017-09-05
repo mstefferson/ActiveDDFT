@@ -1,6 +1,8 @@
 % Makes movie of OP vs time
 function OPMovieMakerTgtherDirAvi(MovStr,x,y,...
   OP,TimeRec, cScale, rhoSlice)
+% set font-size
+fontSize = 30;
 % set colormap
 randFig = randi(10000);
 figure(randFig);
@@ -22,27 +24,27 @@ yTick = [yMid-ly/4 yMid xMid+ly/4];
 xLim  = [x(1) x(end)];
 yLim  = [y(1) y(end)];
 % Set up a index vector so quiver is too crowded
-DivNumX = 8;
-DivNumY = 8;
-DeltaX  = ceil(nx / DivNumX );
-DeltaY  = ceil(ny / DivNumY);
+divNumX = 8;
+divNumY = 8;
+deltaX  = ceil(nx / divNumX );
+deltaY  = ceil(ny / divNumY);
 % dir 1 = rows = x
-SubInd1 = 1:DeltaX:(nx + 1 - DeltaX);
+subInd1 = 1:deltaX:(nx + 1 - deltaX);
 % dir 2 = columns = y
-SubInd2 = 1:DeltaY:(ny + 1 - DeltaX);
+subInd2 = 1:deltaY:(ny + 1 - deltaX);
 % Set up figure, make it a square 0.8 of
 % smallest screen dimension
-ScreenSize = get(0,'screensize');
-ScreenWidth = ScreenSize(3); ScreenHeight = ScreenSize(4);
-FigWidth    = floor( ScreenWidth * .85 );
-FigHeight   =  floor( ScreenHeight * .40);
-FigPos      = [ floor( 0.5 * ( ScreenWidth - FigWidth ) ) ...
-  floor( 0.5 * (ScreenHeight - FigHeight ) ) ...
-  FigWidth FigHeight];
+screenSize = get(0,'screensize');
+screenWidth = screenSize(3); ScreenHeight = screenSize(4);
+figWidth    = floor( screenWidth );
+figHeight   =  floor( ScreenHeight * .40);
+figPos      = [ floor( 0.5 * ( screenWidth - figWidth ) ) ...
+  floor( 0.5 * (ScreenHeight - figHeight ) ) ...
+  figWidth figHeight];
 %Build a square box set by smallest dimension of screen
 Fig = figure();
 Fig.WindowStyle = 'normal';
-Fig.Position = FigPos;
+Fig.Position = figPos;
 %%
 %Initialize the movie structure
 Mov = VideoWriter(MovStr);
@@ -72,8 +74,10 @@ axh1.XLim = xLim;
 wantedTickLabel =  num2cell( yTick ) ;
 axh1.YTickLabel =  wantedTickLabel;
 shading(axh1,'interp');
-xlabel(axh1,'x'); ylabel(axh1,'y') %rename x and y
+xlabel(axh1,'$$ x $$'); ylabel(axh1,'$$ y $$') 
+axh1.FontSize = fontSize;
 axis(axh1, 'square')
+cTitle = '$$ C $$';
 % Polar order
 axh2 = subplot(numRow,numCol,2); % Save the handle of the subplot
 axh2.TickLabelInterpreter = 'latex';
@@ -87,8 +91,10 @@ axh2.XTick = xTick;
 axh2.YTick = yTick;
 axh2.YTickLabel =  wantedTickLabel;
 shading(axh2,'interp');
-xlabel(axh2,'x'); ylabel(axh2,'y') %rename x and y
+xlabel(axh2,'$$ x $$'); ylabel(axh2,'$$ y $$')
+axh2.FontSize = fontSize;
 axis square
+pTitle = '$$ P $$';
 % Nematic order
 axh3 = subplot(numRow,numCol,3); % Save the handle of the subplot
 axh3.TickLabelInterpreter = 'latex';
@@ -103,8 +109,10 @@ axh3.XTick = xTick;
 axh3.YTick = yTick;
 axh3.YTickLabel = wantedTickLabel;
 shading(axh3,'interp');
-xlabel(axh3,'x'); ylabel(axh3,'y') %rename x and y
+xlabel(axh3,'$$ x $$'); ylabel(axh3,'$$ y $$') 
+axh3.FontSize = fontSize;
 axis square
+nTitle = '$$ N $$';
 % inset
 if rhoSlice.plotInset
   axhinsetMain = axh1;
@@ -139,27 +147,29 @@ if rhoSlice.plotInset
 end
 % Scale order parameters by it's max value to for it changes.
 cTemp =  cScale * OP.C_rec;
-polarTempX = OP.POPx_rec(SubInd1,SubInd2,:);
-polarTempY = OP.POPy_rec(SubInd1,SubInd2,:);
-maxPolar = max( max( max( OP.POP_rec(SubInd1,SubInd2,:) ) ) );
+polarTempX = OP.POPx_rec(subInd1,subInd2,:);
+polarTempY = OP.POPy_rec(subInd1,subInd2,:);
+maxPolar = max( max( max( OP.POP_rec(subInd1,subInd2,:) ) ) );
 polarTempX = polarTempX ./ maxPolar;
 polarTempY = polarTempY ./ maxPolar;
-nemTempX = OP.NOPx_rec(SubInd1,SubInd2,:);
-nemTempY = OP.NOPy_rec(SubInd1,SubInd2,:);
-maxNem = max( max( max( OP.NOP_rec(SubInd1,SubInd2,:) ) ) );
-nemTempX = nemTempX .* OP.NOP_rec(SubInd1,SubInd2,:) ./ maxNem;
-nemTempY = nemTempY .* OP.NOP_rec(SubInd1,SubInd2,:) ./ maxNem;
+nemTempX = OP.NOPx_rec(subInd1,subInd2,:);
+nemTempY = OP.NOPy_rec(subInd1,subInd2,:);
+maxNem = max( max( max( OP.NOP_rec(subInd1,subInd2,:) ) ) );
+nemTempX = nemTempX .* OP.NOP_rec(subInd1,subInd2,:) ./ maxNem;
+nemTempY = nemTempY .* OP.NOP_rec(subInd1,subInd2,:) ./ maxNem;
 % These matrices will need to be transposed to correct for x and y
 % loop over frames
 try
   vec2loop = 1:nFrames;
   for ii = vec2loop
+    % get t in title
+    tTitle = [' ($$ t = $$ ' num2str( TimeRec(ii), '%.2f' ) ')' ];
     %% Concentration
     subplot(axh1);
     cla(axh1);
     pcolor( axh1, x, y, cTemp(:,:,ii)' );
     shading interp
-    TitlStr = sprintf('Scale Concentration (bc) t = %.2f', TimeRec(ii));
+    TitlStr = [cTitle  tTitle]; 
     title(axh1,TitlStr);
     pause(0.001);
     drawnow;
@@ -168,9 +178,9 @@ try
     cla(axh2);
     pcolor(axh2, x, y, OP.POP_rec(:,:,ii)' );
     shading interp
-    TitlStr = sprintf('Polar Order t = %.2f', TimeRec(ii));
+    TitlStr = [pTitle  tTitle];  
     hold on
-    quiver(axh2, x(SubInd1), y(SubInd2),...
+    quiver(axh2, x(subInd1), y(subInd2),...
       polarTempX(:,:,ii)',...
       polarTempY(:,:,ii)', 0,'color',[1,1,1] );
     title(axh2,TitlStr)
@@ -212,9 +222,9 @@ try
     subplot(axh3);
     pcolor(axh3, x, y, OP.NOP_rec(:,:,ii)');
     shading interp
-    TitlStr = sprintf('Nem. Order t = %.2f ', TimeRec(ii));
+    TitlStr = [nTitle  tTitle]; 
     hold on
-    quiver(axh3, x(SubInd1),y(SubInd2),...
+    quiver(axh3, x(subInd1),y(subInd2),...
       nemTempX(:,:,ii)', nemTempY(:,:,ii)',0,...
       'color',[1,1,1],'ShowArrowHead','off','LineWidth',0.1);
     title(axh3,TitlStr)

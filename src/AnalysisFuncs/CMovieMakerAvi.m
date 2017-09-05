@@ -1,5 +1,7 @@
 % Makes movie of C vs time
 function CMovieMakerAvi(MovStr,x,y,Crec,TimeRec)
+% set font-size
+fontSize = 34;
 % Calculate log
 if min( Crec(:) ) > 0
   logCrec = log( Crec );
@@ -13,13 +15,14 @@ Fig = figure();
 colormap(Fig, viridis);
 set(Fig, 'WindowStyle', 'normal');
 % Get screen size
-pixSS = get(0,'screensize');
-pixW = pixSS(3);
-pixH = pixSS(4);
-figSize = [pixW pixH] / 2;
-figCorner = [ ( pixW-figSize(1) ) ( pixH-figSize(2) ) ] ./ 2;
-posVec = [figCorner figSize];
-Fig.Position = posVec;
+screenSize = get(0,'screensize');
+screenWidth = screenSize(3); screenHeight = screenSize(4);
+figWidth    = floor( 0.86 * screenWidth );
+figHeight   =  floor( 0.66 * screenHeight );
+figPos      = [ floor( 0.5 * ( screenWidth - figWidth ) ) ...
+  floor( 0.5 * (screenHeight - figHeight ) ) ...
+  figWidth figHeight];
+Fig.Position = figPos;
 set(gcf,'renderer','zbuffer')
 %Initialize the movie structure
 Mov = VideoWriter(MovStr);
@@ -35,7 +38,11 @@ axpos1 = get(axh1,'position'); % Save the position as ax
 set(axh1,'NextPlot','replaceChildren',...
   'CLim', [min(min(min(Crec))) max(max(max(Crec)))],...
   'YDir','normal','Position',axpos1);
-xlabel('x'); ylabel('y')
+shading(axh1,'interp');
+xlabel(axh1,'$$ x $$'); ylabel(axh1,'$$ y $$') 
+axh1.FontSize = fontSize;
+axis(axh1, 'square')
+cTitle = '$$ C $$';
 % log plot
 subplot(1,2,2)
 axh2 = gca; % Save the handle of the subplot
@@ -45,19 +52,25 @@ axpos2 = get(axh2,'position'); % Save the position as ax
 set(axh2,'NextPlot','replaceChildren',...
   'CLim', logLims ,...
   'YDir', 'normal','Position',axpos2);
-xlabel('x'); ylabel('y');
+shading(axh1,'interp');
+xlabel(axh2,'$$ x $$'); ylabel(axh2,'$$ y $$') 
+axh2.FontSize = fontSize;
+axis(axh2, 'square')
+clogTitle = '$$ \log{(C)} $$';
 for ii = 1:nFrames
+  % get t in title
+  tTitle = [' ($$ t = $$ ' num2str( TimeRec(ii), '%.2f' ) ')' ];
   % Concentration
   subplot(axh1);
   pcolor(axh1,x,y,Crec(:,:,ii)')
   shading(axh1,'interp');
-  TitlStr = sprintf('Concentration t = %.2f', TimeRec(ii));
+  TitlStr = [cTitle  tTitle]; 
   title(axh1,TitlStr)
   % Lot concentration
   subplot(axh2);
   pcolor(axh2,x,y,logCrec(:,:,ii)')
   shading(axh2,'interp');
-  TitlStr = sprintf('Log Concentration t = %.2f', TimeRec(ii));
+  TitlStr = [clogTitle tTitle]; 
   title(axh2,TitlStr)
   % pause just in case
   drawnow 
