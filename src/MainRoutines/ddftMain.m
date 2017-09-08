@@ -4,7 +4,7 @@
 
 function  [ denRecObj ] = ...
   ddftMain( filename, paramVec, systemObj, particleObj, runObj, timeObj, ...
-  rhoInit, flags, interactLrV, externalV )
+  rhoInit, flags, interactLrV, externalV, noise )
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 % some global
@@ -52,6 +52,13 @@ try
   particleObj.interactLrV = interactLrV;
   % external pot
   particleObj.externalV = externalV;
+  % noise
+  systemObj.noise = noise;
+  if noise == 0
+    flags.noise = 0;
+  else
+    flags.noise = 1;
+  end
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];

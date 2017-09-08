@@ -46,6 +46,7 @@ systemMaster.l1 = [10];  % Box length (vec)
 systemMaster.l2 = [10];  % Box length (vec)
 systemMaster.l3 = 2 * pi;
 systemMaster.tmp = 1;   % Temperature
+systemMaster.noise = {0, 0}; % Noise {position strength, rot strength}
 %%%%%%%%%%%%%%% Time %%%%%%%%%%%%%%%%%%%%%%%%%%
 timeMaster.dt         = 1e-3; % time step
 timeMaster.t_rec      = 0.1;  % time elapsed before recording
