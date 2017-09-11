@@ -4,7 +4,6 @@
 flagMaster.SaveMe       = 1; % Saving
 flagMaster.Verbose      = 0; % Prints run times
 flagMaster.DiagLop      = 1; % Diag operator = 1. off diag = 0
-flagMaster.Interactions = 1; % Int = 1. No Int = 0
 flagMaster.MakeMovies   = 0; % No movies if save is zero
 flagMaster.MakeOP       = 1; % No OPs if save is zero
 flagMaster.AllNsSame    = 0; % Sets all gridptns to be the same

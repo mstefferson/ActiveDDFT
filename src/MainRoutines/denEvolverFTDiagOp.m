@@ -148,7 +148,7 @@ if shitIsFucked == 0
     end
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
-      if flags.Interactions == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 && flags.Drive == 0
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
       [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
@@ -205,7 +205,7 @@ if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
     % Turn it to a cube if it hasn't been yet
-    if flags.Interactions == 0 && flags.Drive == 0
+    if interObj.anyInter == 0 && flags.Drive == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     DensityFT_rec(:,:,:,jrectemp)   = rho_FT;

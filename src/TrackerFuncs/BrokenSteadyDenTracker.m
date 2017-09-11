@@ -14,6 +14,7 @@ WeightDensityChange =  abs( 1 - rhoPrev ./ rho  );
 maxDrho = max( max( max(WeightDensityChange) ) );
 if maxDrho < timeObj.ss_epsilon_dt
   steadyState = 1;
+  keyboard
 end
 %See if something broke
 %Negative Density check
