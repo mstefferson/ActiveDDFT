@@ -20,8 +20,6 @@
 % Program never actually calculates the Lopagator, but uses expv from
 % ExpoKit. Way Faster.
 %
-% Interactions handled using Mayer function.
-%
 function [denRecObj, rho] = denEvolverFT(...
   rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
 % global
@@ -161,7 +159,7 @@ if shitIsFucked == 0
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
       % Turn it to a cube if it hasn't been yet
-      if flags.Interactions == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 && flags.Drive == 0
         rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
@@ -226,7 +224,7 @@ if flags.SaveMe
     if ( mod(t,timeObj.N_dtRec)== 0 )
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       % Turn it to a cube if it hasn't been yet
-      if flags.Interactions == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 && flags.Drive == 0
         rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
