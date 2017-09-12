@@ -122,14 +122,14 @@ if shitIsFucked == 0
     if interObj.anyInter || flags.Drive
       rho_FT = reshape(rhoVec_FT,n1,n2,n3);
       rho    = real(ifftn(ifftshift(rho_FT)));
-    end
-    %Interactions
-    if interObj.anyInter
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, flags,...
         interObj, systemObj, diffObj, particleObj );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
+    %Interactions
+    if interObj.anyInter
+        end
     % Take step
     if( flags.StepMeth == 0 )
       [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...

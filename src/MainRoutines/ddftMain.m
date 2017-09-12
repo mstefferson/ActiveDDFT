@@ -152,6 +152,7 @@ try
   end
   % Build initial density
   [rho] = MakeConc(systemObj,particleObj,rhoInit,gridObj);
+  rho = exp( -( gridObj.x2' *  gridObj.x2 ) / 4 ) + 10;
   intDenRunTime = toc(tIntDenID);
   if flags.Verbose
     fprintf('Made initial density t%d_%d: %.3g \n', ...

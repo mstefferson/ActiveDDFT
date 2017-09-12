@@ -46,8 +46,8 @@ end
 jrectemp = 1; % Temporary holder for Density_rec
 jrec     = timeObj.recStartInd; % Actual index for runSave
 %Set up Diffusion operator, discrete k-space propagator, and interaction
-[Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
-Prop = exp(Lop .* dt);   % Exponentiate the elements
+[lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
+prop = exp(lop .* dt);   % Exponentiate the elements
 %Driven Term
 if flags.Drive
   % Build the sin and cos phi once
@@ -60,7 +60,7 @@ else
   sinPhi3 = 0;
 end
 % Interactions and driving
-if interObj.anyInter || flags.Drive
+if interObj.anyInter || flags.Drive || flags.noise
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags, ...
@@ -70,39 +70,41 @@ else
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaCube_FT = zeros( n1, n2, n3);
 end
+
 % Take the first step- Euler. Element by element mulitplication
 if( flags.StepMeth == 0 ) % AB 1
   NlPf =  dt;
-  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+  [rho_FTnext] = DenStepperAB1cPf( prop, rho_FT, GammaCube_FT, NlPf );
 elseif( flags.StepMeth == 1 ) % AB 2
   NlPf = 3 * dt / 2;
   NlPrevPf = dt / 2;
-  [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT,dt);
+  [rho_FTnext] = DenStepperAB1cPf( prop, rho_FT, GammaCube_FT,dt);
   % Save prev Gamma if need be
   GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 2 ) % HAB1
-  NlPf = dt .* Prop;
-  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+  NlPf = dt .* prop;
+  [rho_FTnext] = DenStepperHAB1cPf( prop, rho_FT, GammaCube_FT, NlPf );
 elseif( flags.StepMeth == 3 ) % HAB2
-  NlPf = 3 * dt / 2 .* Prop;
-  NlPrevPf = dt / 2 .* Prop .* Prop;
-  [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, dt .* Prop );
+  NlPf = 3 * dt / 2 .* prop;
+  NlPrevPf = dt / 2 .* prop .* prop;
+  [rho_FTnext] = DenStepperHAB1cPf( prop, rho_FT, GammaCube_FT, dt .* prop );
   % Save prev Gamma if need be
   GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 4 ) % BHAB1
-  NlPf = dt / 2 .* ( 1 + Prop);
-  [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
+  NlPf = dt / 2 .* ( 1 + prop);
+  [rho_FTnext] = DenStepperBHAB1cPf( prop, rho_FT, GammaCube_FT, NlPf);
 elseif( flags.StepMeth == 5 ) % BHAB2
-  NlPf = dt / 2 * ( 2 + Prop );
+  NlPf = dt / 2 * ( 2 + prop );
   NlPrevPf = dt / 2;
   [rho_FTnext] = DenStepperBHAB1cPf( ...
-    Prop, rho_FT, GammaCube_FT, dt / 2 .* ( 1 + Prop) );
+    prop, rho_FT, GammaCube_FT, dt / 2 .* ( 1 + prop) );
   % Save prev Gamma if need be
   GammaCube_FTprev = GammaCube_FT;
 elseif( flags.StepMeth == 6 ) % Exponential Euler
-  GamProp = ( Prop - 1 ) ./ Lop;
-  GamProp( gridObj.k1ind0, gridObj.k2ind0, gridObj.k3ind0 ) = 0;
-  [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
+  gamProp = ( prop - 1 ) ./ lop;
+  gamProp( isnan( gamProp) ) = timeObj.dt;
+%   gamProp( gridObj.k1ind0, gridObj.k2ind0, gridObj.k3ind0 ) = 0;
+  [rho_FTnext] = DenStepperEEM1c( prop, gamProp, rho_FT,GammaCube_FT);
 else
   error('No stepping method selected');
 end
@@ -118,7 +120,7 @@ if shitIsFucked == 0
     rho_FT = rho_FTnext;
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions
-    if interObj.anyInter || flags.Drive
+    if interObj.anyInter || flags.Drive || flags.noise
       rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
@@ -126,29 +128,29 @@ if shitIsFucked == 0
     end
     % Take a step
     if( flags.StepMeth == 0 )
-      [rho_FTnext] = DenStepperAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+      [rho_FTnext] = DenStepperAB1cPf( prop, rho_FT, GammaCube_FT, NlPf );
     elseif( flags.StepMeth == 1 )
       [rho_FTnext] = DenStepperAB2cPf( ...
-        Prop, rho_FT,GammaCube_FT,GammaCube_FTprev,NlPf, NlPrevPf );
+        prop, rho_FT,GammaCube_FT,GammaCube_FTprev,NlPf, NlPrevPf );
       GammaCube_FTprev = GammaCube_FT;
     elseif( flags.StepMeth == 2 )
-      [rho_FTnext] = DenStepperHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf);
+      [rho_FTnext] = DenStepperHAB1cPf( prop, rho_FT, GammaCube_FT, NlPf);
     elseif( flags.StepMeth == 3 )
       [rho_FTnext] = DenStepperHAB2cPf( ...
-        Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
+        prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
       GammaCube_FTprev = GammaCube_FT;
     elseif( flags.StepMeth == 4 )
-      [rho_FTnext] = DenStepperBHAB1cPf( Prop, rho_FT, GammaCube_FT, NlPf );
+      [rho_FTnext] = DenStepperBHAB1cPf( prop, rho_FT, GammaCube_FT, NlPf );
     elseif( flags.StepMeth == 5 )
       [rho_FTnext] = DenStepperBHAB2cPf( ...
-        Prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
+        prop, rho_FT, GammaCube_FT,GammaCube_FTprev, NlPf, NlPrevPf );
       GammaCube_FTprev = GammaCube_FT;
     elseif( flags.StepMeth == 6 )
-      [rho_FTnext] = DenStepperEEM1c( Prop, GamProp, rho_FT,GammaCube_FT);
+      [rho_FTnext] = DenStepperEEM1c( prop, gamProp, rho_FT,GammaCube_FT);
     end
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
-      if interObj.anyInter == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 && flags.Drive == 0 && flags.noise == 0
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
       [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
@@ -205,7 +207,7 @@ if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
     % Turn it to a cube if it hasn't been yet
-    if interObj.anyInter == 0 && flags.Drive == 0
+    if interObj.anyInter == 0 && flags.Drive == 0 && flags.noise == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
