@@ -64,6 +64,8 @@ timeMaster.scaleDt = flagMaster.scaleDt;
 % 5: Gaussian perturbations with inhomogenous concentration 
 % 6: Delta function in polar order 
 % 7: Crystal
+% 8: Lorenzian
+rhoInitMaster.RandomAmp = 1; % Random perturbation coeffs
 rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
 rhoInitMaster.LoadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %

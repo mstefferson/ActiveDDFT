@@ -60,6 +60,8 @@ elseif rhoInit.IntCond == 7 % hexagon lattice
     fprintf('Error: box must be symmetric\n');
     error('Box must be symmetric');
   end
+elseif rhoInit.IntCond == 8 % hexagon lattice
+  rho = lorenzianIc(systemObj,gridObj);
 else
   fprintf('Error not written');
   error('Error not written');
