@@ -63,7 +63,6 @@ timeMaster.scaleDt = flagMaster.scaleDt;
 % {'load', loadStr, loadpath}: load density default path: ./src/InitialDensities/SavedRhos/
 % {'delP', dirAngle}: delta function in polar order
 % {'crys', latticeSpacing}: crystal
-% {'lorenz', width1, center1,  width2, center2, width3, center3}
 rhoInitMaster.intCond = {'iso'};
 %rhoInitMaster.loadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %
@@ -73,8 +72,9 @@ rhoInitMaster.intCond = {'iso'};
 % {'none'}: no perturbations
 % {'pw', int randomAmp, weight, int numModes1, int numModes2, int numModes3 }: planewave perturbations.
 % {'gauss', int homoFlag, amp1, var1, center1,  var2, center2, var3, center3}: gaussian perturbation. homoFlag for concentration
+% {'lorenz', width1, center1,  width2, center2, width3, center3}
 % 
-rhoInitMaster.perturb = {'pw', 1, 1e-3, 8, 8, 8}
+rhoInitMaster.perturb = { {'pw', 1, 1e-3, 8, 8, 8} };
 %rhoInitMaster.RandomAmp = 1; % Random perturbation coeffs
 %rhoInitMaster.NumModesX = 8; % Perturb # modes x
 %rhoInitMaster.NumModesY = 8; % Perturb # modes y

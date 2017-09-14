@@ -24,9 +24,8 @@ try
   systemObj.l2 = paramVec(5);
   particleObj.vD = paramVec(6);
   systemObj.bc = paramVec(7);
-  rhoInit.IntCond = paramVec(8);
-  flags.StepMeth = paramVec(9);
-  runObj.runID = paramVec(10);
+  flags.StepMeth = paramVec(8);
+  runObj.runID = paramVec(9);
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
@@ -121,7 +120,7 @@ try
   %Initialze density
   tIntDenID = tic;
   % Find non-driving steady state
-  if strcmp( particleObj.type, 'rods')
+  if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer' )
     % Number of coefficients
     Nc    = 20;
     % Equilib distribution. Don't let bc = 1.5
