@@ -134,10 +134,6 @@ try
     else
       [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
       rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
-      % shift it
-      rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
-      [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
-      rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
     end
   else
     rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );

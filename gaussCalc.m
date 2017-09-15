@@ -11,21 +11,21 @@ center2 = gaussParams.center2;
 xcgIndShift1 = mod( round(systemObj.n1 * center1 / systemObj.l1), systemObj.n1);
 xcgIndShift2 = mod( round(systemObj.n2 * center2 / systemObj.l2), systemObj.n2);
 % calc gaussian in 2 or 3d
-if systemObj.n3 > 1;
+if systemObj.n3 > 1
   var3 = gaussParams.var3;
   center3 = gaussParams.center3;
   xcgIndShift3 = mod( round(systemObj.n3 * center3 / systemObj.l3), systemObj.n3);
   [x2mesh, x1mesh, x3mesh] = meshgrid( x2, x1, x3);
   rho = gaussParams.amp ./ ( pi ^ (3/2) * var1 * var1 * var2 ) * ...
-    exp( -1/2 * ( (x1mesh / var1) .^ 2 + (x1mesh / var1) .^ 2 ...
-    + (x1mesh / var3) .^ 2 ) );
+    exp( -1/2 * ( (x1mesh / var1) .^ 2 + (x2mesh / var2) .^ 2 ...
+    + (x3mesh / var3) .^ 2 ) );
   % shift it
   rho = circshift( circshift( circshift( ...
     rho, xcgIndShift1, 1 ), xcgIndShift2, 2 ), xcgIndShift3, 3 );
 else
   [x2mesh, x1mesh] = meshgrid( x2, x1 );
-  rho = gaussParams.amp ./ ( pi ^ (3/2) * var1 * var1 * var2 ) * ...
-    exp( -1/2 * ( (x1mesh / var1) .^ 2 + (x1mesh / var1) .^ 2 ) );
+  rho = gaussParams.amp ./ ( pi * var1 * var1 ) * ...
+    exp( -1/2 * ( (x1mesh / var1) .^ 2 + (x2mesh / var2) .^ 2 ) );
   % shift it
   rho = circshift( circshift( rho, xcgIndShift1, 1 ), xcgIndShift2, 2 );
 end

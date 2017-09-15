@@ -8,7 +8,7 @@
 function [rho] = PwPerturbFT(rho,systemObj,perturbObj)
 
 % N3 can be commonly used. Declare it
-N3 = systemObj.n1 * systemObj.n2 * systemObj.n3;
+n3 = systemObj.n1 * systemObj.n2 * systemObj.n3;
 % Perturb coeff is the weight times equilbrium
 % concentration. Make sure it isn't too large
 % Find isotropic density
@@ -22,12 +22,13 @@ if min(min(min(rho))) < maxPerturb
 else
   coeffMax = isoDen .* perturbObj.amp;
 end
+
 % If it's not random, set Coeff ourside the loop
 % scale by N3 b/c of FT factor
-if perturbObj.RandomAmp == 0
-  coeff = coeffMax * N3 * ( 1 + sqrt(-1) );
+if perturbObj.randFlag == 0
+  coeff = coeffMax * n3 * ( 1 + sqrt(-1) );
 else
-  coeffTemp = coeffMax * N3;
+  coeffTemp = coeffMax * n3;
 end
 % Handle perturbations in Fourier space
 rhoFT = fftshift( fftn( rho ) );
@@ -55,7 +56,7 @@ m2 = perturbObj.numModes2;
 m3 = perturbObj.numModes3;
 perturb =  zeros( 2*m1 + 1, 2*m2 + 1, 2*m3 + 1 );
 
-if perturbObj.RandomAmp == 1;
+if perturbObj.randFlag == 1
   perturb( 1 : m1+1, 1 : m2+1, 1 : m3+1 ) = ...
     coeffTemp .* ( ( -1 + 2 .* rand( m1+1, m2+1, m3+1 ) ) + ...
     + sqrt(-1) .*  ( -1 + 2 .* rand( m1+1, m2+1, m3+1 ) ) );

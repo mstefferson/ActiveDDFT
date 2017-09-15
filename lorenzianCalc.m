@@ -11,9 +11,10 @@ center2 = lorenzParams.center2;
 xcgIndShift1 = mod( round(systemObj.n1 * center1 / systemObj.l1), systemObj.n1);
 xcgIndShift2 = mod( round(systemObj.n2 * center2 / systemObj.l2), systemObj.n2);
 % calc lorenzian in 2 or 3d
-if systemObj.n3 > 1;
+if systemObj.n3 > 1
   width3 = lorenzParams.width3;
   center3 = lorenzParams.center3;
+  xcgIndShift3 = mod( round(systemObj.n3 * center3 / systemObj.l3), systemObj.n3);
   [x2mesh, x1mesh, x3mesh] = meshgrid( x2, x1, x3);
   lorenz = lorenzParams.amp ./ ( pi * ( ( x1mesh / width1 ) .^ 2 ...
     + ( x2mesh / width2 ) .^ 2 ...
