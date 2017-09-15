@@ -7,14 +7,10 @@ if strcmp( rhoInit.intCond, 'iso' ) % iso
   fprintf('IC: isotropic \n' );
   % Initial distribution
   [rho] = IntDenCalcIso(systemObj);
-  % Perturb it
-  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif strcmp( rhoInit.intCond, 'eq' ) % eq
   fprintf('IC: equilbrium \n' );
   % Initial distribution
   [rho] = IntDenCalcEq(systemObj, particleObj, rhoInit);
-  % Perturb it
-  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif strcmp( rhoInit.intCond, 'nem' ) % nematic
   if systemObj.n3 > 1
     fprintf('IC: nematic \n' );
@@ -24,20 +20,14 @@ elseif strcmp( rhoInit.intCond, 'nem' ) % nematic
     fprintf('IC: nematic requested, but no angular grid! Going iso\n' );
     [rho] = IntDenCalcIso(systemObj);
   end
-  % Perturb it
-  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif strcmp( rhoInit.intCond, 'load' ) % load
-  fprintf('IC: loading %s \n', rhoInit.LoadName );
+  fprintf('IC: loading %s \n', rhoInit.loadName );
   % Initial distribution
-  [rho] = IntDenCalcLoaded2Drot(rhoInit.LoadName,systemObj);
-  % Perturb it
-  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
+  [rho] = IntDenCalcLoaded2Drot( [rhoInit.pathName rhoInit.loadName],systemObj);
 elseif strcmp( rhoInit.intCond, 'delP' ) % delta function in polar
    fprintf('IC: delta function in polar\n' );
   % delta function in polar order
   [rho] = deltaPolarIc(systemObj);
-  % Perturb it
-  [rho] = PwPerturbFT(rho,systemObj,rhoInit);
 elseif strcmp( rhoInit.intCond, 'crys' ) % hexagon lattice
   fprintf('IC: hexagonal lattice with spacing %.2f\n', ...
     rhoInit.crystalLattice(1) );
@@ -50,24 +40,37 @@ elseif strcmp( rhoInit.intCond, 'crys' ) % hexagon lattice
     fprintf('Error: box must be symmetric\n');
     error('Box must be symmetric');
   end
+elseif strcmp( rhoInit.intCond, 'gauss' )
+  rho = gaussCalc( systemObj, rhoInit, gridObj );
+elseif strcmp( rhoInit.intCond, 'lorenz' )
+  rho = lorenzianCalc( systemObj, rhoInit, gridObj );
 else
-  fprintf('Error not written');
-  error('Error not written');
+  fprintf('Cannot find desired IC. Setting to iso');
+  % Initial distribution
+  [rho] = IntDenCalcIso(systemObj);
 end
-% perturb it
-elseif strcmp( rhoInit.intCond, 'lorenz' ) % lorenzian lattice
-  rho = lorenzianIc(systemObj,gridObj);
-elseif rhoInit.IntCond == 4 || rhoInit.IntCond == 5
-  if rhoInit.IntCond == 4
-    fprintf('IC: gaussian perp with homogenous concentration \n' );
-  else
-    fprintf('IC: gaussian perp with inhomogenous concentration \n' );
+
+% Perturb it
+for ii = 1:rhoInit.numPerturb
+  perturbTemp = rhoInit.perturb{1};
   end
-  % Build eq first
-  [rho] = IntDenCalcEq(systemObj, particleObj, rhoInit);
+  % Plane wave perturb
+  if strcmp( perturbTemp, 'pw' )
+    rho = PwPerturbFT( rho, systemObj, perturbTemp );
+  % Lorenzian perturb
+  elseif strcmp( perturbTemp, 'lorenz' )
+    perturb = lorenzianCalc( systemObj, perturbTemp, gridObj );
+    rho = rho + perturb;
   % Gaussian perturb
-  [rho] = polarPerturbGauss( rho, systemObj, rhoInit, gridObj );
+  elseif strcmp( perturbTemp, 'lorenz' )
+    perturb = gaussCalc( systemObj, perturbTemp, gridObj );
+    rho = rho + perturb;
+  else
+    printf('Cannot find perturbation. Not perturbing\n')
+  end
 end
+% Fix negative rho if that happened.
+[rho] = FixNegDenFnc(rho);
 % Renormalize out here
 % Integrate first along the depth of matrix w.r.t theta, then across the
 % columns w.r.t x, then down the rows w.r.t. y

@@ -1,7 +1,7 @@
 function rhoInitObj = rhoInitManager( rhoInit, systemObj )
 % build structure
 rhoInitObj.intCondInput = rhoInit.intCond;
-rhoInitObj.intCond = rhoInit.intCond{1};
+rhoInitObj.type = rhoInit.intCond{1};
 % int cond
 if strcmp(rhoInit.intCond{1}, 'nem')
   if length( rhoInit.intCond ) ~= 1
@@ -40,7 +40,17 @@ elseif strcmp( rhoInit.intCond{1}, 'cry' )
   % set guess to delta function
   rhoInitObj.latticeSpc = rhoInit.intCond{2};
   rhoInitObj.sigGuess = rhoInit.intCond{3};
+elseif strcmp( rhoInit.intCond{1}, 'gauss' )
+  rhoInitObj = buildGaussIcObj( rhoInit.intCond, systemObj );
+  rhoInitObj.intCondInput = rhoInit.intCond;
+elseif strcmp( rhoInit.intCond{1}, 'lorenz' )
+  rhoInitObj = buildLorenzianIcObj( rhoInit.intCond, systemObj );
+  rhoInitObj.intCondInput = rhoInit.intCond;
+else
+  fprintf('Cannot find initial density. Setting to iso\n' )
+  rhoInitObj.type = 'iso';
 end
+
 
 % perturbations
 if isempty( rhoInit.perturb )
@@ -50,98 +60,141 @@ elseif strcmp( rhoInit.perturb{1,1}, 'none' )
   rhoInitObj.perturbList = {'none'};
   rhoInitObj.perturb{1}.type = 'none';
 else
-  numPerturb = size( rhoInit.perturb, 1 );
-  rhoInitObj.perturb = cell( numPerturb, 1 );
-  rhoInitObj.perturbList = cell( numPerturb, 1 );
+  numPerturb = length( rhoInit.perturb );
+  rhoInitObj.perturb = cell( 1, numPerturb );
+  rhoInitObj.perturbList = cell( 1, numPerturb );
+  rhoInitObj.perturbIds = [];
   for ii = 1:numPerturb
     perturbTemp = rhoInit.perturb{ii};
-    rhoInitObj.perturb{ii}.type = perturbTemp{1};
-    rhoInitObj.perturbList{ii} = perturbTemp{1};
     if strcmp( perturbTemp{1}, 'pw' )
-      if systemObj.n1 == 1
-        rhoInit.perturb{4} = 0;
-      end
-      if systemObj.n2 == 1
-        rhoInit.perturb{5} = 0;
-      end
-      if systemObj.n3 == 1
-        rhoInit.perturb{6} = 0;
-      end
-      % Don't perturb more more than you are allowed to
-      if( perturbTemp{4} >= systemObj.n1 / 2 )
-        perturbTemp{4} = floor(systemObj.n1 / 2) - 1;
-      end
-      if( perturbTemp{5} >= systemObj.n2 / 2 )
-        perturbTemp{5} = floor(systemObj.n2 / 2) - 1;
-      end
-      if( perturbTemp{6} >= systemObj.n3 / 2 )
-        perturbTemp{6} = floor(systemObj.n3 / 2) - 1;
-      end
-      rhoInitObj.perturb{ii}.randFlag = perturbTemp{2};
-      rhoInitObj.perturb{ii}.perturbWeight = perturbTemp{3};
-      rhoInitObj.perturb{ii}.numModes1 = perturbTemp{4};
-      rhoInitObj.perturb{ii}.numModes2 = perturbTemp{5};
-      rhoInitObj.perturb{ii}.numModes3 = perturbTemp{6};
+      rhoInitObj.perturbIds = [rhoInitObj.perturbIds 'p'];
+      rhoInitObj.perturbList{ii} = perturbTemp{1};
+      perturbObj = buildPwIcObj( perturbTemp, systemObj );
+      rhoInitObj.perturb{ii} = perturbObj;
+    elseif strcmp( perturbTemp{1}, 'gauss' )
+      rhoInitObj.perturbIds = [rhoInitObj.perturbIds 'g'];
+      rhoInitObj.perturbList{ii} = perturbTemp{1};
+      perturbObj = buildGaussIcObj( perturbTemp, systemObj );
+      rhoInitObj.perturb{ii} = perturbObj;
+    elseif strcmp( perturbTemp{1}, 'lorenz')
+      rhoInitObj.perturbIds = [rhoInitObj.perturbIds 'l'];
+      rhoInitObj.perturbList{ii} = perturbTemp{1};
+      perturbObj = buildLorenzianIcObj( perturbTemp, systemObj );
+      rhoInitObj.perturb{ii} = perturbObj;
+    else
+      fprintf('Warning, cannot find requested perturbations\n')
     end
-    if strcmp( perturbTemp{1}, 'gauss' )
-      if length( perturbTemp ) < 7
-        fprintf('user error: setting gaussian perturb to default values.\n')
-        perturbTemp{2} = 0;
-        perturbTemp{3} = 1e-3;
-        perturbTemp{4} = systemObj.l1 / 2;
-        perturbTemp{5} = systemObj.l1 / 2;
-        perturbTemp{6} = systemObj.l2 / 2;
-        perturbTemp{7} = systemObj.l2 / 2;
-      end
-      %  Make sure variance isn't zero if doing polar
-      if perturbTemp{3} == 0; perturbTemp{3} = min(systemObj.l1)/2; end
-      if perturbTemp{5} == 0; perturbTemp{5} = min(systemObj.l2)/2; end
-      % set obj
-      rhoInitObj.perturb{ii}.homoFlag = perturbTemp{2};
-      rhoInitObj.perturb{ii}.amp = perturbTemp{2};
-      rhoInitObj.perturb{ii}.var1 = perturbTemp{3};
-      rhoInitObj.perturb{ii}.center1 = perturbTemp{4};
-      rhoInitObj.perturb{ii}.var2 = perturbTemp{5};
-      rhoInitObj.perturb{ii}.center2 = perturbTemp{6};
-      if systemObj.n3 > 1
-        if length( perturbTemp ) < 9
-          fprintf('user error: setting gaussian perturb to default values.\n')
-          perturbTemp{8} = systemObj.l2 / 2;
-          perturbTemp{9} = systemObj.l3 / 2;
-        end
-        if perturbTemp{7} == 0; perturbTemp{7} = min(systemObj.l3)/2; end
-        rhoInitObj.perturb{ii}.var2 = rhoInit{5};
-        rhoInitObj.perturb{ii}.center2 = rhoInit{6};
-      end
-    end % gauss
-    if strcmp( perturbTemp{1}, 'lorenz')
-      numSet = length( perturbTemp{:} );
-      if numSet < 3
-        fprintf('user error: setting lorenzian pos 1 values [ l1/2, l1/2 ].\n')
-        perturbTemp{1} = systemObj.l1/2;
-        perturbTemp{3} = systemObj.l1/2;
-      end
-      if numSet < 5
-        fprintf('user error: setting lorenzian pos 2 values [ l2/2, l2/2 ].\n')
-        perturbTemp{4} = systemObj.l2/2;
-        perturbTemp{5} = systemObj.l2/2;
-      end
-      rhoInitObj.width1 = perturbTemp{2};
-      rhoInitObj.center1 = perturbTemp{3};
-      rhoInitObj.width2 = perturbTemp{4};
-      rhoInitObj.center2 = perturbTemp{5};
-      if systemObj.n3 > 1
-        rhoInitObj.n3Flag = 1;
-        if numSet < 7
-          fprintf('user error: setting lorenzian pos 2 values [ l1/2, l1/2 ].\n')
-          perturbTemp{6} = systemObj.l3/2;
-          perturbTemp{7} = systemObj.l3/2;
-        end
-        rhoInitObj.perturb{ii}.width3 = perturbTemp{4};
-        rhoInitObj.perturb{ii}.center3 = perturbTemp{5};
-      else
-        rhoInitObj.n3Flag = 0;
-      end
-    end % lorenztian
   end % loop
+  % get rid of empty
+  rhoInitObj.perturb = ...
+    rhoInitObj.perturb( ~cellfun('isempty', rhoInitObj.perturb) );
+  rhoInitObj.perturbList = ...
+    rhoInitObj.perturbList( ~cellfun('isempty', rhoInitObj.perturbList) );
+  rhoInitObj.numPerturb = length( rhoInitObj.perturbList );
 end % if perturbations
+end
+
+% functions
+function pwObj = buildPwIcObj( pwIc, systemObj )
+pwObj.type = 'pw';
+if systemObj.n1 == 1
+  pwIc{4} = 0;
+end
+if systemObj.n2 == 1
+  pwIc{5} = 0;
+end
+if systemObj.n3 == 1
+  pwIc{6} = 0;
+end
+% Don't perturb more more than you are allowed to
+if( pwIc{4} >= systemObj.n1 / 2 )
+  pwIc{4} = floor(systemObj.n1 / 2) - 1;
+end
+if( pwIc{5} >= systemObj.n2 / 2 )
+  pwIc{5} = floor(systemObj.n2 / 2) - 1;
+end
+if( pwIc{6} >= systemObj.n3 / 2 )
+  pwIc{6} = floor(systemObj.n3 / 2) - 1;
+end
+pwObj.randFlag = pwIc{2};
+pwObj.amp = pwIc{3};
+pwObj.numModes1 = pwIc{4};
+pwObj.numModes2 = pwIc{5};
+pwObj.numModes3 = pwIc{6};
+end
+function gaussObj = buildGaussIcObj( gaussIc, systemObj )
+gaussObj.type = 'gauss';
+numSet = length( gaussIc );
+if numSet < 2
+  ampVal = 1e-3;
+  fprintf('user error: no amplitude given. setting to %f.\n', ampVal)
+  gaussIc{2} = ampVal;
+end
+if numSet < 4
+  fprintf('user error: setting gaussian pos 1 values [ l1/2, l1/2 ].\n')
+  gaussIc{3} = systemObj.l1/2;
+  gaussIc{4} = systemObj.l1/2;
+end
+if numSet < 6
+  fprintf('user error: setting gaussian pos 2 values [ l2/2, l2/2 ].\n')
+  gaussIc{5} = systemObj.l2/2;
+  gaussIc{6} = systemObj.l2/2;
+end
+%  Make sure variance isn't zero if doing polar
+if gaussIc{3} == 0; gaussIc{3} = 1; end
+if gaussIc{5} == 0; gaussIc{5} = 1; end
+gaussObj.amp = gaussIc{2};
+gaussObj.var1 = gaussIc{3};
+gaussObj.center1 = gaussIc{4};
+gaussObj.var2 = gaussIc{5};
+gaussObj.center2 = gaussIc{6};
+if systemObj.n3 > 1
+  if numSet < 7
+    fprintf('user error: setting gaussian pos 2 values [ l3/2, l3/2 ].\n')
+    gaussIc{7} = systemObj.l3/2;
+    gaussIc{8} = 0;
+  end
+  if gaussIc{7} == 0; gaussIc{7} = 1; end
+  gaussObj.var3 = gaussIc{7};
+  gaussObj.center3 = gaussIc{8};
+end
+end
+function lorenzObj = buildLorenzianIcObj( lorenzIc, systemObj )
+lorenzObj.type = 'lorenz';
+numSet = length( lorenzIc );
+if numSet < 2
+  ampVal = 1e-3;
+  fprintf('user error: no amplitude given. setting to %f.\n', ampVal)
+  lorenzIc{2} = ampVal;
+end
+if numSet < 4
+  fprintf('user error: setting lorenzian pos 1 values [ l1/2, l1/2 ].\n')
+  lorenzIc{3} = systemObj.l1/2;
+  lorenzIc{4} = systemObj.l1/2;
+end
+if numSet < 6
+  fprintf('user error: setting lorenzian pos 2 values [ l2/2, l2/2 ].\n')
+  lorenzIc{5} = systemObj.l2/2;
+  lorenzIc{6} = systemObj.l2/2;
+end
+% don't let variance be zero
+if lorenzIc{3} == 0; lorenzIc{3} = systemObj.l1/2; end
+if lorenzIc{5} == 0; lorenzIc{5} = systemObj.l2/2; end
+lorenzObj.amp = lorenzIc{2};
+lorenzObj.width1 = lorenzIc{3};
+lorenzObj.center1 = lorenzIc{4};
+lorenzObj.width2 = lorenzIc{5};
+lorenzObj.center2 = lorenzIc{6};
+if systemObj.n3 > 1
+  if numSet < 7
+    fprintf('user error: setting lorenzian pos 2 values [ l1/2, l1/2 ].\n')
+    lorenzIc{7} = systemObj.l3/2;
+    lorenzIc{8} = 0;
+  end
+  % don't let variance be zero
+  if lorenzIc{3} == 0; lorenzIc{7} = 1; end
+  lorenzObj.width3 = lorenzIc{7};
+  lorenzObj.center3 = lorenzIc{8};
+end
+end
+

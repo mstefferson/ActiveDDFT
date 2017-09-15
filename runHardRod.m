@@ -124,8 +124,7 @@ extStr = externVObj.str;
 interactParam = interactLrVObj.param;
 interactStr = interactLrVObj.str;
 % rhoInit str
-initStr = [ rhoInit.intCond{1} rhoInit.perturb{1} ];
-keyboard
+initStr = [ rhoInitObj.type '_' rhoInitObj.perturbIds ];
 % Loops over all run
 fprintf('Starting loop over runs\n');
 ticID = tic;
