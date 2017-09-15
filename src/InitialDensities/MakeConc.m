@@ -27,13 +27,13 @@ elseif strcmp( rhoInit.type, 'load' ) % load
 elseif strcmp( rhoInit.type, 'delP' ) % delta function in polar
   fprintf('IC: delta function in polar\n' );
   % delta function in polar order
-  [rho] = deltaPolarIc(systemObj);
+  [rho] = deltaPolarIc(systemObj, rhoInit.shiftAngle);
 elseif strcmp( rhoInit.type, 'crys' ) % hexagon lattice
-  fprintf('IC: hexagonal lattice with spacing %.2f\n', ...
-    rhoInit.crystalLattice(1) );
+  fprintf('IC: hexagonal lattice. Attempting spacing %.2f\n', ...
+    rhoInit.latticeSpc );
   if systemObj.n1 == systemObj.n2 && systemObj.l1 == systemObj.l2
     rho = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
-      rhoInit.crystalLattice(1), rhoInit.crystalLattice(2) );
+      rhoInit.latticeSpc, rhoInit.sigGuess );
     % rep it
     rho =  1 / systemObj.l3 * repmat( rho, [1,1,systemObj.n3] );
   else
@@ -51,7 +51,6 @@ else
   % Initial distribution
   [rho] = IntDenCalcIso(systemObj);
 end
-
 % Perturb it
 for ii = 1:rhoInit.numPerturb
   perturbTemp = rhoInit.perturb{ii};

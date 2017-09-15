@@ -4,7 +4,7 @@ rhoInitObj.intCondInput = rhoInit.intCond;
 rhoInitObj.type = rhoInit.intCond{1};
 % int cond
 if strcmp(rhoInit.intCond{1}, 'nem')
-  if length( rhoInit.intCond ) ~= 1
+  if length( rhoInit.intCond ) == 1
     fprintf('user error: setting nem shift angle to 0.\n')
     rhoInit.intCond = {'nem',0};
   end
@@ -24,17 +24,18 @@ elseif strcmp( rhoInit.intCond{1}, 'load')
   rhoInitObj.loadName = rhoInit.intCond{2};
   rhoInitObj.pathName = rhoInit.intCond{3};
 elseif strcmp( rhoInit.intCond{1}, 'delP')
-  if length( rhoInit.intCond ) ~= 1
+  if length( rhoInit.intCond ) == 1
     fprintf('user error: setting polar shift angle to 0.\n')
-    rhoInit.intCond = {'nem',0};
+    rhoInit.intCond = {'delP',0};
   end
   rhoInitObj.shiftAngle = rhoInit.intCond{2};
-elseif strcmp( rhoInit.intCond{1}, 'cry' )
+elseif strcmp( rhoInit.intCond{1}, 'crys' )
   if length( rhoInit.intCond ) == 1
     fprintf('user error: setting crystal lattice spacing to 2.25.\n')
     rhoInit.intCond{2} = 2.25;
-    % don't make people guess gaussian guess width, but it is an option
-  elseif length( rhoInit.intCond ) == 1
+  end
+  % don't make people guess gaussian guess width, but it is an option
+  if length( rhoInit.intCond ) == 2
     rhoInit.intCond{3} = rhoInit.intCond{2} ./ systemObj.l1;
   end
   % set guess to delta function
@@ -51,19 +52,21 @@ else
   rhoInitObj.type = 'iso';
 end
 
-
 % perturbations
+rhoInitObj.perturbIds = [];
 if isempty( rhoInit.perturb )
   rhoInitObj.perturbList = {'none'};
-  rhoInitObj.perturb{1}.type = 'none';
+  rhoInitObj.perturb = 'none';
+  rhoInitObj.numPerturb = 0;
 elseif strcmp( rhoInit.perturb{1,1}, 'none' )
   rhoInitObj.perturbList = {'none'};
-  rhoInitObj.perturb{1}.type = 'none';
+  rhoInitObj.perturb = 'none';
+  rhoInitObj.numPerturb = 0;
 else
+  rhoInitObj.perturbIds = ['_'];
   numPerturb = length( rhoInit.perturb );
   rhoInitObj.perturb = cell( 1, numPerturb );
   rhoInitObj.perturbList = cell( 1, numPerturb );
-  rhoInitObj.perturbIds = [];
   for ii = 1:numPerturb
     perturbTemp = rhoInit.perturb{ii};
     if strcmp( perturbTemp{1}, 'pw' )
@@ -92,9 +95,11 @@ else
     rhoInitObj.perturbList( ~cellfun('isempty', rhoInitObj.perturbList) );
   rhoInitObj.numPerturb = length( rhoInitObj.perturbList );
 end % if perturbations
+% build str
+rhoInitObj.fileStr = [rhoInitObj.type rhoInitObj.perturbIds];
 end
 
-% functions
+%%%% functions
 function pwObj = buildPwIcObj( pwIc, systemObj )
 pwObj.type = 'pw';
 if systemObj.n1 == 1
