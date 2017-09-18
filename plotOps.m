@@ -102,14 +102,12 @@ nTitle = '$$ N $$';
 cTemp =  cScale * OPs.C;
 polarTempX = OPs.POPx(SubInd1,SubInd2,:);
 polarTempY = OPs.POPy(SubInd1,SubInd2,:);
-maxPolar = max( max( max( OPs.POP(SubInd1,SubInd2,:) ) ) );
-polarTempX = polarTempX ./ maxPolar;
-polarTempY = polarTempY ./ maxPolar;
 nemTempX = OPs.NOPx(SubInd1,SubInd2,:);
 nemTempY = OPs.NOPy(SubInd1,SubInd2,:);
-maxNem = max( max( max( OPs.NOP(SubInd1,SubInd2,:) ) ) );
-nemTempX = nemTempX .* OPs.NOPx(SubInd1,SubInd2,:) ./ maxNem;
-nemTempY = nemTempY .* OPs.NOPy(SubInd1,SubInd2,:) ./ maxNem;
+nemTemp = OPs.NOP(SubInd1,SubInd2,:);
+% scale nematic eigenvectors by their value
+nemTempX = nemTempX .* nemTemp;
+nemTempY = nemTempY .* nemTemp;
 % These matrices will need to be transposed to correct for x and y
 % loop over frames
 ii = 1;

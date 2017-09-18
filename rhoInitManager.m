@@ -64,9 +64,18 @@ elseif strcmp( rhoInit.perturb{1,1}, 'none' )
   rhoInitObj.numPerturb = 0;
 else
   rhoInitObj.perturbIds = ['_'];
+  % fix if it's not a list of lists.
+  if ischar( rhoInit.perturb{1} )
+    numPerturb = 1;
+    rhoInitTemp = rhoInit.perturb;
+    rhoInitObj.perturb = cell( 1, numPerturb );
+    rhoInit.perturb = cell( 1, numPerturb );
+    rhoInit.perturb{1} = rhoInitTemp;
+  end
   numPerturb = length( rhoInit.perturb );
   rhoInitObj.perturb = cell( 1, numPerturb );
   rhoInitObj.perturbList = cell( 1, numPerturb );
+  % loop over parameters
   for ii = 1:numPerturb
     perturbTemp = rhoInit.perturb{ii};
     if strcmp( perturbTemp{1}, 'pw' )

@@ -85,7 +85,6 @@ fprintf('Starting loop over runs\n');
   systemObj.l1,systemObj.l2,systemObj.l3);
 % Make rho
 [rho] = MakeConc(systemObj,particleObj,rhoInitObj,gridObj);
-keyboard
 % Calc ops
 if systemObj.n3 > 1
   % Commonly used trig functions
@@ -106,13 +105,8 @@ else
   figure()
   pcolor( gridObj.x1, gridObj.x2, cScale * C' )
 end
-
 dateTime =  datestr(now);
-movefile('ParamsRunning.mat', 'ParamsFinished.mat');
-runHr = floor( runTime / 3600); runTime = runTime - runHr*3600;
-runMin = floor( runTime / 60);  runTime = runTime - runMin*60;
-runSec = floor(runTime);
-fprintf('RunTime: %.2d:%.2d:%.2d (hr:min:sec)\n', runHr, runMin,runSec);
 fprintf('Finished RunHardRod: %s\n', dateTime);
+
 
 

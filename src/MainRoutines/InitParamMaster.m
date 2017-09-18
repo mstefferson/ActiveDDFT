@@ -66,7 +66,6 @@ timeMaster.scaleDt = flagMaster.scaleDt;
 % {'gauss', amp, var1, center1,  var2, center2, var3, center3} 
 % {'lorenz', amp, width1, center1,  width2, center2, width3, center3}
 rhoInitMaster.intCond = {'iso'};
-%rhoInitMaster.loadName  = ''; % File name to load if IC 3
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbation weight is a fraction of the isotropic density
 % If about a nematic, code will correct for negative densities.

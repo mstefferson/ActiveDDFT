@@ -146,17 +146,15 @@ if rhoSlice.plotInset
   axhinset.NextPlot = 'replaceChildren';
 end
 % Scale order parameters by it's max value to for it changes.
-cTemp =  cScale * OP.C_rec;
-polarTempX = OP.POPx_rec(subInd1,subInd2,:);
-polarTempY = OP.POPy_rec(subInd1,subInd2,:);
-maxPolar = max( max( max( OP.POP_rec(subInd1,subInd2,:) ) ) );
-polarTempX = polarTempX ./ maxPolar;
-polarTempY = polarTempY ./ maxPolar;
-nemTempX = OP.NOPx_rec(subInd1,subInd2,:);
-nemTempY = OP.NOPy_rec(subInd1,subInd2,:);
-maxNem = max( max( max( OP.NOP_rec(subInd1,subInd2,:) ) ) );
-nemTempX = nemTempX .* OP.NOP_rec(subInd1,subInd2,:) ./ maxNem;
-nemTempY = nemTempY .* OP.NOP_rec(subInd1,subInd2,:) ./ maxNem;
+cTemp =  cScale * OPs.C;
+polarTempX = OPs.POPx(SubInd1,SubInd2,:);
+polarTempY = OPs.POPy(SubInd1,SubInd2,:);
+nemTempX = OPs.NOPx(SubInd1,SubInd2,:);
+nemTempY = OPs.NOPy(SubInd1,SubInd2,:);
+nemTemp = OPs.NOP(SubInd1,SubInd2,:);
+% scale nematic eigenvectors by their value
+nemTempX = nemTempX .* nemTemp;
+nemTempY = nemTempY .* nemTemp;
 % These matrices will need to be transposed to correct for x and y
 % loop over frames
 try
