@@ -146,12 +146,13 @@ if rhoSlice.plotInset
   axhinset.NextPlot = 'replaceChildren';
 end
 % Scale order parameters by it's max value to for it changes.
-cTemp =  cScale * OPs.C;
-polarTempX = OPs.POPx(SubInd1,SubInd2,:);
-polarTempY = OPs.POPy(SubInd1,SubInd2,:);
-nemTempX = OPs.NOPx(SubInd1,SubInd2,:);
-nemTempY = OPs.NOPy(SubInd1,SubInd2,:);
-nemTemp = OPs.NOP(SubInd1,SubInd2,:);
+cTemp =  cScale * OP.C_rec;
+maxP = max( OP.POP_rec(:) );
+polarTempX = OP.POPx_rec(subInd1,subInd2,:) ./ maxP;
+polarTempY = OP.POPy_rec(subInd1,subInd2,:) ./ maxP;
+nemTempX = OP.NOPx_rec(subInd1,subInd2,:);
+nemTempY = OP.NOPy_rec(subInd1,subInd2,:);
+nemTemp = OP.NOP_rec(subInd1,subInd2,:);
 % scale nematic eigenvectors by their value
 nemTempX = nemTempX .* nemTemp;
 nemTempY = nemTempY .* nemTemp;
