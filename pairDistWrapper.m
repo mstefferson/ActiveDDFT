@@ -1,6 +1,9 @@
 % Wrapper for pairDistribution calculator
 %
 function pairDistWrapper()
+% add paths just in case
+currentDir = pwd;
+addpath( genpath( [currentDir '/src'] ) );
 % grab them from a specific dir using 'path4pairdist.m'. Or, run with all 
 % files in WD
 if exist('path4pairdist.m','file')

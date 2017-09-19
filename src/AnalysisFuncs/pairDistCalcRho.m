@@ -15,9 +15,6 @@ elseif isempty( saveName )
 else
   saveMe = 1;
 end
-% add paths just in case
-currentDir = pwd;
-addpath( genpath( [currentDir '/src'] ) );
 % build phi
 [n1,n2,n3] = size( rho );
 dx1 = l1 ./ n1;
