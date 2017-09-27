@@ -26,6 +26,9 @@ try
   systemObj.bc = paramVec(7);
   flags.StepMeth = paramVec(8);
   runObj.runID = paramVec(9);
+  particleObj.interactLrV = interactLrV{paramVec(10)};
+  particleObj.externalV = externalV{paramVec(11)};
+  % set some other parameters
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
@@ -47,10 +50,6 @@ try
   timeObj.scaleDt = scaleDt;
   timeObj.dt_orig = dtOrig;
   timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
-  % interact pot
-  particleObj.interactLrV = interactLrV;
-  % external pot
-  particleObj.externalV = externalV;
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];

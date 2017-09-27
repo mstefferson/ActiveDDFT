@@ -96,13 +96,13 @@ end
 % external potentials
 fprintf('Building external potential \n' )
 nVec = [systemObj.n1 systemObj.n2 systemObj.n3];
-[ particleObj.externalV] = ...
+particleObj.externalV = ...
   checkExtVDim( particleObj.externalV, nVec );
-[ particleObj.interactLrV] = ...
+particleObj.interactLrV = ...
   checkInteractVDim( particleObj.interactLrV, systemObj.n3 );
-[externVObj] = potRunManager( particleObj.externalV, 0 );
+externVObj = potRunManager( particleObj.externalV, 0 );
 % mean field interactions
-[interactLrVObj] = potRunManager( particleObj.interactLrV, 1 );
+interactLrVObj = potRunManager( particleObj.interactLrV, 1 );
 % Make paramMat
 fprintf('Building parameter mat \n');
 [paramMat, numRuns] = ...
@@ -120,44 +120,36 @@ paramRun     = paramMat(9,:); paramInteractInds = paramMat(10,:);
 paramExtInds = paramMat(11,:);
 % potentials cells
 extParam = externVObj.param;
-extStr = externVObj.str;
 interactParam = interactLrVObj.param;
-interactStr = interactLrVObj.str;
+% set-up strs
+interactStr = cell(1,numRuns);
+extStr = cell(1,numRuns);
+for ii = 1:numRuns
+  interactStr{ii} = interactLrVObj.str{ paramInteractInds(ii) };
+  extStr{ii} = externVObj.str{ paramExtInds(ii) };
+end
 % rhoInit str
 initStr = rhoInitObj.fileStr;
+% set-up parfor
+if numRuns > 1 && flags.parforFlag
+  parobj = gcp;
+  numWorkers = parobj.NumWorkers;
+  flags.MakeMovies = 0;
+else
+  numWorkers = 0;
+end
 % Loops over all run
+denRecObj = cell(numRuns,1);
 fprintf('Starting loop over runs\n');
 ticID = tic;
-if numRuns > 1
-  %parobj = gcp;
-  %fprintf('I have hired %d workers\n',parobj.NumWorkers);
-  for ii = 1:numRuns
-    % Assign parameters
-    paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
-      paraml2(ii) paramvD(ii) parambc(ii) paramSM(ii)  paramRun(ii)];
-    % Name the file
-    filename = [ 'Hr' ptype, interHb, ...
-      interactStr{paramInteractInds(ii)},  extStr{paramExtInds(ii)}, ...
-      '_diag' num2str( diagOp ) ...
-      '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
-      '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
-      '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
-      '_IC' initStr '_SM' num2str( paramSM(ii), '%d'  ) ...
-      '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
-    fprintf('\nStarting %s \n', filename);
-    [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-      runObj, timeObj, rhoInitObj, flags, ...
-      interactParam{paramInteractInds(ii)},extParam{paramExtInds(ii)} );
-    fprintf('Finished %s \n', filename);
-  end
-else
-  ii = 1;
+parfor (ii = 1:numRuns, numWorkers)
   % Assign parameters
   paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
-    paraml2(ii) paramvD(ii) parambc(ii) paramSM(ii)  paramRun(ii)];
+    paraml2(ii) paramvD(ii) parambc(ii) paramSM(ii)  paramRun(ii)...
+    paramInteractInds(ii) paramExtInds(ii)];
   % Name the file
   filename = [ 'Hr' ptype, interHb, ...
-    interactStr{paramInteractInds(ii)},  extStr{paramExtInds(ii)}, ...
+    interactStr{ ii },  extStr{ ii }, ...
     '_diag' num2str( diagOp ) ...
     '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
     '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
@@ -165,11 +157,13 @@ else
     '_IC' initStr '_SM' num2str( paramSM(ii), '%d'  ) ...
     '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
   fprintf('\nStarting %s \n', filename);
-  [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
+  [denRecObjTemp] = ddftMain( filename, paramvec, systemObj, particleObj,...
     runObj, timeObj, rhoInitObj, flags, ...
-    interactParam{paramInteractInds(ii)},extParam{paramExtInds(ii)} );
+    interactParam,extParam );
+  denRecObj{ii} = denRecObjTemp;
   fprintf('Finished %s \n', filename);
 end
+
 runTime = toc(ticID);
 dateTime =  datestr(now);
 movefile('ParamsRunning.mat', 'ParamsFinished.mat');

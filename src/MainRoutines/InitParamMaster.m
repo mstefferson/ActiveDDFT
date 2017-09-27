@@ -2,6 +2,7 @@
 % Parameter inializer for runHardRod
 % Main flagMaster
 flagMaster.SaveMe       = 1; % Saving
+flagMaster.parforFlag   = 0; % Saving
 flagMaster.Verbose      = 0; % Prints run times
 flagMaster.DiagLop      = 1; % Diag operator = 1. off diag = 0
 flagMaster.MakeMovies   = 0; % No movies if save is zero
