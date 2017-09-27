@@ -2,12 +2,8 @@
 % you box using linear interpolation
 
 function [ rho ] = IntDenCalcLoaded2Drot( filename, systemObj)
-% paths
-path2file = './src/InitialDensities/SavedRhos/';
-% path2file = './';
-loadname = [path2file filename];
 % load it. rho should be the name of the saved variable
-load( loadname );
+load( filename );
 % Now fit it to the box 
 [n1iTemp, n2iTemp, n3iTemp] = size( rho );
 % Put it in a box of size one and wrap rho b/c of PBC

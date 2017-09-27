@@ -4,8 +4,8 @@
 %
 function [gridObj] = GridMakerPBCxk(n1,n2,n3,l1,l2,l3)
 % Make pos grid spacings
-dx1   = l1/n1;
-dx2   = l2/n2;
+dx1 = l1/n1;
+dx2 = l2/n2;
 dx3 = l3/n3;
 % Make vectors and grids
 gridObj.x1 = dx1 * ( -n1/2: n1/2 - 1 );

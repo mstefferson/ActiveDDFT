@@ -17,8 +17,7 @@ function f = DistBuilderExpCos2Dsing(Nc,phi,Coeff)
 
 CosSum = zeros(1, length(phi) );
 for i = 1:Nc      
-          CosSum     = CosSum + Coeff(i) * cos(2*i*phi);    
+  CosSum     = CosSum + Coeff(i) * cos(2*i*phi);    
 end
 %        Normalize it again to be safe.
  f = exp( CosSum ) ./ (trapz_periodic( phi, exp( CosSum ) ) );
-% keyboard

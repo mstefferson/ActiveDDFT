@@ -45,22 +45,14 @@ for i = 1:Nc
         
         %         keyboard
         for j = 1:i
-            %             keyboard
-%             CoeffTempVec_next(j) = pi * bc * d2nVec(j) ...
-%                 * ( trapz( phi, cos(2*j*phi) .* exp(CosSum) ) ./ ...
-%                 (trapz( phi, exp(CosSum) ) ) );
-
-% If you make phi periodic, need to integrate it as a periodic function
-CoeffTempVec_next(j) = pi * bc * d2nVec(j) ...
-                * ( trapz_periodic( phi, cos(2*j*phi) .* exp(CosSum) ) ./ ...
-                (trapz_periodic( phi, exp(CosSum) ) ) );
+          % If you make phi periodic, need to integrate it as a periodic function
+          CoeffTempVec_next(j) = pi * bc * d2nVec(j) ...
+              * ( trapz_periodic( phi, cos(2*j*phi) .* exp(CosSum) ) ./ ...
+              (trapz_periodic( phi, exp(CosSum) ) ) );
         end
-        
         counter = counter + 1;
-%         keyboard
     end % End coefficient interation
     
-%         keyboard
     % Update the matrix
     CoeffMat(i,:)   = CoeffTempVec_next;
     
