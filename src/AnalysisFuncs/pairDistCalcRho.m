@@ -3,11 +3,11 @@
 % Calculates the density dependent pair correlation function
 % g(r,r') = rho^(2) ./ rho^(1)rho^(1)
 %
-function [pDist] = pairDistCalcRho( rho, l1, l2, lRod, calcOpDistFlag, ...
+function [pDist] = pairDistCalcRho( rho, indsWant, indsDim, l1, l2, lRod, calcG1G2Flag, ...
   plotflag, saveName )
 % set saveMe
 if nargin == 4
-  calcOpDistFlag = 0;
+  calcG1G2Flag = 0;
   plotflag = 0;
   saveMe = 0;
 elseif nargin == 5
@@ -21,8 +21,24 @@ elseif isempty( saveName )
 else
   saveMe = 1;
 end
-% build phi
+% get sizes
 [n1,n2,n3] = size( rho );
+% get inds to integrate
+if indsDim == 1
+  inds1 = indsWant;
+  inds2 = 1:n2;
+elseif indsDim == 2
+  inds1 = 1:n1;
+  inds2 = indsWant;
+else
+  error('Incorrect dimension')
+end
+
+%[inds1, inds2] =  combvec( inds1, inds2 );
+numInds1 = length( inds1 );
+numInds2 = length( inds2 );
+
+% build grid
 dx1 = l1 ./ n1;
 dx2 = l2 ./ n2;
 dphi = 2 * pi / n3;
@@ -31,67 +47,26 @@ x2 = dx2 .* (-n2/2:1:n2/2-1 );
 phi = 0 : dphi : 2*pi - dphi;
 % new mayer: integrate over angles from the start
 [mayer] = mayerFncHrLabFrame( n1, n2, n3, l1, l2, lRod );
-expV =  mayer + 1;
-delta0 = zeros( n1, n2); % for pair dist
-delta1 = zeros( n1, n2); % for polar dist
-delta2 = zeros( n1, n2); % for nem dist
-intOverRprime0= zeros( n3, n3 );
-intOverRprime1= zeros( n3, n3 );
-intOverRprime2= zeros( n3, n3 );
-% set inds
-allInds1 = 1:n1;
-allInds2 = 1:n2;
-allInds3 = 1:n3;
-mayerInds1 = [0:n1/2 -n1/2+1:1:-1];
-mayerInds2 = [0:n2/2 -n2/2+1:1:-1];
-mayerInds3 = [0:n3/2 -n3/2+1:1:-1];
-% take the cos once
-cosPhiMayInds = cos(mayerInds3);
-cosSqrPhiMayInds = cos(mayerInds3).^2;
+% initialize intergrator class
+pIntegrator = PairDistIntegratorClass( n1, n2, n3, calcG1G2Flag, x1, x2, phi, mayer );
+delta0 = zeros( numInds1, numInds2); % for pair dist
+delta1 = zeros( numInds1, numInds2); % for polar dist
+delta2 = zeros( numInds1, numInds2); % for nem dist
 % track progress
 ticId = tic;
 trackProgMod =  ceil( n1 / 100);
 % calculate the pair dist
-for ii = 1:n1
-  % set x
-  r1Temp = mayerInds1(ii); % Actual location of ii
-  % set x+x'
-  shiftInds1 = mod( (r1Temp-1) + allInds1 - 1, n1 ) + 1;
-  for jj = 1:n2
-    % set y
-    r2Temp = mayerInds2(jj);
-    % set y+y'
-    shiftInds2 = mod( (r2Temp-1) +  allInds2 - 1, n2 ) + 1;
-    % integrate of r' each u and u+u'.
-    for mm = 1:n3
-      phi1Temp = mayerInds3(mm);
-      cosPhiTemp = cosPhiMayInds(mm);
-      cosSqrPhiTemp = cosSqrPhiMayInds(mm);
-      shiftInds3 = mod( (phi1Temp-1) +  allInds3 - 1, n3 ) + 1;
-      allInds3mm = allInds3(mm);
-      for nn = 1:n3
-        shiftInds3nn = shiftInds3(nn);
-        %g0
-        mat2Intdelta0 =  expV( ii, jj, allInds3(nn), shiftInds3(mm) ) .* ...
-          rho( shiftInds1, shiftInds2, shiftInds3nn ) .* rho(allInds1, allInds2, allInds3mm );
-        intOverRprime0(nn,mm) = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta0, 2 ), 1);
-        if calcOpDistFlag
-          %g1
-          mat2Intdelta1 =  cosPhiTemp * mat2Intdelta0;
-          intOverRprime1(nn,mm)= trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta1, 2 ), 1);
-          %g2
-          mat2Intdelta2 =  cosSqrPhiTemp * mat2Intdelta0;
-          intOverRprime2(nn,mm) = trapz_periodic( x1, trapz_periodic( x2, mat2Intdelta2, 2 ), 1);
-        end
-      end
-    end
-    delta0( ii, jj ) = trapz_periodic( phi, ...
-      trapz_periodic( phi, intOverRprime0, 1 ), 2 );
-    if calcOpDistFlag
-      delta1( ii, jj ) = trapz_periodic( phi, ...
-        trapz_periodic( phi, intOverRprime1, 1 ), 2 );
-      delta2( ii, jj ) = trapz_periodic( phi, ...
-        trapz_periodic( phi, intOverRprime2, 1 ), 2 );
+for ii = 1:numInds1
+  % update shifted inds
+  pIntegrator.updateShiftInds( inds1(ii),  1 );
+  for jj = 1:numInds2
+    % update shifted inds
+    pIntegrator.updateShiftInds( inds2(jj),  2 );
+    pIntegrator.calcDeltaIntegrals(rho);
+    delta0( ii, jj ) = pIntegrator.Delta0;
+    if calcG1G2Flag
+      delta1( ii, jj ) = pIntegrator.Delta1;
+      delta2( ii, jj ) = pIntegrator.Delta2;
     end
   end
   if mod( ii, trackProgMod  ) == 0
@@ -106,7 +81,7 @@ V = l1 .* l2;
 normFac = (nParticles^2 ) ./ V;
 % calculate pair distributions
 pDist0 = 1 / normFac * delta0; % pair dist
-if calcOpDistFlag
+if calcG1G2Flag
   pDist1 = delta1 ./ delta0; % polar dist
   pDist1(1,1) = 0; % get rid of dividing by zero
   pDist2 = (2*delta2-delta0) ./ delta0; % nem dist
@@ -118,7 +93,7 @@ shiftRow = round( n2 / 2 );
 pDist0Rot = rot90(pDist0);
 pDist0RotCenter = circshift( circshift( pDist0Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
 % center it. rows and columns are flopped from rotating
-if calcOpDistFlag
+if calcG1G2Flag
   pDist1Rot = rot90(pDist1);
   pDist2Rot = rot90(pDist2);
   pDist1RotCenter = circshift( circshift( pDist1Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
@@ -127,7 +102,7 @@ end
 % store it
 pDist.pDist0 = pDist0;
 pDist.pDist0RotCenter = pDist0RotCenter;
-if calcOpDistFlag
+if calcG1G2Flag
   pDist.pDist1 = pDist1;
   pDist.pDist2 = pDist2;
   pDist.pDist1RotCenter = pDist1RotCenter;
@@ -144,7 +119,7 @@ if plotflag
   ttlstr = '$$g_0(x,y)$$';
   pairDistPlotSingle( pDist0RotCenter, l2, l1, ttlstr);
   % plot the three order parameter distribution functions
-  if calcOpDistFlag
+  if calcG1G2Flag
     pairDistPlotOps( pDist0RotCenter, pDist1RotCenter, pDist2RotCenter, l2, l1)
   end
 end
