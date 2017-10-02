@@ -1,6 +1,9 @@
 % Wrapper for pairDistribution calculator
 %
 function pairDistWrapper()
+% set flags
+g1g2Flag = 0;
+plotFlag = 0;
 % add paths just in case
 currentDir = pwd;
 addpath( genpath( [currentDir '/src'] ) );
@@ -17,6 +20,8 @@ else
   mkdir(  dir4move );
 end
 dir2analyze = dir( [path2dir '/Hr_*'] );
+% save name stuff
+saveNameRoot = 'pDist';
 % loop over files
 
 for ii = 1:length(dir2analyze)
@@ -27,12 +32,20 @@ for ii = 1:length(dir2analyze)
   paramStr = [wd '/params_' dirTemp '.mat'];
   load( paramStr );
   load( rhoStr );
-  saveName = ['pDist_' dirTemp '.mat' ];
+  % calculate slice along dim 1
+  saveName = [ saveNameRoot '1_' dirTemp '.mat' ];
   % calulate pair dist
-  pairDistCalcRho( rho, systemObj.l1, systemObj.l2, particleObj.lMaj, 0, saveName );
+  pDistDim1 = pairDistCalcRho( rho, systemObj.l1, systemObj.l2, ...
+    particleObj.lMaj, 1:systemObj.n1, 1, g1g2Flag, plotFlag );
+  % calulate pair dist
+  pDistDim2 = pairDistCalcRho( rho, systemObj.l1, systemObj.l2, ...
+    particleObj.lMaj, 1, 1:systemObj.n2, g1g2Flag, plotFlag );
+  % calculate slice along dim 1
+  saveName = [ saveNameRoot '/' dirTemp '.mat' ];
+  save( saveName, 'pDistDim1', 'pDistDim2' );
   % move it
   if moveMe
     movefile( wd, dir4move )
   end
-  movefile(saveName, [dir4move '/' dirTemp] )
+  movefile( [saveNameRoot '*'], [dir4move '/' dirTemp] )
 end

@@ -73,12 +73,12 @@ for ii = 1:length(dir2analyze)
   plot(ax1u, x, c(:,center2) )
   plot(ax2u, x, pop(:,center2) )
   plot(ax3u, x, nop(:,center2) )
-  plot(ax4u, x, pDist.pDist0RotCenter(:,center2) )
+  plot(ax4u, x, pDistDim1.pDist0(:,1) )
   % y
   plot(ax1l, y, c(center1,:) )
   plot(ax2l, y, pop(center1,:) )
   plot(ax3l, y, nop(center1,:) )
-  plot(ax4l, y, pDist.pDist0RotCenter(center1,:) )
+  plot(ax4u, x, pDistDim2.pDist0(1,:) )
 end
 
 % build legend
