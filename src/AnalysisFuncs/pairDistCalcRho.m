@@ -3,36 +3,39 @@
 % Calculates the density dependent pair correlation function
 % g(r,r') = rho^(2) ./ rho^(1)rho^(1)
 %
-function [pDist] = pairDistCalcRho( rho, indsWant, indsDim, l1, l2, lRod, calcG1G2Flag, ...
+function [pDist] = pairDistCalcRho( rho, l1, l2, lRod, ...
+  indsWant1, indsWant2, calcG1G2Flag, ...
   plotflag, saveName )
+% get sizes
+[n1,n2,n3] = size( rho );
 % set saveMe
 if nargin == 4
   calcG1G2Flag = 0;
+  indsWant1 = 1:n1;
+  indsWant2 = 1:n2;
   plotflag = 0;
   saveMe = 0;
 elseif nargin == 5
+  indsWant2 = 1:n2;
+  calcG1G2Flag = 0;
   plotflag = 0;
   saveMe = 0;
 elseif nargin == 6
+  calcG1G2Flag = 0;
+  plotflag = 0;
+  saveMe = 0;
+elseif nargin == 7
   plotflag = 0;
   saveMe = 0;
 elseif isempty( saveName )
+  plotflag = 0;
   saveMe = 0;
 else
   saveMe = 1;
 end
-% get sizes
-[n1,n2,n3] = size( rho );
 % get inds to integrate
-if indsDim == 1
-  inds1 = indsWant;
-  inds2 = 1:n2;
-elseif indsDim == 2
-  inds1 = 1:n1;
-  inds2 = indsWant;
-else
-  error('Incorrect dimension')
-end
+inds1 = intersect( indsWant1, 1:n1 );
+inds2 = intersect( indsWant2, 1:n2 );
 
 %[inds1, inds2] =  combvec( inds1, inds2 );
 numInds1 = length( inds1 );
@@ -70,7 +73,7 @@ for ii = 1:numInds1
     end
   end
   if mod( ii, trackProgMod  ) == 0
-    fprintf('%f percent done\n', 100*ii/n1)
+    fprintf('%f percent done\n', 100*ii/numInds1)
   end
 end
 timeRun = toc(ticId);
@@ -90,23 +93,20 @@ end
 % Rotate and center it
 shiftColumn = round( n1 / 2 );
 shiftRow = round( n2 / 2 );
-pDist0Rot = rot90(pDist0);
-pDist0RotCenter = circshift( circshift( pDist0Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
+pDist0Center = circshift( pDist0, [round( n1 / 2 ) round( n2 / 2 ) ] );
 % center it. rows and columns are flopped from rotating
 if calcG1G2Flag
-  pDist1Rot = rot90(pDist1);
-  pDist2Rot = rot90(pDist2);
-  pDist1RotCenter = circshift( circshift( pDist1Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
-  pDist2RotCenter = circshift( circshift( pDist2Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
+  pDist1Center = circshift( pDist1, [round( n1 / 2 ) round( n2 / 2 ) ] );
+  pDist2Center = circshift( pDist2, [round( n1 / 2 ) round( n2 / 2 ) ] );pDist2RotCenter = circshift( circshift( pDist2Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
 end
 % store it
 pDist.pDist0 = pDist0;
-pDist.pDist0RotCenter = pDist0RotCenter;
+pDist.pDist0Center = pDist0Center;
 if calcG1G2Flag
   pDist.pDist1 = pDist1;
   pDist.pDist2 = pDist2;
-  pDist.pDist1RotCenter = pDist1RotCenter;
-  pDist.pDist2RotCenter = pDist2RotCenter;
+  pDist.pDist1Center = pDist1Center;
+  pDist.pDist2Center = pDist2Center;
 end
 % Save it
 if saveMe
