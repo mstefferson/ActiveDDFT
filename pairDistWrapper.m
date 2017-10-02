@@ -33,7 +33,6 @@ for ii = 1:length(dir2analyze)
   load( paramStr );
   load( rhoStr );
   % calculate slice along dim 1
-  saveName = [ saveNameRoot '1_' dirTemp '.mat' ];
   % calulate pair dist
   pDistDim1 = pairDistCalcRho( rho, systemObj.l1, systemObj.l2, ...
     particleObj.lMaj, 1:systemObj.n1, 1, g1g2Flag, plotFlag );
@@ -41,7 +40,7 @@ for ii = 1:length(dir2analyze)
   pDistDim2 = pairDistCalcRho( rho, systemObj.l1, systemObj.l2, ...
     particleObj.lMaj, 1, 1:systemObj.n2, g1g2Flag, plotFlag );
   % calculate slice along dim 1
-  saveName = [ saveNameRoot '/' dirTemp '.mat' ];
+  saveName = [ saveNameRoot '_' dirTemp '.mat' ];
   save( saveName, 'pDistDim1', 'pDistDim2' );
   % move it
   if moveMe

@@ -2,6 +2,7 @@ function plotPdistOps( path2dir )
 % get dir
 dir2analyze = dir( [path2dir '/Hr_*'] );
 numDirs = length(dir2analyze);
+if numDirs == 0; fprintf('No dirs found\n'); end
 % allocate
 bcVec = zeros(1,numDirs);
 vdVec = zeros(1,numDirs);
@@ -46,14 +47,15 @@ hold(ax4l, 'on')
 xlabel('$$ y $$');
 ylabel('$$ p_0 (0,y) $$');
 % loop over files
-for ii = 1:length(dir2analyze)
+for ii = 1:numDirs
+  % get paths and load
+  pathTemp = dir2analyze(ii).folder;
   dirTemp = dir2analyze(ii).name;
   fprintf('Plotting for %s\n', dirTemp);
-  wd = [path2dir  '/' dirTemp ];
-  pDistSearch = dir( [wd '/pDist*'] );
+  wd = [pathTemp  '/' dirTemp ];
   opStr = [wd '/op_' dirTemp '.mat'];
   paramStr = [wd '/params_' dirTemp '.mat'];
-  load( [pDistSearch.folder '/' pDistSearch.name] );
+  load( [wd '/pDist_' dirTemp '.mat'] );
   load( paramStr );
   load( opStr );
   % grab bc and vd vectors
@@ -73,12 +75,12 @@ for ii = 1:length(dir2analyze)
   plot(ax1u, x, c(:,center2) )
   plot(ax2u, x, pop(:,center2) )
   plot(ax3u, x, nop(:,center2) )
-  plot(ax4u, x, pDistDim1.pDist0(:,1) )
+  plot(ax4u, x, pDistDim1.pDist0Center(:,1) )
   % y
   plot(ax1l, y, c(center1,:) )
   plot(ax2l, y, pop(center1,:) )
   plot(ax3l, y, nop(center1,:) )
-  plot(ax4u, x, pDistDim2.pDist0(1,:) )
+  plot(ax4l, x, pDistDim2.pDist0Center(1,:) )
 end
 
 % build legend

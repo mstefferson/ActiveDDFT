@@ -27,8 +27,9 @@ elseif nargin == 6
 elseif nargin == 7
   plotflag = 0;
   saveMe = 0;
+elseif nargin == 8
+  saveMe = 0;
 elseif isempty( saveName )
-  plotflag = 0;
   saveMe = 0;
 else
   saveMe = 1;
