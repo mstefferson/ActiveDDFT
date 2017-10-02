@@ -94,11 +94,11 @@ end
 % Rotate and center it
 shiftColumn = round( n1 / 2 );
 shiftRow = round( n2 / 2 );
-pDist0Center = circshift( pDist0, [round( n1 / 2 ) round( n2 / 2 ) ] );
+pDist0Center = circshift( pDist0, [floor( numInds1 / 2 ) floor( numInds2 / 2 ) ] );
 % center it. rows and columns are flopped from rotating
 if calcG1G2Flag
-  pDist1Center = circshift( pDist1, [round( n1 / 2 ) round( n2 / 2 ) ] );
-  pDist2Center = circshift( pDist2, [round( n1 / 2 ) round( n2 / 2 ) ] );pDist2RotCenter = circshift( circshift( pDist2Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
+  pDist1Center = circshift( pDist1, [floor( numInds1 / 2 ) floor( numInds2 / 2 ) ] );
+  pDist2Center = circshift( pDist2, [floor( numInds1 / 2 ) floor( numInds2 / 2 ) ] );pDist2RotCenter = circshift( circshift( pDist2Rot, -shiftRow+1, 1 ), shiftColumn, 2 );
 end
 % store it
 pDist.pDist0 = pDist0;
