@@ -1,0 +1,1 @@
+matlab -nodesktop -nodisplay < pairDistWrapper.m &> pDistSlice.out &
