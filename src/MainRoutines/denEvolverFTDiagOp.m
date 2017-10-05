@@ -16,7 +16,7 @@
 %
 function [denRecObj,rho]  = ...
   denEvolverFTDiagOp(rho,systemObj,particleObj,...
-  timeObj,gridObj,diffObj,interObj,flags,lfid)
+  timeObj,gridObj,diffObj,interObj, noise, flags,lfid)
 % globals
 global runSave
 % where you at
@@ -53,18 +53,18 @@ if flags.Drive
   % Build the sin and cos phi once
   phi = zeros( 1, 1, n3 );
   phi(1,1,:) = gridObj.x3;
-  cosPhi3 = cos( repmat( phi, [n1, n2, 1] ) );
-  sinPhi3 = sin( repmat( phi, [n1, n2, 1] ) );
+  trigFnc.cosPhi3 = cos( repmat( phi, [n1, n2, 1] ) );
+  trigFnc.sinPhi3 = sin( repmat( phi, [n1, n2, 1] ) );
 else
-  cosPhi3 = 0;
-  sinPhi3 = 0;
+  trigFnc.cosPhi3 = 0;
+  trigFnc.sinPhi3 = 0;
 end
 % Interactions and driving
 if interObj.anyInter || flags.Drive || flags.noise
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags, ...
-    interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3, dt );
+    interObj, systemObj, diffObj, particleObj, trigFnc, noise );
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
@@ -123,8 +123,9 @@ if shitIsFucked == 0
     if interObj.anyInter || flags.Drive || flags.noise
       rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
-      [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
-        interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3, dt );
+      [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = dRhoMaster( ...
+        rho, rho_FT, flags, interObj, systemObj, diffObj, particleObj, ...
+        trigFnc, noise );
     end
     % Take a step
     if( flags.StepMeth == 0 )

@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [gammaCube_FT, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3, dt )
+  flags, interObj,  systemObj, diffObj, particleObj, trigFnc, noise )
 % Initialize
 gammaCube_FT = 0;
 shitIsFucked = 0;
@@ -74,12 +74,11 @@ end
 if flags.Drive && flags.DiagLop
   gammaDrCube_FT  = ...
     dRhoDriveCalcFtId(rho,particleObj.vD,...
-    cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
+    trigFnc.cosPhi3, trigFnc.sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
   gammaCube_FT = gammaCube_FT + gammaDrCube_FT;
 end
 % noise
 if flags.noise
-  gammaNoiseFT = dRhoNoise( rho, systemObj.noise, ...
-    systemObj.n1, systemObj.n2, systemObj.n3, diffObj, systemObj, dt );
+  gammaNoiseFT = noise.calcDrho( rho ); 
   gammaCube_FT = gammaCube_FT + gammaNoiseFT;
 end

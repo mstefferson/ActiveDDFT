@@ -161,6 +161,11 @@ try
   runTime.intDen = intDenRunTime;
   % Set-up interactions and external potentials
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
+  % set-up noise
+  [noise] = DRhoNoiseClass( flags.noise, systemObj.noise, ...
+    systemObj.n1, systemObj.n2, systemObj.n3, systemObj.l1, systemObj.l2, ...
+    systemObj.l3, diffObj.D_pos, diffObj.D_rot, diffObj.ik1rep3, diffObj.ik2rep3, ...
+    diffObj.ik3rep3, timeObj.dt);
   % Save everything before running body of code
   if flags.SaveMe
     runSave.flags    = flags;
@@ -197,10 +202,12 @@ try
   tBodyID      = tic;
   if flags.DiagLop == 1
     [denRecObj, rho]  = denEvolverFTDiagOp( ...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
+      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
+      noise, flags, lfid);
   else
     [denRecObj, rho]  = denEvolverFT( ...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
+      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
+      noise, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;

@@ -21,7 +21,8 @@
 % ExpoKit. Way Faster.
 %
 function [denRecObj, rho] = denEvolverFT(...
-  rho,systemObj,particleObj,timeObj,gridObj,diffObj,interObj,flags,lfid )
+  rho,systemObj,particleObj,timeObj,gridObj,...
+  diffObj,interObj,noise,flags,lfid )
 % global
 global runSave
 % where you at
@@ -55,10 +56,13 @@ jrectemp = 1; % Temporary holder for Density_rec
 jrec     = timeObj.recStartInd; % Actual index for runSave
 %Set up Diffusion operator, discrete k-space Lopagator, and interaction
 [Lop] = DiffOpBuilderDr(diffObj,gridObj,n1,n2,n3,N2,N3);
+% trig functions for driving not used here, but set it to zero
+trigFnc.cosPhi3 = 0;
+trigFnc.sinPhi3 = 0;
 %Interactions
 if interObj.anyInter
   [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
-    interObj, systemObj, diffObj, particleObj );
+    interObj, systemObj, diffObj, particleObj, trigFnc, noise );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
@@ -124,7 +128,7 @@ if shitIsFucked == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, flags,...
-        interObj, systemObj, diffObj, particleObj );
+        interObj, systemObj, diffObj, particleObj, trigFnc, noise );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
     %Interactions
