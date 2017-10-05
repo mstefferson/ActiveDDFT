@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [GammaCube_FT, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  flags, interObj,  systemObj, diffObj, particleObj, cosPhi3, sinPhi3 )
+  interObj,  systemObj, diffObj, polarDrive )
 % Initialize
 GammaCube_FT = 0;
 shitIsFucked = 0;
@@ -71,9 +71,7 @@ if calcGamma
   GammaCube_FT = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
 end
 % driving
-if flags.Drive && flags.DiagLop
-  GammaDrCube_FT  = ...
-    dRhoDriveCalcFtId(rho,particleObj.vD,...
-    cosPhi3, sinPhi3,diffObj.ik1rep3,diffObj.ik2rep3);
+if polarDrive.Flag == 1
+  GammaDrCube_FT = polarDrive.calcDrho( rho );
   GammaCube_FT = GammaCube_FT + GammaDrCube_FT;
 end

@@ -16,7 +16,7 @@
 %
 function [denRecObj,rho]  = ...
   denEvolverFTDiagOp(rho,systemObj,particleObj,...
-  timeObj,gridObj,diffObj,interObj,flags,lfid)
+  timeObj,gridObj,diffObj,interObj,polarDrive,flags,lfid)
 % globals
 global runSave
 % where you at
@@ -48,23 +48,12 @@ jrec     = timeObj.recStartInd; % Actual index for runSave
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 [Lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 Prop = exp(Lop .* dt);   % Exponentiate the elements
-%Driven Term
-if flags.Drive
-  % Build the sin and cos phi once
-  phi = zeros( 1, 1, n3 );
-  phi(1,1,:) = gridObj.x3;
-  cosPhi3 = cos( repmat( phi, [n1, n2, 1] ) );
-  sinPhi3 = sin( repmat( phi, [n1, n2, 1] ) );
-else
-  cosPhi3 = 0;
-  sinPhi3 = 0;
-end
 % Interactions and driving
-if interObj.anyInter || flags.Drive
+if interObj.anyInter || polarDrive.Flag 
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
-  [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags, ...
-    interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
+  [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, ...
+    interObj, systemObj, diffObj, polarDrive );
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
@@ -118,11 +107,12 @@ if shitIsFucked == 0
     rho_FT = rho_FTnext;
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions
-    if interObj.anyInter || flags.Drive
+    if interObj.anyInter || polarDrive.Flag
       rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
-      [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
-        interObj, systemObj, diffObj, particleObj, cosPhi3, sinPhi3 );
+      [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
+        dRhoMaster( rho, rho_FT, ...
+        interObj, systemObj, diffObj, polarDrive );
     end
     % Take a step
     if( flags.StepMeth == 0 )
@@ -148,7 +138,7 @@ if shitIsFucked == 0
     end
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
-      if interObj.anyInter == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 && polarDrive.Flag == 0
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
       [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
@@ -205,7 +195,7 @@ if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
     % Turn it to a cube if it hasn't been yet
-    if interObj.anyInter == 0 && flags.Drive == 0
+    if interObj.anyInter == 0 && polarDrive.Flag == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     DensityFT_rec(:,:,:,jrectemp)   = rho_FT;

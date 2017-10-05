@@ -148,6 +148,10 @@ try
   runTime.intDen = intDenRunTime;
   % Set-up interactions and external potentials
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
+  % set-up driving
+  dRhoDriveFlag = flags.Drive && flags.DiagLop;
+  polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.vD, systemObj.n1,...
+    systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2 );
   % Save everything before running body of code
   if flags.SaveMe
     runSave.flags    = flags;
@@ -184,10 +188,12 @@ try
   tBodyID      = tic;
   if flags.DiagLop == 1
     [denRecObj, rho]  = denEvolverFTDiagOp( ...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
+      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
+      polarDrive, flags, lfid);
   else
     [denRecObj, rho]  = denEvolverFT( ...
-      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, flags, lfid);
+      rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
+      polarDrive, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
