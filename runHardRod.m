@@ -21,69 +21,7 @@ end
 load Params.mat;
 fprintf('Params locked and loaded\n');
 movefile('Params.mat', 'ParamsRunning.mat');
-% Fix things
-% Change odd gridspacings to even unless it's one.
-if systemMaster.n1 == 1
-  systemMaster.l1 = 1;
-  rhoInitMaster.NumModesX = 0;
-else
-  systemMaster.n1 = systemMaster.n1 + mod( systemMaster.n1, 2 );
-end
-if systemMaster.n2 == 1
-  systemMaster.l2 = 1;
-  rhoInitMaster.NumModesY = 0;
-else
-  systemMaster.n2 = systemMaster.n2 + mod( systemMaster.n2, 2 );
-end
-if systemMaster.n3 == 1
-  systemMaster.l3 = 1;
-  rhoInitMaster.NumModesM = 0;
-else
-  systemMaster.n3 = systemMaster.n3 + mod( systemMaster.n3, 2 );
-end
-% Don't perturb more more than you are allowed to
-if( rhoInitMaster.NumModesX >= systemMaster.n1 / 2 )
-  rhoInitMaster.NumModesX = floor(systemMaster.n1 / 2) - 1;
-end
-if( rhoInitMaster.NumModesY >= systemMaster.n2 / 2 )
-  rhoInitMaster.NumModesY = floor(systemMaster.n2 / 2) - 1;
-end
-if( rhoInitMaster.NumModesM >= systemMaster.n3 / 2 )
-  rhoInitMaster.NumModesM = floor(systemMaster.n3 / 2) - 1;
-end
-%  Make sure variance isn't zero if doing polar
-if rhoInitMaster.gP(2) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end
-if rhoInitMaster.gP(5) == 0;  rhoInitMaster.gP(2) = min(systemMaster.l1)/2; end
-if rhoInitMaster.gP(8) == 0; rhoInitMaster.gP(8) = min(systemMaster.l1)/2; end
-% Fix Ls if we want the box to be square
-if flagMaster.SquareBox == 1
-  systemMaster.L_box = unique( [systemMaster.l1 systemMaster.l2] );
-  systemMaster.l1 = systemMaster.L_box;
-  systemMaster.l2 = systemMaster.L_box;
-end
-% Fix l1 is we want all Ns to be the same
-if flagMaster.AllNsSame == 1
-  if systemMaster.n3 == 1
-    Nvec = unique( [systemMaster.n1 systemMaster.n2] );
-    systemMaster.n1 = Nvec;  systemMaster.n2 = Nvec;
-  else
-    Nvec = unique( [systemMaster.n1 systemMaster.n2 systemMaster.n3] );
-    systemMaster.n1 = Nvec;  systemMaster.n2 = Nvec;   systemMaster.n3 = Nvec;
-  end
-end
-% Make OP if making movies
-if flagMaster.MakeMovies == 1; flagMaster.MakeOP = 1; end % if make movie, make OP first
-%Currently, you must save
-if flagMaster.MakeOP && flagMaster.SaveMe == 0
-  fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
-  flagMaster.SaveMe = 1;
-end
-if particleMaster.vD  == 0; flagMaster.Drive = 0; else flagMaster.Drive = 1;end
-% Get particle mobility
-[particleMaster, systemMaster] = ...
-  particleInit( particleMaster, systemMaster, flagMaster.DiagLop);
 % Copy the master parameter list to ParamObj
-%ParamObj = ParamMaster;
 systemObj = systemMaster;
 particleObj = particleMaster;
 timeObj = timeMaster;
@@ -92,6 +30,52 @@ flags    = flagMaster;
 runObj  = runMaster;
 diagOp = flags.DiagLop;
 trial = runObj.trialID;
+% Fix things
+% Change odd gridspacings to even unless it's one.
+if systemObj.n1 == 1
+  systemObj.l1 = 1;
+else
+  systemObj.n1 = systemObj.n1 + mod( systemObj.n1, 2 );
+end
+if systemObj.n2 == 1
+  systemObj.l2 = 1;
+else
+  systemObj.n2 = systemObj.n2 + mod( systemObj.n2, 2 );
+end
+if systemObj.n3 == 1
+  systemObj.l3 = 1;
+else
+  systemObj.n3 = systemObj.n3 + mod( systemObj.n3, 2 );
+end
+% Fix Ls if we want the box to be square
+if flags.SquareBox == 1
+  systemObj.L_box = unique( [systemObj.l1 systemObj.l2] );
+  systemObj.l1 = systemObj.L_box;
+  systemObj.l2 = systemObj.L_box;
+end
+% Fix l1 is we want all Ns to be the same
+if flags.AllNsSame == 1
+  if systemObj.n3 == 1
+    Nvec = unique( [systemObj.n1 systemObj.n2] );
+    systemObj.n1 = Nvec;  systemObj.n2 = Nvec;
+  else
+    Nvec = unique( [systemObj.n1 systemObj.n2 systemObj.n3] );
+    systemObj.n1 = Nvec;  systemObj.n2 = Nvec;   systemObj.n3 = Nvec;
+  end
+end
+% Make OP if making movies
+if flags.MakeMovies == 1; flags.MakeOP = 1; end % if make movie, make OP first
+%Currently, you must save
+if flags.MakeOP && flags.SaveMe == 0
+  fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
+  flags.SaveMe = 1;
+end
+if particleObj.vD  == 0; flags.Drive = 0; else flags.Drive = 1;end
+% fix rhoInit
+rhoInitObj = rhoInitManager( rhoInit, systemObj );
+% Get particle mobility
+[particleObj, systemObj] = ...
+  particleInit( particleObj, systemObj, flags.DiagLop);
 % grab particle types and interactions
 ptype = ['_' particleObj.type];
 if isempty(particleObj.interHb); interHb = '';
@@ -123,19 +107,19 @@ interactLrVObj = potRunManager( particleObj.interactLrV, 1 );
 % Make paramMat
 fprintf('Building parameter mat \n');
 [paramMat, numRuns] = ...
-  MakeParamMat( systemObj, particleObj, runObj, rhoInit, externVObj.inds, ...
+  MakeParamMat( systemObj, particleObj, runObj, externVObj.inds, ...
   interactLrVObj.inds, noiseObj.inds, flags );
 fprintf('Executing %d runs \n\n', numRuns);
 % Display everythin
-disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInit);
+disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInitObj);
 % For some reason, param_mat gets "sliced". Create vectors to get arround
 paramn1  = paramMat(1,:); paramn2  = paramMat(2,:);
 paramn3  = paramMat(3,:); paraml1  = paramMat(4,:);
 paraml2  = paramMat(5,:); paramvD  = paramMat(6,:);
-parambc  = paramMat(7,:); paramIC  = paramMat(8,:);
-paramSM  = paramMat(9,:); paramRun = paramMat(10,:);
-paramInteractInds = paramMat(11,:);
-paramExtInds = paramMat(12,:);
+parambc  = paramMat(7,:); paramSM  = paramMat(8,:); 
+paramRun = paramMat(9,:);
+paramInteractInds = paramMat(10,:);
+paramExtInds = paramMat(11,:);
 paramNoiseInds = paramMat(12,:);
 % potentials cells and noise
 extParam = externVObj.param;
@@ -143,60 +127,50 @@ extStr = externVObj.str;
 noiseParam = noiseObj.param;
 noiseStr = noiseObj.str;
 interactParam = interactLrVObj.param;
-interactStr = interactLrVObj.str;
-% Loops over all run
-fprintf('Starting loop over %d runs\n', numRuns);
-ticID = tic;
-if numRuns > 1
-  %parobj = gcp;
-  %fprintf('I have hired %d workers\n',parobj.NumWorkers);
-  for ii = 1:numRuns
-    % Assign parameters
-    paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
-      paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
-      paramSM(ii)  paramRun(ii)];
-    % name the file
-    filename = [ 'Hr' ptype, interHb, ...
-    interactStr{paramInteractInds(ii)},  extStr{paramExtInds(ii)}, ...
-      '_diag' num2str( diagOp ) ...
-      '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
-      '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
-      '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
-      noiseStr{ii}...
-      '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
-      '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
-    fprintf('\nStarting %s \n', filename);
-    % run the code
-    [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-      runObj, timeObj, rhoInit, flags, ...
-      interactParam{paramInteractInds(ii)},extParam{paramExtInds(ii)},...
-      noiseParam{ paramNoiseInds(ii) } );
-    fprintf('Finished %s \n', filename);
-  end
+% set-up strs
+interactStr = cell(1,numRuns);
+extStr = cell(1,numRuns);
+for ii = 1:numRuns
+  interactStr{ii} = interactLrVObj.str{ paramInteractInds(ii) };
+  extStr{ii} = externVObj.str{ paramExtInds(ii) };
+end
+% rhoInit str
+initStr = rhoInitObj.fileStr;
+% set-up parfor
+if numRuns > 1 && flags.parforFlag
+  parobj = gcp;
+  numWorkers = parobj.NumWorkers;
+  flags.MakeMovies = 0;
 else
-  ii = 1;
+  numWorkers = 0;
+end
+% Loops over all run
+denRecObj = cell(numRuns,1);
+fprintf('Starting loop over runs\n');
+ticID = tic;
+parfor (ii = 1:numRuns, numWorkers)
   % Assign parameters
   paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
-    paraml2(ii) paramvD(ii) parambc(ii) paramIC(ii)...
-    paramSM(ii)  paramRun(ii)];
-  % name the file
+    paraml2(ii) paramvD(ii) parambc(ii) paramSM(ii)  paramRun(ii)...
+    paramInteractInds(ii) paramExtInds(ii) paramNoiseInds(ii) ];
+  % Name the file
   filename = [ 'Hr' ptype, interHb, ...
-  interactStr{paramInteractInds(ii)},  extStr{paramExtInds(ii)}, ...
+    interactStr{ ii },  extStr{ ii }, ...
     '_diag' num2str( diagOp ) ...
     '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
     '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
     '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
-    noiseStr{ii}...
-    '_IC' num2str( paramIC(ii), '%d' ) '_SM' num2str( paramSM(ii), '%d'  ) ...
+    noiseStr{ii}, ...
+    '_IC' initStr '_SM' num2str( paramSM(ii), '%d'  ) ...
     '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
   fprintf('\nStarting %s \n', filename);
-  % run the code
-  [denRecObj] = ddftMain( filename, paramvec, systemObj, particleObj,...
-    runObj, timeObj, rhoInit, flags, ...
-    interactParam{paramInteractInds(ii)},extParam{paramExtInds(ii)},...
-    noiseParam{ paramNoiseInds(ii) } );
+  [denRecObjTemp] = ddftMain( filename, paramvec, systemObj, particleObj,...
+    runObj, timeObj, rhoInitObj, flags, ...
+    interactParam, extParam, noiseParam);
+  denRecObj{ii} = denRecObjTemp;
   fprintf('Finished %s \n', filename);
 end
+
 runTime = toc(ticID);
 dateTime =  datestr(now);
 movefile('ParamsRunning.mat', 'ParamsFinished.mat');

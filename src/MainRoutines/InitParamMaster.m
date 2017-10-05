@@ -2,6 +2,7 @@
 % Parameter inializer for runHardRod
 % Main flagMaster
 flagMaster.SaveMe       = 1; % Saving
+flagMaster.parforFlag   = 0; % Saving
 flagMaster.Verbose      = 0; % Prints run times
 flagMaster.DiagLop      = 1; % Diag operator = 1. off diag = 0
 flagMaster.MakeMovies   = 0; % No movies if save is zero
@@ -57,30 +58,26 @@ timeMaster.scaleDt = flagMaster.scaleDt;
 % Key
 % The number of k-modes above and below k = 0 added as a perturbation
 % Type of Inital Condition
-% 0: Plane wave perturbation over an isotropic distribution
-% 1: Plane wave perturbation over the equilibrium distribution
-% 2: Plane wave perturbation over a nematic distribution
-% 3: Load an equilbrium distribution and fit it to your box
-% 4: Gaussian perturbations with homogenous concentration 
-% 5: Gaussian perturbations with inhomogenous concentration 
-% 6: Delta function in polar order 
-% 7: Crystal
-rhoInitMaster.IntCond   = [1]; % IC indicator (vec)
-rhoInitMaster.LoadName  = ''; % File name to load if IC 3
+% if not specified, input should be a double
+% {'iso'}: isotropic
+% {'nem', shiftAngle}: nematic, nematis
+% {'eq'}: equilibrium (hardrod, softshoulder)
+% {'load', loadStr, loadpath}: load density default path: ./src/InitialDensities/SavedRhos/
+% {'delP', dirAngle}: delta function in polar order
+% {'crys', latticeSpacing}: crystal
+% {'gauss', amp, var1, center1,  var2, center2, var3, center3} 
+% {'lorenz', amp, width1, center1,  width2, center2, width3, center3}
+rhoInitMaster.intCond = {'iso'};
 % Weight of the spatial sinusoidal perturbation. %
 % Perturbation weight is a fraction of the isotropic density
 % If about a nematic, code will correct for negative densities.
-rhoInitMaster.RandomAmp = 1; % Random perturbation coeffs
-rhoInitMaster.NumModesX = 8; % Perturb # modes x
-rhoInitMaster.NumModesY = 8; % Perturb # modes y
-rhoInitMaster.NumModesM = 8; % Perturb # modes m
-rhoInitMaster.WeightPert = 1e-3; % Weight of perturbations
-rhoInitMaster.shiftAngle = 0; % If perturbing about nematic, shift distribution by this much
-% Gaussian perturbation 
-% rhoInitMaster.gP = [ aYf, varY, centerY, aYf, varY, centerY, aPhif, varPhi, centerPhi ]
-rhoInitMaster.gP = [0, systemMaster.l1/2, 0, 0, systemMaster.l1/2, 0, 0, systemMaster.l3/2, 0]; 
-% Crystal crystalLattice = [a sigma]. A: 2.26, B:1.21
-rhoInitMaster.crystalLattice = [1.21 systemMaster.l1 / 100]; 
+% perturb = 
+% {'none'}: no perturbations
+% {'pw', int randomAmp, weight, int numModes1, int numModes2, int numModes3 }: planewave perturbations.
+% {'gauss', amp1, var1, center1,  var2, center2, var3, center3}: gaussian perturbation. homoFlag for concentration
+% {'lorenz', amp, width1, center1,  width2, center2, width3, center3}
+rhoInitMaster.perturb = { {'pw', 1, 1e-3, 8, 8, 8} };
 % Save the Params
+
 save('Params.mat','particleMaster','systemMaster',...
   'runMaster','timeMaster','flagMaster','rhoInitMaster')

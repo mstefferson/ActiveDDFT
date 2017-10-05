@@ -24,9 +24,12 @@ try
   systemObj.l2 = paramVec(5);
   particleObj.vD = paramVec(6);
   systemObj.bc = paramVec(7);
-  rhoInit.IntCond = paramVec(8);
-  flags.StepMeth = paramVec(9);
-  runObj.runID = paramVec(10);
+  flags.StepMeth = paramVec(8);
+  runObj.runID = paramVec(9);
+  particleObj.interactLrV = interactLrV{paramVec(10)};
+  particleObj.externalV = externalV{paramVec(11)};
+  systemObj.noise = noise{paramVec(12)};
+  % set some other parameters
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
@@ -48,17 +51,6 @@ try
   timeObj.scaleDt = scaleDt;
   timeObj.dt_orig = dtOrig;
   timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
-  % interact pot
-  particleObj.interactLrV = interactLrV;
-  % external pot
-  particleObj.externalV = externalV;
-  % noise
-  systemObj.noise = noise;
-  if noise == 0
-    flags.noise = 0;
-  else
-    flags.noise = 1;
-  end
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];
@@ -128,7 +120,7 @@ try
   %Initialze density
   tIntDenID = tic;
   % Find non-driving steady state
-  if strcmp( particleObj.type, 'rods')
+  if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer' )
     % Number of coefficients
     Nc    = 20;
     % Equilib distribution. Don't let bc = 1.5
@@ -142,10 +134,6 @@ try
     else
       [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
       rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
-      % shift it
-      rhoInit.shiftAngle = mod(rhoInit.shiftAngle , 2*pi);
-      [~,shiftInd] = min( abs( gridObj.x3 - rhoInit.shiftAngle ) );
-      rhoInit.feq = circshift( rhoInit.feq, [0, shiftInd - 1 ] );
     end
   else
     rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
@@ -162,10 +150,14 @@ try
   % Set-up interactions and external potentials
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
   % set-up noise
-  [noise] = DRhoNoiseClass( flags.noise, systemObj.noise, ...
+  [noise] = DRhoNoiseClass( systemObj.noise, ...
     systemObj.n1, systemObj.n2, systemObj.n3, systemObj.l1, systemObj.l2, ...
     systemObj.l3, diffObj.D_pos, diffObj.D_rot, diffObj.ik1rep3, diffObj.ik2rep3, ...
     diffObj.ik3rep3, timeObj.dt);
+  % set-up driving
+  dRhoDriveFlag = flags.Drive && flags.DiagLop;
+  polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.vD, systemObj.n1,...
+    systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2 );
   % Save everything before running body of code
   if flags.SaveMe
     runSave.flags    = flags;
@@ -203,11 +195,11 @@ try
   if flags.DiagLop == 1
     [denRecObj, rho]  = denEvolverFTDiagOp( ...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
-      noise, flags, lfid);
+      polarDrive, noise, flags, lfid);
   else
     [denRecObj, rho]  = denEvolverFT( ...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
-      noise, flags, lfid);
+      polarDrive, noise, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;

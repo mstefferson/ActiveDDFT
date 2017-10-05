@@ -1,7 +1,7 @@
 % IntDenCalcEq(systemObj, particleObj rhoInit)
 function [rho] = IntDenCalcEq(systemObj, particleObj, rhoInit)
 % make equilbrium concentration based on interaction
-if strcmp( particleObj.interHb, 'mayer')
+if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer')
   fprintf('Choosing hardrod IN equilbrium distribution\n');
   % if bc is too close to 1.5, errors arise. Fix this here.
   if 1.499 < systemObj.bc && systemObj.bc < 1.501
@@ -24,7 +24,7 @@ elseif ~isempty( particleObj.interactLrV )
       if strcmp( disper.phase, 'crystal A' )
         a = 2.26;
         [rho, crysGrid] = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
-          a, rhoInit.crystalLattice(2) );
+          a, rhoInit.sigGuess );
         kCrys = crysGrid.kaClosestEven;
         kUnstable = disper.kAllUnstable( disper.kAllUnstable > 0 );
         kUnstable = kUnstable( kUnstable < 4 );
@@ -36,7 +36,7 @@ elseif ~isempty( particleObj.interactLrV )
       elseif strcmp( disper.phase, 'crystal B' )
         a = 1.21;
         [rho, crysGrid] = hexCrystal(systemObj.l1, systemObj.n1, systemObj.numPart, ...
-          a, rhoInit.crystalLattice(2) );
+          a, rhoInit.sigGuess );
         kCrys = crysGrid.kaClosestEven;
         kUnstable = disper.kAllUnstable( disper.kAllUnstable > 0 );
         kUnstable = kUnstable( kUnstable > 4 );

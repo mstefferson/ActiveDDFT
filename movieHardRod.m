@@ -14,7 +14,7 @@ plotMax = 1;
 plotSlice = 0;
 plotMovie = 1;
 plotInset = 0;
-plotAmp = 0;
+plotAmp = 1;
 plotCrystal = 0;
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')

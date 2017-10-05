@@ -22,7 +22,7 @@
 %
 function [denRecObj, rho] = denEvolverFT(...
   rho,systemObj,particleObj,timeObj,gridObj,...
-  diffObj,interObj,noise,flags,lfid )
+  diffObj,interObj, polarDrive, noise,flags,lfid )
 % global
 global runSave
 % where you at
@@ -61,8 +61,8 @@ trigFnc.cosPhi3 = 0;
 trigFnc.sinPhi3 = 0;
 %Interactions
 if interObj.anyInter
-  [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, flags,...
-    interObj, systemObj, diffObj, particleObj, trigFnc, noise );
+  [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT,...     
+    interObj, systemObj, diffObj, polarDrive, noise );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
@@ -123,12 +123,12 @@ if shitIsFucked == 0
     rhoVec_FT      = rhoVec_FTnext;
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions
-    if interObj.anyInter || flags.Drive
+    if interObj.anyInter
       rho_FT = reshape(rhoVec_FT,n1,n2,n3);
       rho    = real(ifftn(ifftshift(rho_FT)));
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
-        dRhoMaster( rho, rho_FT, flags,...
-        interObj, systemObj, diffObj, particleObj, trigFnc, noise );
+        dRhoMaster( rho, rho_FT, ...
+        interObj, systemObj, diffObj, polarDrive, noise );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
     %Interactions
@@ -163,7 +163,7 @@ if shitIsFucked == 0
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
       % Turn it to a cube if it hasn't been yet
-      if interObj.anyInter == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 
         rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
@@ -228,7 +228,7 @@ if flags.SaveMe
     if ( mod(t,timeObj.N_dtRec)== 0 )
       fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
       % Turn it to a cube if it hasn't been yet
-      if interObj.anyInter == 0 && flags.Drive == 0
+      if interObj.anyInter == 0 
         rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end

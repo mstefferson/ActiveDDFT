@@ -1,6 +1,6 @@
 classdef DRhoNoiseClass
   properties
-    NoiseFlag  = 0;
+    Flag  = 0;
     IsotropicDiffusion = 1;
     PosFluxAmp = [];
     RotFluxAmp = [];
@@ -15,14 +15,13 @@ classdef DRhoNoiseClass
   
   methods
     % Constructor
-    function obj = DRhoNoiseClass( flag, amp, n1, n2, n3, l1, l2, l3,...
+    function obj = DRhoNoiseClass( amp, n1, n2, n3, l1, l2, l3,...
         Dpos, Drot, ik1, ik2, ik3,  dt )
       % set flags
-      obj.NoiseFlag = flag;
       if amp == 0
-        obj.NoiseFlag = 0;
-      end
-      if obj.NoiseFlag
+        obj.Flag = 0;
+      else
+        obj.Flag = 1;
         % set properties
         obj.N1 = n1;
         obj.N2 = n2;
