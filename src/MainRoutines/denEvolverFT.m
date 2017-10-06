@@ -22,7 +22,7 @@
 %
 function [denRecObj, rho] = denEvolverFT(...
   rho,systemObj,particleObj,timeObj,gridObj,...
-  diffObj,interObj, polarDrive, noise,flags,lfid )
+  diffObj,interObj, polarDrive, noise, densityDepDr,flags,lfid )
 % global
 global runSave
 % where you at
@@ -62,7 +62,7 @@ trigFnc.sinPhi3 = 0;
 %Interactions
 if interObj.anyInter
   [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT,...     
-    interObj, systemObj, diffObj, polarDrive, noise );
+    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
@@ -128,7 +128,7 @@ if shitIsFucked == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise );
+        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
     %Interactions

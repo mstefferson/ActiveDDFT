@@ -2,7 +2,7 @@
 %
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
-function [NegDivFluxEx_FT] = ...
+function [NegDivFluxEx_FT, jx3] = ...
   dRhoIntCalcMu(rho, dMu, systemObj, diffObj, interObj)
 % Allocate and calulate
 n3 = systemObj.n3;

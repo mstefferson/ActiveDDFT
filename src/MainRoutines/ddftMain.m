@@ -158,6 +158,9 @@ try
   dRhoDriveFlag = flags.Drive && flags.DiagLop;
   polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.vD, systemObj.n1,...
     systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2 );
+  % set-up density dep diffusion
+  densityDepDr = DensityDepRotDiffClass( particleObj.nlDr, systemObj.n1, ...
+    systemObj.n2, systemObj.n3, diffObj.D_rot, sqrt(-1) * gridObj.k3 );
   % Save everything before running body of code
   if flags.SaveMe
     runSave.flags    = flags;
@@ -195,11 +198,11 @@ try
   if flags.DiagLop == 1
     [denRecObj, rho]  = denEvolverFTDiagOp( ...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
-      polarDrive, noise, flags, lfid);
+      polarDrive, noise, densityDepDr, flags, lfid);
   else
     [denRecObj, rho]  = denEvolverFT( ...
       rho, systemObj, particleObj, timeObj, gridObj, diffObj, interObj, ...
-      polarDrive, noise, flags, lfid);
+      polarDrive, noise, densityDepDr, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   evolvedSucess = 1;
