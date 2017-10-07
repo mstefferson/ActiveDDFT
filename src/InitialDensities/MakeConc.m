@@ -51,6 +51,7 @@ else
   % Initial distribution
   [rho] = IntDenCalcIso(systemObj);
 end
+
 % Perturb it
 for ii = 1:rhoInit.numPerturb
   perturbTemp = rhoInit.perturb{ii};
