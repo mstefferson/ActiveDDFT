@@ -70,29 +70,38 @@ for ii = 1:numDirs
   c = C_rec(:,:,end) ./ pi;
   pop = POP_rec(:,:,end);
   nop = NOP_rec(:,:,end);
+  % get max ind
+  [~, maxInd] = max( c(:) );
+  [max1, max2] = ind2sub( [systemObj.n1 systemObj.n2], maxInd);
   % plot it
   % x
-  plot(ax1u, x, c(:,center2) )
-  plot(ax2u, x, pop(:,center2) )
-  plot(ax3u, x, nop(:,center2) )
+  plot(ax1u, x, circshift( c(:,max2), center1 - max1 ) );
+  plot(ax2u, x, circshift( pop(:,max2), center1 - max1 ) );
+  plot(ax3u, x, circshift( nop(:,max2), center1 - max1 ) );
   plot(ax4u, x, pDistDim1.pDist0Center(:,1) )
   % y
-  plot(ax1l, y, c(center1,:) )
-  plot(ax2l, y, pop(center1,:) )
-  plot(ax3l, y, nop(center1,:) )
+  plot(ax1l, y, circshift( c(max1,:), center2 - max2 ) );
+  plot(ax2l, y, circshift( pop(max1,:), center2 - max2 ) );
+  plot(ax3l, y, circshift( nop(max1,:), center2 - max2 ) );
   plot(ax4l, x, pDistDim2.pDist0Center(1,:) )
 end
-
 % build legend
-bcVec = unique( bcVec );
-vdVec = unique( vdVec );
-if length(bcVec) == 1
-  legendCell = cellstr(num2str(vdVec', 'vD=%-.1f'));
-elseif length(vdVec) == 1
-  legendCell = cellstr(num2str(bcVec', 'bc=%-.2f'));
+bcVecUn = unique( bcVec );
+vdVecUn = unique( vdVec );
+if length(bcVecUn) == 1
+  legendCell = cell(1, length( vdVec ) );
+  for ii = 1:length( vdVec )
+    legendCell{ii} = [' $$ v_D =  ' num2str( vdVec(ii), '%-.1f') ' $$' ];
+  end
+elseif length(vdVecUn) == 1
+    legendCell = cell(1, length( bcVec ) );
+  for ii = 1:length( bcVec )
+    legendCell{ii} = [' $$ c^* =  ' num2str( bcVec(ii), '%-.1f') ' $$' ];
+  end
 else
-  legendCell = cellstr([ num2str(bcVec', 'bc=%-.2f ')   num2str(vdVec', 'vD=%-.1f') ]);
+  legendCell = cellstr([ num2str(bcVec', '$$ c^* = $$ %-.2f ')  ...
+    num2str(vdVec', '$$ v_D = $$ %-.1f') ]);
 end
 leg = legend( ax4l, legendCell );
-leg.Position = [0.8615    0.8346    0.0914    0.1320];
-
+leg.Position = [0.8683 0.6466 0.0779 0.3081];
+leg.Interpreter = 'latex';
