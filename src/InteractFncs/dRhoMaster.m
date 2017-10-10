@@ -70,6 +70,13 @@ if calcGamma
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
   [gammaCube_FT, j3Ex] = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
 end
+%% Debug
+debug = 0;
+if debug
+  gammaIntFT = gammaCube_FT;
+  gammaInt = real( ifftn(ifftshift( gammaCube_FT ) ) );
+end
+%%
 % driving
 if polarDrive.Flag
   gammaDrCube_FT = polarDrive.calcDrho( rho );
@@ -77,12 +84,22 @@ if polarDrive.Flag
 end
 % noise
 if noise.Flag
-  gammaNoiseFT = noise.calcDrho( rho ); 
+  gammaNoiseFT = noise.calcDrho( rho );
   gammaCube_FT = gammaCube_FT + gammaNoiseFT;
 end
 % density dep diffusion
 if densityDepDr.Flag
-  gammaDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex ); 
+  gammaDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
   gammaCube_FT = gammaCube_FT + gammaDiffFt;
 end
 
+if debug
+  gammaDiff = real( ifftn(ifftshift( gammaDiffFt ) ) );
+  %%
+  subplot(1,2,1)
+  pcolor( gammaDiff(:,:,1) ); colorbar;
+  subplot(1,2,2)
+  pcolor( gammaInt(:,:,1) ); colorbar;
+  %%
+  keyboard
+end
