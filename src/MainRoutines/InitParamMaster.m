@@ -5,7 +5,6 @@ flagMaster.SaveMe       = 1; % Saving
 flagMaster.parforFlag   = 0; % Saving
 flagMaster.Verbose      = 0; % Prints run times
 flagMaster.DiagLop      = 1; % Diag operator = 1. off diag = 0
-flagMaster.MakeMovies   = 0; % No movies if save is zero
 flagMaster.MakeOP       = 1; % No OPs if save is zero
 flagMaster.AllNsSame    = 0; % Sets all gridptns to be the same
 flagMaster.SquareBox    = 0; % Forces box to be square
@@ -13,6 +12,14 @@ flagMaster.StepMeth     = [6]; % Stepping (integrating) method (vec)
 flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
 flagMaster.scaleDt = 1; % scale dt by velocity
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
+% movie flags
+movieFlagMaster.analysis = 0; % Turn off all plots
+movieFlagMaster.makeMovie = 0; % movies
+movieFlagMaster.plotInset = 0; % plot inset with movies
+movieFlagMaster.plotMax = 0; % max vs time
+movieFlagMaster.plotAmp = 0; % plot Ft amplitudes
+movieFlagMaster.plotSlice = 0; % plot crysal structure
+movieFlagMaster.plotCrystal = 0; % plot crysal structure
 %%%%%% Parameters %%%%%%%%%%%%%%%%%
 % Can be vector if (vec) is in comment
 runMaster.numTrial =  1; % number of trials

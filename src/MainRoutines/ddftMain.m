@@ -61,12 +61,14 @@ try
       dirName  = ['./runfiles/' dirName ];
     else
       saveNameOP   = ['op_' filename];
-      if flags.MakeMovies == 1
-        dirName  = ['./analyzedfiles/' dirName ];
-      else
-        dirName  = ['./runOPfiles/' dirName ];
-      end
+      dirName  = ['./runOPfiles/' dirName ];
       opSave = matfile(saveNameOP,'Writable',true);
+      %if flags.movie.analysis == 1
+      %dirName  = ['./analyzedfiles/' dirName ];
+      %else
+      %dirName  = ['./runOPfiles/' dirName ];
+      %end
+      %opSave = matfile(saveNameOP,'Writable',true);
     end
     if exist(dirName,'dir') == 0
       mkdir(dirName);
@@ -320,7 +322,7 @@ try
       opSave.aveP_rec = opSave.aveP_rec(1,1:totRec);
       opSave.aveN_rec = opSave.aveN_rec(1,1:totRec);
     end
-    if flags.MakeMovies
+    if flags.movie.analysis
       OPobj.OpTimeRecVec = opTimeRecVec;
       OPobj.C_rec    = opSave.C_rec;
       if systemObj.n3 > 1
@@ -345,7 +347,7 @@ try
         OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
         gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
       % Save if movies
-      if flags.MakeMovies
+      if flags.movie.analysis
         OPobj.NOPeq = opSave.NOPeq;
       end
     end
@@ -356,114 +358,113 @@ try
     end
     fprintf(lfid,'OrderParam Run time = %f\n', opRunTime);
     runTime.op = opRunTime;
-    % Make movies
-    if flags.MakeMovies == 1
-      movieSuccess = 0;
-      % Make matlab movies
-      tMovID       = tic;
-      % for n3 = 1, just concentration
-      if systemObj.n3 == 1
-        % Save Name
-        movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-          systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
-        % Run function
-        CMovieMakerAvi(movStr,...
-          gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
-          OPobj.OpTimeRecVec);
-      else
-        % Save Name
-        movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-          systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
-        % Run function
-        OPMovieMakerTgtherDirAvi(movStr,...
-          gridObj.x1,gridObj.x2, OPobj, ...
-          OPobj.OpTimeRecVec, particleObj.b, sliceRho);
-      end
-      movieSuccess = 1;
-      % Move it
-      movRunTime   = toc(tMovID);
-      if flags.Verbose
-        fprintf('Made movies t%d_%d: %.3g \n', ...
-          runObj.trialID, runObj.runID, movRunTime);
-      end
-      fprintf(lfid,'Make Mov Run Time = %f\n',  movRunTime);
-      runTime.mov = movRunTime;
-      % Make amplitude plot
-      k1ind0 = gridObj.k1ind0;
-      k2ind0 = gridObj.k2ind0;
-      k3ind0 = gridObj.k3ind0;
-      nRec = length( denRecObj.TimeRecVec);
-      % Ft amps
-      if systemObj.n3 > 1
-        totModes   = 12;
-      else
-        totModes = 4;
-      end
-      FTind2plot = zeros( totModes , 3 );
-      FTmat2plot = zeros( totModes , nRec );
-      FTind2plot(1,:) = [k1ind0     k2ind0     k3ind0 ];
-      FTind2plot(2,:) = [k1ind0 + 1 k2ind0     k3ind0 ];
-      FTind2plot(3,:) = [k1ind0     k2ind0 + 1 k3ind0 ];
-      FTind2plot(4,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 ];
-      if systemObj.n3 > 1
-        FTind2plot(5,:) = [k1ind0     k2ind0     k3ind0 + 1];
-        FTind2plot(6,:) = [k1ind0 + 1 k2ind0     k3ind0 + 1];
-        FTind2plot(7,:) = [k1ind0     k2ind0 + 1 k3ind0 + 1];
-        FTind2plot(8,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 + 1];
-        FTind2plot(9,:) = [k1ind0     k2ind0     k3ind0 + 2];
-        FTind2plot(10,:) = [k1ind0 + 1 k2ind0     k3ind0 + 2];
-        FTind2plot(11,:) = [k1ind0     k2ind0 + 1 k3ind0 + 2];
-        FTind2plot(12,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 + 2];
-      end
-      % Scale by N so it's N independent
-      for i = 1:totModes
-        FTmat2plot(i,:) =  1 / (systemObj.n1 * systemObj.n2 * systemObj.n3) .* ...
-          reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
-          [ 1, nRec ]  );
-      end
-      % Plot Amplitudes
-      ampPlotterFT(FTmat2plot, FTind2plot, ...
-        denRecObj.TimeRecVec(1:nRec), k1ind0, k2ind0, k3ind0, timeObj.t_tot);
-      % Save it
-      figtl = sprintf('AmpFT.fig');
-      % savefig doesn't like decimals so save it and rename it.
-      savefig(gcf,figtl)
-      figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
-        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-      movefile(figtl,[figtl2 '.fig'])
-      saveas(gcf, [figtl2 '.jpg'],'jpg')
-      % Plot final slices of final order parameters
-      if systemObj.n3 > 1
-        sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-        if denRecObj.DidIBreak == 0
-          sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
-            OPobj.NOP_rec(:,:,end), systemObj, ...
-            gridObj, rhoFinalSave.rho, sliceSaveTag )
-        else
-          stepsNb = length(OPobj.OpTimeRecVec);
-          sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
-            OPobj.NOP_rec(:,:,end), systemObj, ...
-            gridObj, runSave.Den_rec( :,:,:, stepsNb), sliceSaveTag );
-        end
-        % Move it
-        movefile([sliceSaveTag '*'], dirName);
-        % Plot max order parameters vs time
-        maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-        plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
-          particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
-      else
-        % Plot max order parameters vs time
-        maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
-        plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
-      end
-      % Move everything else
-      movefile([figtl2 '*'], dirName);
-      movefile([movStr '*'], dirName);
-      movefile([maxSaveTag '*'], dirName);
-    end % End if movies
+    %if flags.movie.makeMovies == 1
+    %movieSuccess = 0;
+    %% Make matlab movies
+    %tMovID       = tic;
+    %% for n3 = 1, just concentration
+    %if systemObj.n3 == 1
+    %% Save Name
+    %movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
+    %systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+    %% Run function
+    %CMovieMakerAvi(movStr,...
+    %gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
+    %OPobj.OpTimeRecVec);
+    %else
+    %% Save Name
+    %movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
+    %systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+    %% Run function
+    %OPMovieMakerTgtherDirAvi(movStr,...
+    %gridObj.x1,gridObj.x2, OPobj, ...
+    %OPobj.OpTimeRecVec, particleObj.b, sliceRho);
+    %end
+    %movieSuccess = 1;
+    %% Move it
+    %movRunTime   = toc(tMovID);
+    %if flags.Verbose
+    %fprintf('Made movies t%d_%d: %.3g \n', ...
+    %runObj.trialID, runObj.runID, movRunTime);
+    %end
+    %fprintf(lfid,'Make Mov Run Time = %f\n',  movRunTime);
+    %runTime.mov = movRunTime;
+    %% Make amplitude plot
+    %k1ind0 = gridObj.k1ind0;
+    %k2ind0 = gridObj.k2ind0;
+    %k3ind0 = gridObj.k3ind0;
+    %nRec = length( denRecObj.TimeRecVec);
+    %% Ft amps
+    %if systemObj.n3 > 1
+    %totModes   = 12;
+    %else
+    %totModes = 4;
+    %end
+    %FTind2plot = zeros( totModes , 3 );
+    %FTmat2plot = zeros( totModes , nRec );
+    %FTind2plot(1,:) = [k1ind0     k2ind0     k3ind0 ];
+    %FTind2plot(2,:) = [k1ind0 + 1 k2ind0     k3ind0 ];
+    %FTind2plot(3,:) = [k1ind0     k2ind0 + 1 k3ind0 ];
+    %FTind2plot(4,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 ];
+    %if systemObj.n3 > 1
+    %FTind2plot(5,:) = [k1ind0     k2ind0     k3ind0 + 1];
+    %FTind2plot(6,:) = [k1ind0 + 1 k2ind0     k3ind0 + 1];
+    %FTind2plot(7,:) = [k1ind0     k2ind0 + 1 k3ind0 + 1];
+    %FTind2plot(8,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 + 1];
+    %FTind2plot(9,:) = [k1ind0     k2ind0     k3ind0 + 2];
+    %FTind2plot(10,:) = [k1ind0 + 1 k2ind0     k3ind0 + 2];
+    %FTind2plot(11,:) = [k1ind0     k2ind0 + 1 k3ind0 + 2];
+    %FTind2plot(12,:) = [k1ind0 + 1 k2ind0 + 1 k3ind0 + 2];
+    %end
+    %% Scale by N so it's N independent
+    %for i = 1:totModes
+    %FTmat2plot(i,:) =  1 / (systemObj.n1 * systemObj.n2 * systemObj.n3) .* ...
+    %reshape(runSave.DenFT_rec( FTind2plot(i,1), FTind2plot(i,2), FTind2plot(i,3),1:nRec ),...
+    %[ 1, nRec ]  );
+    %end
+    %% Plot Amplitudes
+    %ampPlotterFT(FTmat2plot, FTind2plot, ...
+    %denRecObj.TimeRecVec(1:nRec), k1ind0, k2ind0, k3ind0, timeObj.t_tot);
+    %% Save it
+    %figtl = sprintf('AmpFT.fig');
+    %% savefig doesn't like decimals so save it and rename it.
+    %savefig(gcf,figtl)
+    %figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
+    %systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+    %movefile(figtl,[figtl2 '.fig'])
+    %saveas(gcf, [figtl2 '.jpg'],'jpg')
+    %% Plot final slices of final order parameters
+    %if systemObj.n3 > 1
+    %sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+    %systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+    %if denRecObj.DidIBreak == 0
+    %sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+    %OPobj.NOP_rec(:,:,end), systemObj, ...
+    %gridObj, rhoFinalSave.rho, sliceSaveTag )
+    %else
+    %stepsNb = length(OPobj.OpTimeRecVec);
+    %sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
+    %OPobj.NOP_rec(:,:,end), systemObj, ...
+    %gridObj, runSave.Den_rec( :,:,:, stepsNb), sliceSaveTag );
+    %end
+    %% Move it
+    %movefile([sliceSaveTag '*'], dirName);
+    %% Plot max order parameters vs time
+    %maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
+    %systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+    %plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
+    %particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
+    %else
+    %% Plot max order parameters vs time
+    %maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
+    %systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+    %plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
+    %end
+    %% Move everything else
+    %movefile([figtl2 '*'], dirName);
+    %movefile([movStr '*'], dirName);
+    %movefile([maxSaveTag '*'], dirName);
+    %end % End if movies
   end % if OP
   % Save how long everything took
   totRunTime = toc(tMainID);
@@ -483,6 +484,10 @@ try
       movefile( saveNameOP,dirName);
     end
   end
+  % run analysis
+  if flags.movie.analysis == 1
+    movieHardRod(dirName)
+  end
 catch err %Catch errors
   % write the error to file and to screen
   fprintf('%s\n', err.getReport('extended')) ;
@@ -491,15 +496,15 @@ catch err %Catch errors
   % to ./runOPfiles
   % Move saved things
   if evolvedSucess == 1 && flags.SaveMe == 1
-    if flags.MakeMovies == 1 && movieSuccess == 0
-      fprintf('Movies failed\n');
-      if exist(movStr,'file'); delete(movStr); end
-      rmdir(dirName);
-      dirName = [ './runOPfiles' filename(1:end-4) ];
-      denRecObj.dirName = dirName;
-    end
+    %     if flags.MakeMovies == 1 && movieSuccess == 0
+    %       fprintf('Movies failed\n');
+    %       if exist(movStr,'file'); delete(movStr); end
+    %       rmdir(dirName);
+    %       dirName = [ './runOPfiles' filename(1:end-4) ];
+    %       denRecObj.dirName = dirName;
+    %     end
     movefile(saveNameRun,dirName);
-    movefile( saveNameParams,dirName);
+    movefile(saveNameParams,dirName);
     if flags.MakeOP == 1
       movefile( saveNameOP,dirName);
     end
