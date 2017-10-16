@@ -27,6 +27,7 @@ particleObj = particleMaster;
 timeObj = timeMaster;
 rhoInit  = rhoInitMaster;
 flags    = flagMaster;
+flags.movie = movieFlagMaster;
 runObj  = runMaster;
 diagOp = flags.DiagLop;
 trial = runObj.trialID;
@@ -64,7 +65,8 @@ if flags.AllNsSame == 1
   end
 end
 % Make OP if making movies
-if flags.MakeMovies == 1; flags.MakeOP = 1; end % if make movie, make OP first
+if flags.movie.analysis == 1; flags.MakeOP = 1; end % if make movie, make OP first
+if flags.MakeOP == 1; flags.SaveMe = 1; end
 %Currently, you must save
 if flags.MakeOP && flags.SaveMe == 0
   fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
@@ -125,14 +127,16 @@ paramNoiseInds = paramMat(12,:);
 extParam = externVObj.param;
 extStr = externVObj.str;
 noiseParam = noiseObj.param;
-noiseStr = noiseObj.str;
+
 interactParam = interactLrVObj.param;
 % set-up strs
 interactStr = cell(1,numRuns);
 extStr = cell(1,numRuns);
+noiseStr = cell(1,numRuns);
 for ii = 1:numRuns
   interactStr{ii} = interactLrVObj.str{ paramInteractInds(ii) };
   extStr{ii} = externVObj.str{ paramExtInds(ii) };
+  noiseStr{ii} = noiseObj.str{ paramNoiseInds(ii) };
 end
 % rhoInit str
 initStr = rhoInitObj.fileStr;
@@ -140,7 +144,7 @@ initStr = rhoInitObj.fileStr;
 if numRuns > 1 && flags.parforFlag
   parobj = gcp;
   numWorkers = parobj.NumWorkers;
-  flags.MakeMovies = 0;
+  flags.movie.analysis = 0;
 else
   numWorkers = 0;
 end

@@ -16,9 +16,9 @@ isoDen = systemObj.c / ( systemObj.l3);
 
 maxPerturb = isoDen * perturbObj.amp * ...
   (2*perturbObj.numModes1) * (2*perturbObj.numModes2) * (2*perturbObj.numModes3);
-if min(min(min(rho))) < maxPerturb
+if min( rho(:) ) < maxPerturb
   coeffMax = isoDen .* ...
-    perturbObj.amp * min(min(min(rho))) / maxPerturb;
+    perturbObj.amp * mean(rho(:)) / maxPerturb;
 else
   coeffMax = isoDen .* perturbObj.amp;
 end
@@ -92,7 +92,6 @@ rhoFT( kx0 - m1 : kx0 + m1, ky0 - m2 : ky0 + m2, km0 - m3 : km0 + m3) = ...
   rhoFT( kx0 - m1 : kx0 + m1, ky0 - m2 : ky0 + m2, km0 - m3 : km0 + m3) + perturb;
 % Inverse transform and Take real part
 rho = real( ifftn( ifftshift( rhoFT ) ) );
-
 % Fix negative rho if that happened.
 [rho] = FixNegDenFnc(rho);
 

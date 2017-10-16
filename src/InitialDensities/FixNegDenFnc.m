@@ -2,7 +2,7 @@ function [rho] = FixNegDenFnc(rho)
 
 % Fix rho if it is negative 
 
-rho_min = min( min ( min( rho ) ) );
+rho_min = min( rho(:) );
 epsilon = rho_min / 100;
 
 % keyboard

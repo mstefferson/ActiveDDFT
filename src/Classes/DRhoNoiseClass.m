@@ -3,7 +3,11 @@ classdef DRhoNoiseClass
     Flag  = 0;
     IsotropicDiffusion = 1;
     PosFluxAmp = [];
+    PosFluxAmpDeltaScaled = [];
+    PosAmpDelta = [];
     RotFluxAmp = [];
+    RotFluxAmpDeltaScaled = [];
+    RotAmpDelta = [];
     N1 = [];
     N2 = [];
     N3 = [];
@@ -33,13 +37,17 @@ classdef DRhoNoiseClass
         dy = l2 / n2;
         dphi = l3 / n3;
         % position
-        obj.PosFluxAmp = sqrt( 24 * amp(1) * Dpos  / ...
+        obj.PosFluxAmpDeltaScaled = sqrt( 24 * amp(1) * Dpos  / ...
           ( dt * dx * dy * dphi ) );
+        obj.PosAmpDelta = amp(1)  / ( dt * dx * dy * dphi );
+        obj.PosFluxAmp = sqrt( 24 * amp(1) * Dpos  );
         % random values
         if n3 > 1
           obj.AngleFluxFlag = 1;
-          obj.RotFluxAmp = sqrt( 24 * amp(2) * Drot  / ...
+          obj.RotFluxAmpDeltaScaled = sqrt( 24 * amp(2) * Drot  / ...
             ( dt * dx * dy * dphi ) );
+          obj.RotAmpDelta = amp(2)  / ( dt * dx * dy * dphi );
+          obj.RotFluxAmp = sqrt( 24 * amp(2) * Drot  );
           obj.Ik3 = ik3;
         else
           obj.AngleFluxFlag = 0;

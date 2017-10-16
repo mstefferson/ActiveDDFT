@@ -1,21 +1,24 @@
 % movieHardRod
 %
 % Takes all files in ./runOPfiles, makes movies, and moves them to analyzed
-function movieHardRod(destinationDir)
+function movieHardRod(desiredFilesId, destinationDir, flagsOverride)
 if nargin == 0
+  desiredFilesId = './runOPfiles/Hr_';
   destinationDir = 'analyzedfiles/';
-else
+  override = 0;
+elseif nargin == 1
+  destinationDir  = 'analyzedfiles/';
+  override = 0;
+elseif nargin == 2
   if destinationDir(end) ~= '/'
     destinationDir = [ destinationDir '/'];
   end
   destinationDir = [ 'analyzedfiles/' destinationDir ];
+  override = 0;
+else
+  override = 1;
+  movieflags = flagsOverride;
 end
-plotMax = 1;
-plotSlice = 0;
-plotMovie = 1;
-plotInset = 0;
-plotAmp = 1;
-plotCrystal = 0;
 % use latex for plots
 set(0,'defaulttextinterpreter','latex')
 try
@@ -26,7 +29,7 @@ try
   if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end
   if exist(destinationDir,'dir') == 0; mkdir(destinationDir);end
   % see how many dirs to analyze
-  dir2Analyze = dir( './runOPfiles/Hr_*');
+  dir2Analyze = dir( [desiredFilesId '*'] );
   numDirs = length(dir2Analyze);
   % run if there are things to run
   if numDirs
@@ -48,6 +51,19 @@ try
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
       timeObj =  runSave.timeObj;
+      if override == 0 
+        flags = runSave.flags;
+        if isfield( flags, 'movie')
+           movieflags = flags.movie;
+        else
+          movieflags.makeMovie = 1;
+          movieflags.plotInset = 0;
+          movieflags.plotMax = 1;
+          movieflags.plotAmp = 1;
+          movieflags.plotCrystal = 0;
+          movieflags.plotSlice = 0;
+        end
+      end
       % get rho Final
       if isfield( denRecObj, 'rhoFinal')
         rhoFinal = denRecObj.rhoFinal;
@@ -58,7 +74,7 @@ try
       % op stuff
       OPobj.OpTimeRecVec = opSave.OpTimeRecVec;
       OPobj.C_rec    = opSave.C_rec;
-      if plotMovie
+      if movieflags.makeMovie
         if systemObj.n3 > 1
           OPobj.POP_rec  = opSave.POP_rec;
           OPobj.POPx_rec = opSave.POPx_rec;
@@ -68,7 +84,7 @@ try
           OPobj.NOPy_rec = opSave.NOPy_rec;
           if isfield(opSave, 'sliceRho')
             sliceRho = opSave.sliceRho;
-            sliceRho.plotInset = plotInset;
+            sliceRho.plotInset = movieflags.plotInset;
           else
             sliceRho.plotInset = 0;
           end
@@ -91,7 +107,7 @@ try
         % move it
         movefile([movStr '*'], dirFullPath);
       end % plotMov
-      if plotAmp
+      if movieflags.plotAmp
         % Make amplitude plot
         kx0 = systemObj.n1 / 2 + 1;
         ky0 = systemObj.n2 / 2 + 1;
@@ -143,7 +159,7 @@ try
         movefile([figtl2 '*'], dirFullPath);
       end % plotAmp
       % Plot final slices of final order parameters
-      if plotSlice && strcmp( particleObj.interHb, 'mayer' )
+      if movieflags.plotSlice 
         sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
         sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
@@ -152,7 +168,7 @@ try
         movefile([sliceSaveTag '*'], dirFullPath);
       end % plot slice
       % plot max OPs
-      if plotMax
+      if movieflags.plotMax
         if systemObj.n3 > 1
           % Plot max order parameters vs time
           maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
@@ -169,7 +185,7 @@ try
         movefile([maxSaveTag '*'], dirFullPath);
       end % plotMax
       % crystal peaks
-      if plotCrystal
+      if movieflags.plotCrystal
         plotConfirm = 0;
         nFrames = length(OPobj.OpTimeRecVec);
         if isfield(particleObj, 'interLr')
