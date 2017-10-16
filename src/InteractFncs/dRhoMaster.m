@@ -1,8 +1,8 @@
 % Handles all the dRho contributions that are not in Lop
-function [gammaCube_FT, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr )
+function [gammaCubeFt, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
+  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr, prop )
 % Initialize
-gammaCube_FT = 0;
+gammaCubeFt = 0;
 shitIsFucked = 0;
 calcGamma = 0;
 whatBroke = [];
@@ -68,38 +68,75 @@ if calcGamma
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
-  [gammaCube_FT, j3Ex] = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
+  [gammaCubeFt, j3Ex] = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
 end
 %% Debug
-debug = 0;
+debug = 1;
 if debug
-  gammaIntFT = gammaCube_FT;
-  gammaInt = real( ifftn(ifftshift( gammaCube_FT ) ) );
+  gammaIntFt = gammaCubeFt;
 end
 %%
 % driving
 if polarDrive.Flag
-  gammaDrCube_FT = polarDrive.calcDrho( rho );
-  gammaCube_FT = gammaCube_FT + gammaDrCube_FT;
+  gammaDrCubeFt = polarDrive.calcDrho( rho );
+  gammaCubeFt = gammaCubeFt + gammaDrCubeFt;
 end
 % noise
 if noise.Flag
-  gammaNoiseFT = noise.calcDrho( rho );
-  gammaCube_FT = gammaCube_FT + gammaNoiseFT;
+  gammaNoiseFt = noise.calcDrho( rho );
+  gammaCubeFt = gammaCubeFt + gammaNoiseFt;
 end
 % density dep diffusion
 if densityDepDr.Flag
-  gammaDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
-  gammaCube_FT = gammaCube_FT + gammaDiffFt;
+  gammaRotDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
+  gammaCubeFt = gammaCubeFt + gammaRotDiffFt;
 end
 
 if debug
+  gammaDiffFt = prop .* rho_FT;
   gammaDiff = real( ifftn(ifftshift( gammaDiffFt ) ) );
+  gammaInt = real( ifftn(ifftshift( gammaIntFt ) ) );
+  gammaRotDiff = real( ifftn(ifftshift( gammaRotDiffFt ) ) );
+  gammaDrive = real( ifftn(ifftshift( gammaDrCubeFt  ) ) );
   %%
-  subplot(1,2,1)
-  pcolor( gammaDiff(:,:,1) ); colorbar;
-  subplot(1,2,2)
-  pcolor( gammaInt(:,:,1) ); colorbar;
+  %   gammaRotDiff2Plot = sum( gammaRotDiff, 3);
+  %   gammaInt2Plot = sum( gammaInt, 3);
+  %   gammaDrive2Plot = sum( gammaDrive, 3);
+  indWant = 17;
+  gammaDiff2Plot = gammaDiff(:,:,indWant);
+  gammaRotDiff2Plot = gammaRotDiff(:,:,indWant);
+  gammaInt2Plot = gammaInt(:,:,indWant);
+  gammaDrive2Plot = gammaDrive(:,:,indWant);
+  rho2plot = rho(:,:,indWant);
+  subplot(2,2,1)
+  pcolor( gammaRotDiff2Plot ); colorbar;
+  title('Rot Diffusion')
+  subplot(2,2,2)
+  pcolor( gammaInt2Plot ); colorbar;
+  title('Interaction')
+  subplot(2,2,3)
+  pcolor( gammaDiff2Plot ); colorbar;
+  title('Diffusion')
+  subplot(2,2,4)
+%   pcolor( gammaDrive2Plot ); colorbar;
+%   title('Drive')
+  pcolor( rho2plot ); colorbar;
+  title('rho')
+  
+  % check conservation
+  if 0
+    normRotDiff = sum( gammaRotDiff(:) )
+    normInt = sum( gammaInt(:) )
+    normDrive = sum( gammaDrCubeFt(:) )
+    
+    ind1 = systemObj.n1/2 + 1;
+    ind2 = systemObj.n2/2 + 1;
+    ind3 = systemObj.n3/2 + 1;
+    
+    gammaIntFt( ind1, ind2, ind3 )
+    gammaRotDiffFt( ind1, ind2, ind3 )
+    gammaDrCubeFt( ind1, ind2, ind3 )
+  end
   %%
   keyboard
 end

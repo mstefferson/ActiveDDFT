@@ -79,5 +79,7 @@ else
   diffObj.j2Mm2f_reps = repmat( jyMm2f, [1,1,n3]);
   diffObj.j2Mp2f_reps = repmat( jyMp2f, [1,1,n3]);
 end
+% jm
+diffObj.jx3f = - diffObj.ik3rep3 .* diffObj.D_rot;
 
 end

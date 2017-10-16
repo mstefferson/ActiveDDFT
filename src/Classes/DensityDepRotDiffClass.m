@@ -41,16 +41,13 @@ classdef DensityDepRotDiffClass < handle
     % calc d rho
     function [dRho] = calcDrho( obj, rho, rhoFt, jEx )
       obj.calcDiffNl( rho );
+      % "flux" without mobility
       obj.JDiff = -real( ifftn( ifftshift( obj.Ik3 .* rhoFt ) ) );
       obj.JEx = jEx;
       obj.Jft = fftshift( fftn( obj.DrNl .* ( obj.JDiff + obj.JEx ) ) );
       dRho = - obj.Ik3 .* obj.Jft;
+      keyboard
     end
   end %methods
 end %class
-
-
-
-
-
 

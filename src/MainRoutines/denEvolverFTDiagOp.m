@@ -53,7 +53,7 @@ if interObj.anyInter || polarDrive.Flag
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, ...
-    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
+    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr, prop );
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
@@ -114,7 +114,7 @@ if shitIsFucked == 0
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
+        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr, prop );
     end
     % Take a step
     if( flags.StepMeth == 0 )
