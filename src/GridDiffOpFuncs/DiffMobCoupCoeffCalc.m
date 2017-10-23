@@ -16,11 +16,6 @@ diffObj.D_par  = Mob_par * T; % Parallel diffusion coeff
 diffObj.D_perp = Mob_perp * T; % Perpendicular coeff
 diffObj.D_rot  = Mob_rot * T; % Rotational diffusion
 
-%% DEBUG %%
-diffObj.D_par = 0;
-diffObj.D_perp = 0;
-diffObj.D_pos = 0;
-
 %Aniso rods diffusion coupling
 % Constant in front of cross terms
 CrossTermFactor = (diffObj.D_par - diffObj.D_perp)/4; 

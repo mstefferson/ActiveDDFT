@@ -48,23 +48,17 @@ jrec     = timeObj.recStartInd; % Actual index for runSave
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 [lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 prop = exp(lop .* dt);   % Exponentiate the elements
-
-%% DEBUG %%
-gamProp = ( prop - 1 ) ./ lop;
-gamProp( isnan( gamProp) ) = timeObj.dt;
-  %%
 % Interactions and driving
 if interObj.anyInter || polarDrive.Flag 
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, ...
-    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr, lop, prop, dt, gamProp);
+    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaCube_FT = zeros( n1, n2, n3);
 end
-
 % Take the first step- Euler. Element by element mulitplication
 if( flags.StepMeth == 0 ) % AB 1
   NlPf =  dt;
@@ -119,7 +113,7 @@ if shitIsFucked == 0
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr, lop, prop, dt, gamProp );
+        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
     end
     % Take a step
     if( flags.StepMeth == 0 )
