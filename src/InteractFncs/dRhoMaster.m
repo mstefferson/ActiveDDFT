@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [gammaCubeFt, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr, prop )
+  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr, lop, prop, dt, gamProp)
 % Initialize
 gammaCubeFt = 0;
 shitIsFucked = 0;
@@ -88,26 +88,47 @@ if noise.Flag
 end
 % density dep diffusion
 if densityDepDr.Flag
-  gammaRotDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
+  [gammaRotDiffFt, gammaRotDiffFtDiff, gammaRotDiffFtInt] = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
   gammaCubeFt = gammaCubeFt + gammaRotDiffFt;
 end
 
 if debug
-  gammaDiffFt = prop .* rho_FT;
+  %gammaDiffFt = ( prop - 1 ) .* rho_FT;
+  gammaDiffFt = ( lop ) .* rho_FT;
+  
+  % calc in real space
   gammaDiff = real( ifftn(ifftshift( gammaDiffFt ) ) );
   gammaInt = real( ifftn(ifftshift( gammaIntFt ) ) );
   gammaRotDiff = real( ifftn(ifftshift( gammaRotDiffFt ) ) );
-  gammaDrive = real( ifftn(ifftshift( gammaDrCubeFt  ) ) );
-  %%
-  %   gammaRotDiff2Plot = sum( gammaRotDiff, 3);
-  %   gammaInt2Plot = sum( gammaInt, 3);
-  %   gammaDrive2Plot = sum( gammaDrive, 3);
-  indWant = 17;
-  gammaDiff2Plot = gammaDiff(:,:,indWant);
-  gammaRotDiff2Plot = gammaRotDiff(:,:,indWant);
-  gammaInt2Plot = gammaInt(:,:,indWant);
-  gammaDrive2Plot = gammaDrive(:,:,indWant);
-  rho2plot = rho(:,:,indWant);
+  gammaRotDiffDiff = real( ifftn(ifftshift( gammaRotDiffFtDiff ) ) );
+  gammaRotDiffInt = real( ifftn(ifftshift( gammaRotDiffFtInt ) ) );
+
+  % scale is
+  nlProp = 1;
+  gammaInt = nlProp .* gammaInt;
+  gammaRotDiff = nlProp .* gammaRotDiff;
+  
+  if 0
+    rho2plot = sum( rho, 3);
+    gammaDiff2Plot = sum( gammaDiff, 3);
+    gammaRotDiff2Plot = sum( gammaRotDiff, 3);
+    gammaRotDiffDiff2Plot = sum( gammaRotDiff, 3);
+    gammaRotDiffInt2Plot = sum( gammaRotDiff, 3);
+    gammaInt2Plot = sum( gammaInt, 3);
+  end
+  
+  if 1
+    indWant = 17;
+    gammaDiff2Plot = gammaDiff(:,:,indWant);
+    gammaRotDiff2Plot = gammaRotDiff(:,:,indWant);
+    gammaRotDiffDiff2Plot = gammaRotDiffDiff(:,:,indWant);
+    gammaRotDiffInt2Plot = gammaRotDiffInt(:,:,indWant);
+    gammaInt2Plot = gammaInt(:,:,indWant);
+    rho2plot = rho(:,:,indWant);
+  end
+   
+  % plot different contributions
+  figure
   subplot(2,2,1)
   pcolor( gammaRotDiff2Plot ); colorbar;
   title('Rot Diffusion')
@@ -118,10 +139,54 @@ if debug
   pcolor( gammaDiff2Plot ); colorbar;
   title('Diffusion')
   subplot(2,2,4)
-%   pcolor( gammaDrive2Plot ); colorbar;
-%   title('Drive')
   pcolor( rho2plot ); colorbar;
   title('rho')
+  
+  % compate rotational diffusion parts
+  figure
+  subplot(2,2,1)
+  pcolor( gammaRotDiff2Plot ); colorbar;
+  title('Rot Diff Total')
+  subplot(2,2,2)
+  pcolor( gammaRotDiffDiff2Plot ); colorbar;
+  title('Rot Diff Diff ')
+  subplot(2,2,3)
+  pcolor( gammaRotDiffInt2Plot ); colorbar;
+  title('Rot Diff Int ')
+  subplot(2,2,4)
+  pcolor( gammaDiff2Plot ); colorbar;
+  title('Diffusion')
+  
+  figure()
+  hold
+  n = systemObj.n3;
+  phi = 1:n;
+  ind1 = 1;
+  ind2 = 1;
+
+  plot( phi, reshape( gammaDiff(ind1,ind2,:), [1 n] ) );
+  plot( phi, reshape( gammaInt(ind1,ind2,:), [1 n] ) );
+  plot( phi, reshape( gammaRotDiffDiff(ind1,ind2,:), [1 n] ) );
+  plot( phi, reshape( gammaRotDiffInt(ind1,ind2,:), [1 n] ) );
+  legend( 'pure diff', 'gamma Int', 'rot diff diff',...
+    'rot diff int' )
+  
+  figure()
+  hold
+   plot( phi, reshape( gammaDiff(ind1,ind2,:) + gammaRotDiffDiff(ind1,ind2,:),...
+     [1 n] ) );
+  plot( phi, reshape( gammaInt(ind1,ind2,:) + gammaRotDiffInt(ind1,ind2,:), [1 n] ) );
+  legend( 'diff', 'Int')
+  
+  % check flux
+  jDiff = -densityDepDr.Dr0 .* ...
+    real( ifftn( ifftshift( densityDepDr.Ik3 .* rho_FT ) ) );
+  jDiffRot = -real( ifftn( ifftshift( ...
+    densityDepDr.DrNl .* densityDepDr.Ik3 .* rho_FT ) ) );
+  figure()
+  hold
+  plot( phi, reshape( jDiff(ind1,ind2,:), [1 n] ) );
+  plot( phi, reshape( jDiffRot(ind1,ind2,:), [1 n] ) );
   
   % check conservation
   if 0
