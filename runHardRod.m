@@ -127,12 +127,13 @@ paramNoiseInds = paramMat(12,:);
 extParam = externVObj.param;
 extStr = externVObj.str;
 noiseParam = noiseObj.param;
-
 interactParam = interactLrVObj.param;
 % set-up strs
 interactStr = cell(1,numRuns);
 extStr = cell(1,numRuns);
 noiseStr = cell(1,numRuns);
+% nlDr
+nlDr = particleObj.nlDr;
 for ii = 1:numRuns
   interactStr{ii} = interactLrVObj.str{ paramInteractInds(ii) };
   extStr{ii} = externVObj.str{ paramExtInds(ii) };
@@ -165,6 +166,7 @@ parfor (ii = 1:numRuns, numWorkers)
     '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
     '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
     noiseStr{ii}, ...
+    '_drNl' num2str( nlDr, '%.2f' ), ...
     '_IC' initStr '_SM' num2str( paramSM(ii), '%d'  ) ...
     '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
   fprintf('\nStarting %s \n', filename);
