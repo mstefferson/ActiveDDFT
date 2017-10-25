@@ -59,19 +59,11 @@ if flags.AllNsSame == 1
     systemObj.n1 = Nvec;  systemObj.n2 = Nvec;   systemObj.n3 = Nvec;
   end
 end
-% Make OP if making movies
-if flags.MakeMovies == 1; flags.MakeOP = 1; end % if make movie, make OP first
-%Currently, you must save
-if flags.MakeOP && flags.SaveMe == 0
-  fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
-  flags.SaveMe = 1;
-end
-if particleObj.vD  == 0; flags.Drive = 0; else flags.Drive = 1;end
-% fix rhoInit
-rhoInitObj = rhoInitManager( rhoInit, systemObj );
 % fix particles
 [particleObj, systemObj] = ...
   particleInit( particleObj, systemObj, flags.DiagLop );
+% fix rhoInit
+rhoInitObj = rhoInitManager( rhoInit, systemObj, particleObj );
 systemObj.c = systemObj.bc ./ particleObj.b;
 systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
 % Display everythin
@@ -99,6 +91,13 @@ if systemObj.n3 > 1
     gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
   cScale = particleObj.b;
   plotOps( OPs, gridObj.x1, gridObj.x2, cScale )
+  % plot a slice
+  figure()
+  ind1 = round(systemObj.n1/2);
+  ind2 = round(systemObj.n2/2);
+  plot( gridObj.x3, reshape( rho(ind1,ind2,:), size( gridObj.x3 ) ) )
+  title('Fixed pos: slice through angles');
+  xlabel( ' $$ \phi $$ ' ); ylabel( ' $$ f( \phi ) $$ ' );
 else
   cScale = particleObj.b;
   C = trapz_periodic( gridObj.x3, rho, 3 );
@@ -107,6 +106,3 @@ else
 end
 dateTime =  datestr(now);
 fprintf('Finished RunHardRod: %s\n', dateTime);
-
-
-

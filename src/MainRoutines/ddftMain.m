@@ -111,25 +111,6 @@ try
   runTime.diff = diffRunTime;
   %Initialze density
   tIntDenID = tic;
-  % Find non-driving steady state
-  if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer' )
-    % Number of coefficients
-    Nc    = 20;
-    % Equilib distribution. Don't let bc = 1.5
-    if 1.499 < systemObj.bc && systemObj.bc < 1.501
-      rhoInit.bc = 1.502;
-    else
-      rhoInit.bc = systemObj.bc;
-    end
-    if systemObj.n3 == 1
-      rhoInit.feq = [];
-    else
-      [Coeff_best,~] = CoeffCalcExpCos2D(Nc,gridObj.x3,rhoInit.bc); % Calculate coeff
-      rhoInit.feq = DistBuilderExpCos2Dsing(Nc,gridObj.x3,Coeff_best);        % Build equil distribution
-    end
-  else
-    rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
-  end
   % Build initial density
   [rho] = MakeConc(systemObj,particleObj,rhoInit,gridObj);
   intDenRunTime = toc(tIntDenID);
