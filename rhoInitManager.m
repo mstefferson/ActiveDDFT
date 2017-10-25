@@ -1,15 +1,45 @@
-function rhoInitObj = rhoInitManager( rhoInit, systemObj )
+function rhoInitObj = rhoInitManager( rhoInit, systemObj, particleObj )
 % build structure
 rhoInitObj.intCondInput = rhoInit.intCond;
 rhoInitObj.type = rhoInit.intCond{1};
+% Build equiblibrium density if you can
+% Find non-driving steady state
+if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer' )
+  % Number of coefficients
+  Nc    = 20;
+  % Equilib distribution. Don't let bc = 1.5
+  if 1.499 < systemObj.bc && systemObj.bc < 1.501
+    rhoInitObj.bc = 1.502;
+  else
+    rhoInitObj.bc = systemObj.bc;
+  end
+  if systemObj.n3 == 1
+    rhoInitObj.feq = [];
+  else
+  % Calculate coeff
+  phi = 2*pi/systemObj.n3 * (0:systemObj.n3-1);
+  [Coeff_best,~] = CoeffCalcExpCos2D(Nc,phi,rhoInitObj.bc); 
+  % Build equil distribution
+  rhoInitObj.feq = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);
+  end
+else
+  rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
+end
+
 % int cond
-if strcmp(rhoInit.intCond{1}, 'nem')
+if strcmp(rhoInit.intCond{1}, 'iso')
+  fprintf('Setting IC to iso\n');
+elseif strcmp(rhoInit.intCond{1}, 'nem')
+  fprintf('Setting IC to nem\n');
   if length( rhoInit.intCond ) == 1
     fprintf('user error: setting nem shift angle to 0.\n')
     rhoInit.intCond = {'nem',0};
   end
   rhoInitObj.shiftAngle = rhoInit.intCond{2};
+elseif strcmp(rhoInit.intCond{1}, 'eq')
+  fprintf('Setting IC to eq\n');
 elseif strcmp( rhoInit.intCond{1}, 'load')
+  fprintf('Setting IC to load\n');
   if length( rhoInit.intCond ) == 1
     fprintf('user error: no load name. resetting to iso.\n')
     rhoInit.intCond{1} = 'iso';
@@ -24,12 +54,14 @@ elseif strcmp( rhoInit.intCond{1}, 'load')
   rhoInitObj.loadName = rhoInit.intCond{2};
   rhoInitObj.pathName = rhoInit.intCond{3};
 elseif strcmp( rhoInit.intCond{1}, 'delP')
+  fprintf('Setting IC to delta function in angle\n');
   if length( rhoInit.intCond ) == 1
     fprintf('user error: setting polar shift angle to 0.\n')
     rhoInit.intCond = {'delP',0};
   end
   rhoInitObj.shiftAngle = rhoInit.intCond{2};
 elseif strcmp( rhoInit.intCond{1}, 'crys' )
+  fprintf('Setting IC to crystal\n');
   if length( rhoInit.intCond ) == 1
     fprintf('user error: setting crystal lattice spacing to 2.25.\n')
     rhoInit.intCond{2} = 2.25;
@@ -42,13 +74,15 @@ elseif strcmp( rhoInit.intCond{1}, 'crys' )
   rhoInitObj.latticeSpc = rhoInit.intCond{2};
   rhoInitObj.sigGuess = rhoInit.intCond{3};
 elseif strcmp( rhoInit.intCond{1}, 'gauss' )
+  fprintf('Setting IC to gauss\n')
   rhoInitObj = buildGaussIcObj( rhoInit.intCond, systemObj );
   rhoInitObj.intCondInput = rhoInit.intCond;
 elseif strcmp( rhoInit.intCond{1}, 'lorenz' )
+  fprintf('Setting IC to lorenztian\n');
   rhoInitObj = buildLorenzianIcObj( rhoInit.intCond, systemObj );
   rhoInitObj.intCondInput = rhoInit.intCond;
 else
-  fprintf('Cannot find initial density. Setting to iso\n' )
+  fprintf('Cannot find initial density. Setting to iso\n' );
   rhoInitObj.type = 'iso';
 end
 

@@ -73,11 +73,11 @@ if flags.MakeOP && flags.SaveMe == 0
   flags.SaveMe = 1;
 end
 if particleObj.vD  == 0; flags.Drive = 0; else flags.Drive = 1;end
-% fix rhoInit
-rhoInitObj = rhoInitManager( rhoInit, systemObj );
 % Get particle mobility
 [particleObj, systemObj] = ...
   particleInit( particleObj, systemObj, flags.DiagLop);
+% fix rhoInit
+rhoInitObj = rhoInitManager( rhoInit, systemObj, particleObj );
 % grab particle types and interactions
 ptype = ['_' particleObj.type];
 if isempty(particleObj.interHb); interHb = '';

@@ -59,11 +59,11 @@ if flags.AllNsSame == 1
     systemObj.n1 = Nvec;  systemObj.n2 = Nvec;   systemObj.n3 = Nvec;
   end
 end
-% fix rhoInit
-rhoInitObj = rhoInitManager( rhoInit, systemObj );
 % fix particles
 [particleObj, systemObj] = ...
   particleInit( particleObj, systemObj, flags.DiagLop );
+% fix rhoInit
+rhoInitObj = rhoInitManager( rhoInit, systemObj, particleObj );
 systemObj.c = systemObj.bc ./ particleObj.b;
 systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
 % Display everythin
