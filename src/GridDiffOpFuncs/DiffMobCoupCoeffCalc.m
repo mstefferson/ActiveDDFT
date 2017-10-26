@@ -18,7 +18,7 @@ diffObj.D_rot  = Mob_rot * T; % Rotational diffusion
 
 %Aniso rods diffusion coupling
 % Constant in front of cross terms
-CrossTermFactor = (diffObj.D_par - diffObj.D_perp)/4; 
+CrossTermFactor = (diffObj.Mob_par - diffObj.Mob_perp)/4; 
 % Coupling coefficent
 if CrossTermFactor == 0
   diffObj.Ani = 0;
@@ -51,36 +51,35 @@ diffObj.ik3rep3 = sqrt(-1) .* diffObj.ik3rep3;
 % key: jiMm2f = ji m -2 coupling factor
 % jx
 n3 = length(km);
-j1f    = - ( diffObj.D_par + diffObj.D_perp ) .* ...
+j1f    = - ( diffObj.Mob_par + diffObj.Mob_perp ) .* ...
   ( sqrt(-1) * kx2D ) / 2;
 diffObj.j1f_reps = repmat( j1f, [1,1,n3]);
-if diffObj.Ani == 0 || diffObj.D_perp == diffObj.D_par
+if diffObj.Ani == 0 || diffObj.Mob_perp == diffObj.Mob_par
   diffObj.j1Mm2f_reps = 0;
   diffObj.j1Mp2f_reps = 0;
 else
-  jxMm2f = - ( diffObj.D_par - diffObj.D_perp ) .* ...
+  jxMm2f = - ( diffObj.Mob_par - diffObj.Mob_perp ) .* ...
     ( sqrt(-1) * kx2D + ky2D ) / 4;
-  jxMp2f = - ( diffObj.D_par - diffObj.D_perp ) .* ...
+  jxMp2f = - ( diffObj.Mob_par - diffObj.Mob_perp ) .* ...
     ( sqrt(-1) * kx2D - ky2D ) / 4;
   diffObj.j1Mm2f_reps = repmat( jxMm2f, [1,1,n3]);
   diffObj.j1Mp2f_reps = repmat( jxMp2f, [1,1,n3]);
 end
 % jy
-j2f    = - ( diffObj.D_perp + diffObj.D_par ) .* ...
+j2f    = - ( diffObj.Mob_perp + diffObj.Mob_par ) .* ...
   ( sqrt(-1) * ky2D ) / 2;
 diffObj.j2f_reps = repmat( j2f, [1,1,n3]);
-if diffObj.Ani == 0 || diffObj.D_perp == diffObj.D_par
+if diffObj.Ani == 0 || diffObj.Mob_perp == diffObj.Mob_par
   diffObj.j2Mm2f_reps = 0;
   diffObj.j2Mp2f_reps = 0;
 else
-  jyMm2f = - ( diffObj.D_perp - diffObj.D_par ) .* ...
+  jyMm2f = - ( diffObj.Mob_perp - diffObj.Mob_par ) .* ...
     ( sqrt(-1) * ky2D - kx2D ) / 4;
-  jyMp2f = - ( diffObj.D_perp - diffObj.D_par ) .* ...
+  jyMp2f = - ( diffObj.Mob_perp - diffObj.Mob_par ) .* ...
     ( sqrt(-1) * ky2D + kx2D ) / 4;
   diffObj.j2Mm2f_reps = repmat( jyMm2f, [1,1,n3]);
   diffObj.j2Mp2f_reps = repmat( jyMp2f, [1,1,n3]);
 end
 % jm
-diffObj.jx3f = - diffObj.ik3rep3 .* diffObj.D_rot;
-
+diffObj.j3f_reps = - diffObj.ik3rep3 .* diffObj.Mob_rot;
 end
