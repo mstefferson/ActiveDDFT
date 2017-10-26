@@ -10,12 +10,20 @@ elseif nargin == 1
   destinationDir  = 'analyzedfiles/';
   override = 0;
 elseif nargin == 2
-  if destinationDir(end) ~= '/'
-    destinationDir = [ destinationDir '/'];
+  if ~isempty( destinationDir )
+    if destinationDir(end) ~= '/'
+      destinationDir = [ destinationDir '/'];
+    end
   end
   destinationDir = [ 'analyzedfiles/' destinationDir ];
   override = 0;
 else
+  if ~isempty( destinationDir )
+    if destinationDir(end) ~= '/'
+      destinationDir = [ destinationDir '/'];
+    end
+  end
+  destinationDir = [ 'analyzedfiles/' destinationDir ];
   override = 1;
   movieflags = flagsOverride;
 end
@@ -51,10 +59,10 @@ try
       runObj  = runSave.runObj;
       denRecObj = runSave.denRecObj;
       timeObj =  runSave.timeObj;
-      if override == 0 
+      if override == 0
         flags = runSave.flags;
         if isfield( flags, 'movie')
-           movieflags = flags.movie;
+          movieflags = flags.movie;
         else
           movieflags.makeMovie = 1;
           movieflags.plotInset = 0;
@@ -159,7 +167,7 @@ try
         movefile([figtl2 '*'], dirFullPath);
       end % plotAmp
       % Plot final slices of final order parameters
-      if movieflags.plotSlice 
+      if movieflags.plotSlice
         sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
           systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
         sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
