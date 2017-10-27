@@ -1,4 +1,7 @@
-function plotOps( OPs, x, y, cScale )
+function plotOps( OPs, x, y, cScale, figStyle )
+if nargin == 4
+  figStyle = 'normal';
+end
 % set-up fonts
 fontSize = 30;
 % Find ticks
@@ -38,7 +41,7 @@ figPos      = [ floor( 0.5 * ( screenWidth - figWidth ) ) ...
   figWidth figHeight];
 %Build a square box set by smallest dimension of screen
 Fig = figure();
-Fig.WindowStyle = 'normal';
+Fig.WindowStyle = figStyle;
 Fig.Position = figPos;
 % Concentration
 axh1 = subplot(numRow,numCol,1); % Save the handle of the subplot
