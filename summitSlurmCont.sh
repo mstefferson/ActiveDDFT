@@ -27,6 +27,10 @@
 # partition
 #SBATCH --partition=shas
 
+# email
+#SBATCH --mail-type=END
+#SBATCH --mail-user=michael.stefferson@colorado.edu
+
 # Load any modules you need here
 module load matlab/R2016b
 

@@ -90,12 +90,17 @@ if systemObj.n3 > 1
     OpCPNCalc(systemObj.n1,systemObj.n2,rho,...
     gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
   cScale = particleObj.b;
-  plotOps( OPs, gridObj.x1, gridObj.x2, cScale )
+  plotOps( OPs, gridObj.x1, gridObj.x2, cScale, 'docked' )
   % plot a slice
   figure()
-  ind1 = round(systemObj.n1/2);
-  ind2 = round(systemObj.n2/2);
-  plot( gridObj.x3, reshape( rho(ind1,ind2,:), size( gridObj.x3 ) ) )
+  hold
+  inds1 = round(systemObj.n1/4) * [ 1 2 3 ]; 
+  inds2 = round(systemObj.n2/4) * [ 1 2 3 ]; 
+  for ii = inds1
+    for jj = inds2
+      plot( gridObj.x3, reshape( rho(ii,jj,:), size( gridObj.x3 ) ) )
+    end
+  end
   title('Fixed pos: slice through angles');
   xlabel( ' $$ \phi $$ ' ); ylabel( ' $$ f( \phi ) $$ ' );
 else
