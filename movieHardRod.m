@@ -3,7 +3,7 @@
 % Takes all files in ./runOPfiles, makes movies, and moves them to analyzed
 function movieHardRod(desiredFilesId, destinationDir, flagsOverride)
 if nargin == 0
-  desiredFilesId = './runOPfiles/Hr_';
+  desiredFilesId = 'Hr_*';
   destinationDir = 'analyzedfiles/';
   override = 0;
 elseif nargin == 1
@@ -37,7 +37,11 @@ try
   if exist('analyzedfiles','dir') == 0; mkdir('analyzedfiles');end
   if exist(destinationDir,'dir') == 0; mkdir(destinationDir);end
   % see how many dirs to analyze
-  dir2Analyze = dir( [desiredFilesId '*'] );
+  if exist( ['runOPfiles/' desiredFilesId], 'dir' )
+    dir2Analyze = dir( ['runOPfiles/' desiredFilesId(1:end-1) '*'] );
+  else
+    dir2Analyze = dir( ['runOPfiles/' desiredFilesId] );
+  end
   numDirs = length(dir2Analyze);
   % run if there are things to run
   if numDirs
@@ -48,10 +52,15 @@ try
       fprintf('Movies for %s\n', dirTemp);
       dirFullPath = ['runOPfiles/' dirTemp];
       % load things
-      runFileName = [dirFullPath '/run_' dirTemp '.mat'];
-      opFileName = [dirFullPath '/op_' dirTemp '.mat'];
-      rhoFinalFileName = [dirFullPath '/rhoFinal_' dirTemp '.mat'];
-      runSave = matfile( runFileName);
+      runFileName = ls( [dirFullPath '/run_*'] );
+      opFileName = ls( [dirFullPath '/op_*' ] );
+      rhoFinalFileName = ls( [dirFullPath '/rhoFinal_*'] );
+      % get rid of blank
+      runFileName = runFileName(1:end-1);
+      opFileName = opFileName(1:end-1);
+      rhoFinalFileName = rhoFinalFileName(1:end-1);
+      % build mat files
+      runSave = matfile( runFileName );
       opSave  = matfile( opFileName );
       gridObj  = runSave.gridObj;
       particleObj  = runSave.particleObj;
@@ -82,14 +91,16 @@ try
       % op stuff
       OPobj.OpTimeRecVec = opSave.OpTimeRecVec;
       OPobj.C_rec    = opSave.C_rec;
+      if systemObj.n3 > 1
+        OPobj.POP_rec  = opSave.POP_rec;
+        OPobj.POPx_rec = opSave.POPx_rec;
+        OPobj.POPy_rec = opSave.POPy_rec;
+        OPobj.NOP_rec  = opSave.NOP_rec;
+        OPobj.NOPx_rec = opSave.NOPx_rec;
+        OPobj.NOPy_rec = opSave.NOPy_rec;
+      end
       if movieflags.makeMovie
         if systemObj.n3 > 1
-          OPobj.POP_rec  = opSave.POP_rec;
-          OPobj.POPx_rec = opSave.POPx_rec;
-          OPobj.POPy_rec = opSave.POPy_rec;
-          OPobj.NOP_rec  = opSave.NOP_rec;
-          OPobj.NOPx_rec = opSave.NOPx_rec;
-          OPobj.NOPy_rec = opSave.NOPy_rec;
           if isfield(opSave, 'sliceRho')
             sliceRho = opSave.sliceRho;
             sliceRho.plotInset = movieflags.plotInset;
@@ -233,7 +244,14 @@ try
         end
       end % plot Crystal
       % move directory
-      movefile(dirFullPath, [destinationDir  dirTemp] )
+      % dont override
+      if exist( [destinationDir  dirTemp], 'dir' )
+        dirNew = [  dirTemp '_' ...
+          datestr(now,'yyyymmdd_HH.MM.SS') ];
+        movefile( dirFullPath, ['runOPfiles/' dirNew] );
+        dirFullPath = ['runOPfiles/' dirNew];
+      end
+      movefile(dirFullPath, destinationDir )
     end % loop over dir
   else
     fprintf('Nothing to make movies for \n');

@@ -54,15 +54,20 @@ try
     saveNameParams = ['params_' filename];
     dirName  = filename(1:end-4) ;
     if flags.MakeOP == 0
-      dirName  = ['./runfiles/' dirName ];
+      dirPath = 'runfiles/';
     else
       saveNameOP   = ['op_' filename];
-      dirName  = ['./runOPfiles/' dirName ];
+      dirPath = 'runOPfiles/';
       opSave = matfile(saveNameOP,'Writable',true);
     end
-    if exist(dirName,'dir') == 0
-      mkdir(dirName);
+    % dont overwrite dirs
+    if exist( [dirPath dirName],'dir') == 0
+      dirId = dirName;
+    else
+      dirId = [dirName '_' datestr(now,'yyyymmdd_HH.MM.SS') ];
     end
+    dirName = [dirPath dirId];
+    mkdir( dirName );
     paramSave = matfile(saveNameParams,'Writable',true);
     rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
     runSave = matfile(saveNameRun,'Writable',true);
@@ -340,7 +345,7 @@ try
   end
   % run analysis
   if flags.movie.analysis == 1
-    movieHardRod(dirName)
+    movieHardRod(dirId)
   end
 catch err %Catch errors
   % write the error to file and to screen
