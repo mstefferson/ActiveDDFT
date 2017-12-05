@@ -24,8 +24,6 @@ timeObj = timeMaster;
 rhoInit  = rhoInitMaster;
 flags    = flagMaster;
 runObj  = runMaster;
-diagOp = flags.DiagLop;
-trial = runObj.trialID;
 % Fix things
 % Change odd gridspacings to even unless it's one.
 if systemObj.n1 == 1
@@ -69,7 +67,6 @@ systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of part
 % Display everythin
 disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); disp(rhoInitObj);
 % rhoInit str
-initStr = rhoInitObj.fileStr;
 % Loops over all run
 fprintf('Starting loop over runs\n');
 % build grid
