@@ -43,7 +43,7 @@ particleMaster.nlDr = [0]; % off if 0, if ~0, rhoMax value
 % different cells are different runs
 particleMaster.interactLrV = { }; 
 % External potential (cell of cells): 
-%  { {'linV', dim, a}, {'quadV', dim, a}, {'nemV', es1, phase} }
+%  { {'linV', dim, a}, {'quadV', dim, k}, {'nemV', es1, phase} }
 particleMaster.externalV = { }; % External potential 
 %%%%%%%%% System %%%%%%%%%%%%%%%%
 systemMaster.n1 = [64]; % Gridpoints in x dir (vec)

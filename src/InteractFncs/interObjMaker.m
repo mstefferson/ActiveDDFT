@@ -14,10 +14,14 @@ interObj.longFlag = 0;
 interObj.extFlag = 0;
 % save k3 index
 interObj.k3ind0 = floor( systemObj.n3 / 2 ) + 1;
-% flags
+% flags, any int
 interObj.dv1Flag = 0;
 interObj.dv2Flag = 0;
 interObj.dv3Flag = 0;
+% flags, any int
+interObj.dv1IntFlag = 0;
+interObj.dv2IntFlag = 0;
+interObj.dv3IntFlag = 0;
 % initialize ints
 interObj.srInd1 = [];
 interObj.srInd2 = [];
@@ -38,9 +42,9 @@ else
   if  strcmp( particleObj.type, 'rods' )
     interObj.typeId = 1;
     % flags/inds
-    interObj.dv1Flag = 1;
-    interObj.dv2Flag = 1;
-    interObj.dv3Flag = 1;
+    interObj.dv1IntFlag = 1;
+    interObj.dv2IntFlag = 1;
+    interObj.dv3IntFlag = 1;
     interObj.srInd1 = 1:systemObj.n1;
     interObj.srInd2 = 1:systemObj.n2;
     interObj.srInd3 = 1:systemObj.n3;
@@ -63,8 +67,8 @@ else
     % disks
   elseif strcmp( particleObj.type, 'disks' )
     % flags/inds
-    interObj.dv1Flag = 1;
-    interObj.dv2Flag = 1;
+    interObj.dv1IntFlag = 1;
+    interObj.dv2IntFlag = 1;
     interObj.typeId = 2;
     interObj.srInd1 = 1:systemObj.n1;
     interObj.srInd2 = 1:systemObj.n2;
@@ -95,9 +99,9 @@ else
   elseif strcmp( particleObj.type, 'spheres' )
     interObj.typeId = 3;
     % flags/inds
-    interObj.dv1Flag = 1;
-    interObj.dv2Flag = 1;
-    interObj.dv3Flag = 1;
+    interObj.dv1IntFlag = 1;
+    interObj.dv3IntFlag = 1;
+    interObj.dv3IntFlag = 1;
     interObj.srInd1 = 1:systemObj.n1;
     interObj.srInd2 = 1:systemObj.n2;
     interObj.srInd3 = 1:systemObj.n3;
@@ -199,25 +203,29 @@ else
     interObj.lrInd1 = floor(systemObj.n1/2) + 1;
   else
     interObj.lrInd1 = 1:systemObj.n1;
-    interObj.dv1Flag = 1;
+    interObj.dv1IntFlag = 2;
   end
   if vn2 == 1
     interObj.lrInd2 = floor(systemObj.n2/2) + 1;
   else
     interObj.lrInd2 = 1:systemObj.n2;
-    interObj.dv2Flag = 1;
+    interObj.dv2IntFlag = 2;
   end
   if vn3 == 1
     interObj.lrInd3 = floor(systemObj.n3/2) + 1;
   else
     interObj.lrInd3 = 1:systemObj.n3;
-    interObj.dv3Flag = 1;
+    interObj.dv3IntFlag = 2;
   end
   % store it
   interObj.v = v;
   interObj.c2 = c2;
   interObj.c2Ft = fftshift( fftn( c2 ) );
 end % long range interaction
+% if there is long or short range interaction, set interaction flag
+if interObj.dv1IntFlag; interObj.dv1Flag = 1; end
+if interObj.dv2IntFlag; interObj.dv2Flag = 1; end
+if interObj.dv3IntFlag; interObj.dv3Flag = 1; end
 % External potentional
 if isempty(particleObj.externalV)
   interObj.ext = 'none';
@@ -265,7 +273,7 @@ else
           currPot{2}(2), gridObj.x3 );
         interObj.externalV{ii} = vTemp;
         addPot = 1;
-        interObj.dv3Flag = 1;
+        %interObj.dv3Flag = 1;
       end
     elseif strcmp( currPot{1}, 'polV' ) % polar
       % run a dim check just in case
@@ -274,7 +282,7 @@ else
           currPot{2}(2), gridObj.x3 );
         interObj.externalV{ii} = vTemp;
         addPot = 1;
-        interObj.dv3Flag = 1;
+        %interObj.dv3Flag = 1;
       end
     else
       fprintf('Not building potential, potential not available\n' );

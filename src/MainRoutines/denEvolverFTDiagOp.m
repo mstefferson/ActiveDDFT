@@ -30,9 +30,9 @@ dt = timeObj.dt;
 % FT initial density and max density
 rho_FT = fftshift(fftn(rho));
 if n3 == 1
-  constConc = rho_FT( n1/2 + 1, n1/2 + 1);
+  constConc = rho_FT( n1/2 + 1, n2/2 + 1);
 else
-  constConc = rho_FT( n1/2 + 1, n1/2 + 1, n3/2 + 1);
+  constConc = rho_FT( n1/2 + 1, n2/2 + 1, n3/2 + 1);
 end
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
