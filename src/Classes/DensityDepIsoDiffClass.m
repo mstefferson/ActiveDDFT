@@ -9,9 +9,6 @@ classdef DensityDepIsoDiffClass < handle
     DNlFact = cell(1,3); % non linear diffusion coefficient factor
     DNl = cell(1,3); % non linear diffusion contribution
     Ik = cell(1,3); % sqrt(-1) * k1 vec
-    JEx = cell(1,3); % flux excess (without diff coeff), in dir 1
-    JDiff = cell(1,3); % flux diffusion (without diff coeff), in dir 1
-    Jft = cell(1,3); % flux total in dir 1
     NlDiffComponents = []; % compentes (1,2,3) we want nl diffusion in
   end
   
@@ -41,9 +38,6 @@ classdef DensityDepIsoDiffClass < handle
           % scale rho by average excluded volume and angle
           obj.Ik{ii} = reshape( ik{ii}, nVec{ii} );
           obj.DNl{ii} = zeros(n1,n2,n3);
-          obj.JEx{ii} = zeros(n1,n2,n3);
-          obj.JDiff{ii} = zeros(n1,n2,n3);
-          obj.Jft{ii} = zeros(n1,n2,n3);
         end
       end
     end
@@ -62,15 +56,10 @@ classdef DensityDepIsoDiffClass < handle
       % "flux" without mobility
       dRho_dt = zeros( obj.N1, obj.N2, obj.N3 );
       for ii = obj.NlDiffComponents
-        obj.JDiff{ii} = -real( ifftn( ifftshift( obj.Ik{ii} .* rhoFt ) ) );
-        obj.JEx{ii} = jEx{ii};
-        obj.Jft{ii} = fftshift( fftn( ...
-          obj.DNl{ii} .* ( obj.JDiff{ii} + obj.JEx{ii} ) ) );
-        dRho_dt = dRho_dt - obj.Ik{ii} .* obj.Jft{ii};
-        %jDiffTemp  = -real( ifftn( ifftshift( obj.Ik{ii} .* rhoFt ) ) );
-        %jftTemp = fftshift( fftn( ...
-          %obj.DNl{ii} .* ( jDiffTemp + jEx{ii} ) ) );
-        %dRho_dt = dRho_dt - obj.Ik{ii} .* jftTemp;
+        jDiffTemp  = -real( ifftn( ifftshift( obj.Ik{ii} .* rhoFt ) ) );
+        jftTemp = fftshift( fftn( ...
+          obj.DNl{ii} .* ( jDiffTemp + jEx{ii} ) ) );
+        dRho_dt = dRho_dt - obj.Ik{ii} .* jftTemp;
       end
    end
   end %methods

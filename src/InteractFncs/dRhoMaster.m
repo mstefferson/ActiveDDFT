@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [gammaCubeFt, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr, densityDepD )
+  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDiff )
 % Initialize
 gammaCubeFt = 0;
 shitIsFucked = 0;
@@ -82,14 +82,8 @@ if noise.Flag
   gammaCubeFt = gammaCubeFt + gammaNoiseFt;
 end
 % density dep diffusion
-if densityDepD.Flag
-  gammaRotDiffFt1 = densityDepD.calcDrho( rho, rho_FT,...
+if densityDepDiff.Flag
+  gammaRotDiffFt1 = densityDepDiff.calcDrho( rho, rho_FT,...
     {j1Ex, j2Ex, j3Ex} );
   gammaCubeFt = gammaCubeFt + gammaRotDiffFt1;
 end
-% density dep diffusion
-if densityDepDr.Flag
-  gammaRotDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
-  gammaCubeFt = gammaCubeFt + gammaRotDiffFt;
-end
-keyboard
