@@ -83,7 +83,9 @@ if noise.Flag
 end
 % density dep diffusion
 if densityDepDiff.Flag
-  gammaRotDiffFt1 = densityDepDiff.calcDrho( rho, rho_FT,...
+  gammaRotDiffFt = densityDepDiff.calcDrho( rho, rho_FT,...
     {j1Ex, j2Ex, j3Ex} );
-  gammaCubeFt = gammaCubeFt + gammaRotDiffFt1;
+  gammaCubeFt = gammaCubeFt + gammaRotDiffFt;
 end
+keyboard
+
