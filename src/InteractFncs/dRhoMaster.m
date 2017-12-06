@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [gammaCubeFt, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr )
+  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDr, densityDepD )
 % Initialize
 gammaCubeFt = 0;
 shitIsFucked = 0;
@@ -68,7 +68,8 @@ if calcGamma
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
-  [gammaCubeFt, j3Ex] = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
+  [gammaCubeFt, j1Ex, j2Ex, j3Ex] = dRhoIntCalcMu( ...
+    rho, dVmaster, systemObj, diffObj, interObj);
 end
 % driving
 if polarDrive.Flag
@@ -81,7 +82,14 @@ if noise.Flag
   gammaCubeFt = gammaCubeFt + gammaNoiseFt;
 end
 % density dep diffusion
+if densityDepD.Flag
+  gammaRotDiffFt1 = densityDepD.calcDrho( rho, rho_FT,...
+    {j1Ex, j2Ex, j3Ex} );
+  gammaCubeFt = gammaCubeFt + gammaRotDiffFt1;
+end
+% density dep diffusion
 if densityDepDr.Flag
   gammaRotDiffFt = densityDepDr.calcDrho( rho, rho_FT, j3Ex );
   gammaCubeFt = gammaCubeFt + gammaRotDiffFt;
 end
+keyboard

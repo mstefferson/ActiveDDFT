@@ -1,18 +1,22 @@
 classdef DensityDepRotDiffClass < handle
   properties
-    Flag = [];
-    Dr0 = [];
-    RhoMax = [];
-    DrNlFact = [];
-    DrNl = [];
-    Ik3 = [];
-    JEx = [];
-    JDiff = [];
-    Jft = [];
+    Flag = []; % flag to calculate or not
+    Dr0 = []; % constant diffusion coefficient
+    RhoMax = []; % density, c, where rho goes to zero
+    DrNlFact = []; % non linear diffusion coefficient factor
+    DrNl = []; % non linear diffusion contribution
+    Ik3 = []; % sqrt(-1) * k1 vec
+    JEx3 = []; % flux excess (without diff coeff), in dir 3
+    JDiff3 = []; % flux diffusion (without diff coeff), in dir 3
+    JFt3 = []; % flux total in dir 3
   end
   
   methods
     % Constructor
+    % rhoMax: density diffusion goes to zero
+    % n1,2,3: number of grid points in 1, 2, 3
+    % dr0: rot diffusion constant
+    % ik3: sqrt(-1) * k vector
     function obj = DensityDepRotDiffClass( rhoMax, b, n1, n2, n3, dr0, ik3 )
       if rhoMax == 0
         obj.Flag = 0;
@@ -24,13 +28,13 @@ classdef DensityDepRotDiffClass < handle
         obj.DrNlFact = -obj.Dr0 / obj.RhoMax ;
         obj.Ik3 = reshape( ik3, [1 1 n3] );
         obj.DrNl = zeros(n1,n2,n3);
-        obj.JEx = zeros(n1,n2,n3);
-        obj.JDiff = zeros(n1,n2,n3);
-        obj.Jft = zeros(n1,n2,n3);
+        obj.JEx3 = zeros(n1,n2,n3);
+        obj.JDiff3 = zeros(n1,n2,n3);
+        obj.JFt3 = zeros(n1,n2,n3);
       end
     end
     function [obj] = setExcessJ( obj, j )
-      obj.JEx = j;
+      obj.JEx3 = j;
     end
     
     % Set the nl diffusion coeff
@@ -43,10 +47,10 @@ classdef DensityDepRotDiffClass < handle
     function [dRho_dt] = calcDrho( obj, rho, rhoFt, jEx )
       obj.calcDiffNl( rho );
       % "flux" without mobility
-      obj.JDiff = -real( ifftn( ifftshift( obj.Ik3 .* rhoFt ) ) );
-      obj.JEx = jEx;
-      obj.Jft = fftshift( fftn( obj.DrNl .* ( obj.JDiff + obj.JEx ) ) );
-      dRho_dt = -obj.Ik3 .* obj.Jft;
+      obj.JDiff3 = -real( ifftn( ifftshift( obj.Ik3 .* rhoFt ) ) );
+      obj.JEx3 = jEx;
+      obj.JFt3 = fftshift( fftn( obj.DrNl .* ( obj.JDiff3 + obj.JEx3 ) ) );
+      dRho_dt = -obj.Ik3 .* obj.JFt3;
    end
   end %methods
 end %class

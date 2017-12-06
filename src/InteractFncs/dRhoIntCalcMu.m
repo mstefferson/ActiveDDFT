@@ -2,7 +2,7 @@
 %
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
-function [negDivFluxEx_FT, jx3] = ...
+function [negDivFluxEx_FT, jx1, jx2, jx3] = ...
   dRhoIntCalcMu(rho, dMu, systemObj, diffObj, interObj)
 % Allocate and calulate
 n3 = systemObj.n3;
@@ -31,6 +31,8 @@ if interObj.dv1Flag
       diffObj.j1Mm2f_reps .* jx1_FT(:,:,jInd_m2) + ...
       diffObj.j1Mp2f_reps .* jx1_FT(:,:,jInd_p2);
   end
+else
+  jx1 = 0;
 end
 % coordinate 2
 if interObj.dv2Flag
@@ -45,6 +47,8 @@ if interObj.dv2Flag
       diffObj.j2Mm2f_reps .* jx2_FT(:,:,jInd_m2) + ...
       diffObj.j2Mp2f_reps .* jx2_FT(:,:,jInd_p2);
   end
+else
+  jx2 = 0;
 end
 % coordinate 3
 if interObj.dv3Flag
@@ -52,4 +56,6 @@ if interObj.dv3Flag
   jx3_FT = fftshift(fftn(jx3));
   negDivFluxEx_FT = negDivFluxEx_FT +...
     diffObj.j3f_reps .* jx3_FT;
+else
+  jx3 = 0;
 end

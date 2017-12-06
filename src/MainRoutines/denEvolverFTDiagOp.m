@@ -16,7 +16,8 @@
 %
 function [denRecObj,rho]  = ...
   denEvolverFTDiagOp(rho,systemObj,particleObj,...
-  timeObj,gridObj,diffObj,interObj,polarDrive,noise,densityDepDr, flags,lfid)
+  timeObj,gridObj,diffObj,interObj,polarDrive,...
+  noise, densityDepDr, densityDepD,flags,lfid)
 % globals
 global runSave
 % where you at
@@ -53,7 +54,7 @@ if interObj.anyInter || polarDrive.Flag
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, ...
-    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
+    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr, densityDepD );
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
@@ -112,8 +113,8 @@ if shitIsFucked == 0
       rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
-        dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
+        dRhoMaster( rho, rho_FT, interObj, systemObj,...
+        diffObj, polarDrive, noise, densityDepDr, densityDepD );
     end
     % Take a step
     if( flags.StepMeth == 0 )
