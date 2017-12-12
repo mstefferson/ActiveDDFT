@@ -10,6 +10,7 @@ classdef DensityDepIsoDiffClass < handle
     DNl = cell(1,3); % non linear diffusion contribution
     Ik = cell(1,3); % sqrt(-1) * k1 vec
     NlDiffComponents = []; % compentes (1,2,3) we want nl diffusion in
+    DNlMin = [];
   end
   
   methods
@@ -33,6 +34,7 @@ classdef DensityDepIsoDiffClass < handle
         obj.NlDiffComponents = indsWant;
         obj.D0 = d0;
         obj.DNlFact = -obj.D0 / obj.RhoMax ;
+        obj.DNlMin = -obj.D0;
         nVec = { [n1 1 1], [1 n2 1], [1 1 n3] };
         for ii = obj.NlDiffComponents
           % scale rho by average excluded volume and angle
@@ -46,10 +48,21 @@ classdef DensityDepIsoDiffClass < handle
     function [obj] = calcDiffNl( obj, rho )
       for ii = obj.NlDiffComponents
         obj.DNl{ii} = obj.DNlFact(ii) .* rho;
-        obj.DNl{ii}( obj.DNl{ii} <  -obj.D0(ii) ) = -obj.D0(ii);
+        obj.DNl{ii} = obj.fixNegativeDiff( obj.DNl{ii}, obj.DNlMin(ii) );
+        %obj.DNl{ii}( obj.DNl{ii} <  -obj.D0(ii) ) = -obj.D0(ii);
       end
     end
     
+    % fix densities that are too low
+    function dCurrent = fixNegativeDiff( obj, dCurrent, dMin )
+      logInds = dCurrent < dMin;
+      if isscalar( dMin  )
+        dCurrent( logInds ) = dMin;
+      else
+        dCurrent( logInds ) = dMin( logInds );
+      end
+    end
+
     % calc d rho
     function [dRho_dt] = calcDrho( obj, rho, rhoFt, jEx )
       obj.calcDiffNl( rho );

@@ -33,8 +33,10 @@ particleMaster.vD   = [0]; % Driving velocity (vec)
 particleMaster.mob  = 1; % mobility
 particleMaster.type = 'rods'; % rods, disks, spheres 
 particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
-% isotropic non-linear diff, [bcMax,[dimension] off if bcMax = 0
-particleMaster.nlDiffIso = {0, []}; 
+% non-linear diff, 
+% {'iso', bcMax, [dimension] } off if bcMax = 0
+% {'aniso', bcMax, [posFlag rotFlag] } off if bcMax = 0
+particleMaster.nlDiff = {'iso', 0, []}; 
 %  Long range interaction type in MF: 
 % {'ss', 'mf/vir', es1, es2, lr1, lr2}  (softshoulder2d), 
 % {'pa', 'mf/vir', es1} (polaralign2d), 

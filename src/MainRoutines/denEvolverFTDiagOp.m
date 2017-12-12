@@ -50,7 +50,7 @@ jrec     = timeObj.recStartInd; % Actual index for runSave
 [lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 prop = exp(lop .* dt);   % Exponentiate the elements
 % Interactions and driving
-if interObj.anyInter || polarDrive.Flag 
+if flags.dRhoCalc
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, ...
@@ -60,6 +60,30 @@ else
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaCube_FT = zeros( n1, n2, n3);
 end
+gammaExReal = real( ifftn( ifftshift( GammaCube_FT ) ) );
+gammaExSqReal = trapz_periodic( gammaExReal, 3 );
+gammaExPhiReal =  reshape( trapz_periodic( trapz_periodic(...
+  gammaExReal,1 ),2 ), [1 n3] );
+gammaDiff = lop .* rho_FT;
+gammaDiffReal = real( ifftn( ifftshift( gammaDiff ) ) );
+gammaDiffSqReal =  trapz_periodic( gammaDiffReal, 3 );
+gammaDiffPhiReal =  reshape( trapz_periodic( trapz_periodic(...
+  gammaDiffReal,1 ),2 ), [1 n3] );
+figure()
+subplot(1,3,1)
+imagesc( gammaDiffSqReal )
+colorbar
+subplot(1,3,2)
+imagesc( gammaExSqReal )
+colorbar
+subplot(1,3,3)
+imagesc( gammaDiffSqReal + gammaExSqReal )
+colorbar
+figure()
+plot( gridObj.x3, gammaDiffPhiReal,...
+  gridObj.x3, gammaExPhiReal,...
+  gridObj.x3, gammaExPhiReal + gammaDiffPhiReal)
+keyboard
 % Take the first step- Euler. Element by element mulitplication
 if( flags.StepMeth == 0 ) % AB 1
   NlPf =  dt;
@@ -109,7 +133,7 @@ if shitIsFucked == 0
     rho_FT = rho_FTnext;
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions
-    if interObj.anyInter || polarDrive.Flag || noise.Flag
+    if flags.dRhoCalc
       rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
@@ -140,7 +164,7 @@ if shitIsFucked == 0
     end
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
-      if interObj.anyInter == 0 && polarDrive.Flag == 0 && noise.Flag == 0
+      if flags.dRhoCalc
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
       [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
@@ -197,7 +221,7 @@ if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
     % Turn it to a cube if it hasn't been yet
-    if interObj.anyInter == 0 && polarDrive.Flag == 0 && noise.Flag == 0
+    if flags.dRhoCalc
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     DensityFT_rec(:,:,:,jrectemp)   = rho_FT;

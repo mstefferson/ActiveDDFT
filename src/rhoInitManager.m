@@ -23,7 +23,7 @@ if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer' )
   rhoInitObj.feq = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);
   end
 else
-  rhoInit.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
+  rhoInitObj.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
 end
 
 % int cond
