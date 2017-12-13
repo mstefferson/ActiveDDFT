@@ -60,30 +60,6 @@ else
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaCube_FT = zeros( n1, n2, n3);
 end
-gammaExReal = real( ifftn( ifftshift( GammaCube_FT ) ) );
-gammaExSqReal = trapz_periodic( gammaExReal, 3 );
-gammaExPhiReal =  reshape( trapz_periodic( trapz_periodic(...
-  gammaExReal,1 ),2 ), [1 n3] );
-gammaDiff = lop .* rho_FT;
-gammaDiffReal = real( ifftn( ifftshift( gammaDiff ) ) );
-gammaDiffSqReal =  trapz_periodic( gammaDiffReal, 3 );
-gammaDiffPhiReal =  reshape( trapz_periodic( trapz_periodic(...
-  gammaDiffReal,1 ),2 ), [1 n3] );
-figure()
-subplot(1,3,1)
-imagesc( gammaDiffSqReal )
-colorbar
-subplot(1,3,2)
-imagesc( gammaExSqReal )
-colorbar
-subplot(1,3,3)
-imagesc( gammaDiffSqReal + gammaExSqReal )
-colorbar
-figure()
-plot( gridObj.x3, gammaDiffPhiReal,...
-  gridObj.x3, gammaExPhiReal,...
-  gridObj.x3, gammaExPhiReal + gammaDiffPhiReal)
-keyboard
 % Take the first step- Euler. Element by element mulitplication
 if( flags.StepMeth == 0 ) % AB 1
   NlPf =  dt;
