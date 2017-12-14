@@ -1,3 +1,7 @@
+% DensityDepIsoDiffClass: handles non-linear density contributions to diffusion
+% considering an anisotropic diffusion coefficient
+% Can turn on NL diffusion in x,y,phi
+
 classdef DensityDepIsoDiffClass < handle
   properties
     Flag = []; % flag to calculate or not
@@ -49,7 +53,6 @@ classdef DensityDepIsoDiffClass < handle
       for ii = obj.NlDiffComponents
         obj.DNl{ii} = obj.DNlFact(ii) .* rho;
         obj.DNl{ii} = obj.fixNegativeDiff( obj.DNl{ii}, obj.DNlMin(ii) );
-        %obj.DNl{ii}( obj.DNl{ii} <  -obj.D0(ii) ) = -obj.D0(ii);
       end
     end
     
@@ -70,8 +73,9 @@ classdef DensityDepIsoDiffClass < handle
       dRho_dt = zeros( obj.N1, obj.N2, obj.N3 );
       for ii = obj.NlDiffComponents
         jDiffTemp  = -real( ifftn( ifftshift( obj.Ik{ii} .* rhoFt ) ) );
+        jTemp = jDiffTemp + jEx{ii};
         jftTemp = fftshift( fftn( ...
-          obj.DNl{ii} .* ( jDiffTemp + jEx{ii} ) ) );
+          obj.DNl{ii} .* ( jTemp ) ) );
         dRho_dt = dRho_dt - obj.Ik{ii} .* jftTemp;
       end
    end

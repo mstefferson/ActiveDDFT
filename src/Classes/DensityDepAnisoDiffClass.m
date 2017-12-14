@@ -1,3 +1,7 @@
+% DensityDepAnisoDiffClass: handles non-linear density contributions to diffusion
+% considering an anisotropic diffusion coefficient
+% Currently, only alters perpendicular and rotational diffusion
+%
 classdef DensityDepAnisoDiffClass < handle
   properties
     Flag = []; % flag to calculate or not
@@ -79,8 +83,7 @@ classdef DensityDepAnisoDiffClass < handle
           obj.DNlFact22 = 0;
         end
         if obj.FlagRot
-          obj.DimInclude = 3;
-          obj.DimInclude = [obj.DimInclude 3];
+          obj.DimInclude = unique( [obj.DimInclude 3] );
           obj.DNlFactR = -obj.D0R / obj.RhoMax ;
           obj.DNlRMin = -obj.D0R;
           obj.DNlR = zeros(n1,n2,n3);
@@ -100,17 +103,12 @@ classdef DensityDepAnisoDiffClass < handle
     function [obj] = calcDiffNl( obj, rho )
       if obj.FlagRot
         obj.DNlR = obj.DNlFactR .* rho;
-        %obj.DNlR( obj.DNlR < -obj.D0R ) = -obj.D0R;
         obj.DNlR = obj.fixNegativeDiff( obj.DNlR, obj.DNlRMin );
       end
       if obj.FlagPos
         obj.DNl11 = obj.DNlFact11 .* rho;
         obj.DNl12 = obj.DNlFact12 .* rho;
         obj.DNl22 = obj.DNlFact22 .* rho;
-        % I am unsure about this
-        %obj.DNl11( obj.DNl11 < -obj.D0Perp ) = -obj.D0Perp;
-        %obj.DNl12( obj.DNl12 < -obj.D0Perp ) = -obj.D0Perp;
-        %obj.DNl22( obj.DNl22 < -obj.D0Perp ) = -obj.D0Perp;
         obj.DNl11 = obj.fixNegativeDiff( obj.DNl11, obj.DNl11Min );
         obj.DNl12 = obj.fixNegativeDiff( obj.DNl12, obj.DNl12Min );
         obj.DNl22 = obj.fixNegativeDiff( obj.DNl22, obj.DNl22Min );
