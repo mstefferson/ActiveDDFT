@@ -18,7 +18,7 @@ try
   systemObj.n3 = paramVec(3);
   systemObj.l1 = paramVec(4);
   systemObj.l2 = paramVec(5);
-  particleObj.vD = paramVec(6);
+  particleObj.fD = paramVec(6);
   systemObj.bc = paramVec(7);
   flags.StepMeth = paramVec(8);
   runObj.runID = paramVec(9);
@@ -31,8 +31,8 @@ try
   systemObj.lBox = [systemObj.l1 systemObj.l2];
   % set up the time object
   dtOrig = timeObj.dt ;
-  if timeObj.scaleDt && particleObj.vD ~=0
-    timeObj.dt = min( timeObj.dt, timeObj.dt * 30  / particleObj.vD );
+  if timeObj.scaleDt && particleObj.fD ~=0
+    timeObj.dt = min( timeObj.dt, timeObj.dt * 30  / particleObj.fD );
   end
   % Fix the time
   ss_epsilon = timeObj.ss_epsilon;
@@ -106,7 +106,7 @@ try
   [diffObj] =  DiffMobCoupCoeffCalc( systemObj.tmp,...
     particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
     gridObj.k1, gridObj.k2, gridObj.k3, ...
-    gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
+    gridObj.k1rep2, gridObj.k2rep2,particleObj.fD);
   diffRunTime = toc(tDiffID);
   if flags.Verbose
     fprintf('Made diffusion object t%d_%d: %.3g\n', ...
@@ -134,8 +134,9 @@ try
     diffObj.ik3rep3, timeObj.dt);
   % set-up driving
   dRhoDriveFlag = flags.Drive && flags.DiagLop;
-  polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.vD, systemObj.n1,...
-    systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2 );
+  polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.fD, ...
+  systemObj.n1, systemObj.n2, systemObj.n3, ...
+  gridObj.x3, gridObj.k1rep2, gridObj.k2rep2, diffObj.D_pos, systemObj.tmp  );
   % build density dep diffusion class
   densityDepDiff = densityDepDiffClassHandler( ...
     particleObj, systemObj, gridObj, diffObj, rho  );

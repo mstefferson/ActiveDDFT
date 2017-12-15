@@ -115,8 +115,41 @@ classdef DensityDepAnisoDiffClass < handle
       end
     end
     
+    function [dRho_dt] = calcDrho( obj, rho, rhoFt, iotaEx )
+      obj.calcDiffNl( rho );
+      % "flux" without mobility
+      iotaTemp = cell( 1, 3 );
+      iotaFtTemp = cell( 1, 3 );
+      for ii = 1:3
+        if any( ii == obj.DimInclude )
+          iotaDiffTemp = obj.calcIotaDiff( rhoFt, obj.Ik{ii} );
+          iotaTemp{ii} = iotaDiffTemp + iotaEx{ii};
+        else
+          iotaTemp{ii} = 0;
+        end
+      end
+      % fourier transform of true flux
+      if obj.FlagPos
+        iotaFtTemp{1} = fftshift( fftn( ...
+          obj.DNl11 .* iotaTemp{1} + obj.DNl12 .* iotaTemp{2} ) );
+        iotaFtTemp{2} = fftshift( fftn( ...
+          obj.DNl12 .* iotaTemp{1} + obj.DNl22 .* iotaTemp{2} ) );
+      end
+      if obj.FlagRot
+        iotaFtTemp{3} = fftshift( fftn( ...
+          obj.DNlR .* iotaTemp{3} ) );
+      end
+      % minus divergence of flux
+      dRho_dt = 0;
+      for ii = obj.DimInclude
+        dRho_dt = dRho_dt - obj.Ik{ii} .* ( iotaFtTemp{ii} );
+      end
+    end
+  end %methods
+  
+  methods (Static)
     % fix densities that are too low
-    function dCurrent = fixNegativeDiff( obj, dCurrent, dMin )
+    function dCurrent = fixNegativeDiff( dCurrent, dMin )
       logInds = dCurrent < dMin;
       if isscalar( dMin )
         dCurrent( logInds ) = dMin;
@@ -124,38 +157,18 @@ classdef DensityDepAnisoDiffClass < handle
         dCurrent( logInds ) = dMin( logInds );
       end
     end
-    
-    % calc d rho
-    function [dRho_dt] = calcDrho( obj, rho, rhoFt, jEx )
-      obj.calcDiffNl( rho );
-      % "flux" without mobility
-      jTemp = cell( 1, 3 );
-      jftTemp = cell( 1, 3 );
-      for ii = 1:3
-        if any( ii == obj.DimInclude )
-          jDiffTemp  = -real( ifftn( ifftshift( obj.Ik{ii} .* rhoFt ) ) );
-          jTemp{ii} = jDiffTemp + jEx{ii};
-        else
-          jTemp{ii} = 0;
-        end
-      end
-      % fourier transform of true flux
-      if obj.FlagPos
-        jftTemp{1} = fftshift( fftn( ...
-          obj.DNl11 .* jTemp{1} + obj.DNl12 .* jTemp{2} ) );
-        jftTemp{2} = fftshift( fftn( ...
-          obj.DNl12 .* jTemp{1} + obj.DNl22 .* jTemp{2} ) );
-      end
-      if obj.FlagRot
-        jftTemp{3} = fftshift( fftn( ...
-          obj.DNlR .* jTemp{3} ) );
-      end
-      % minus divergence of flux
-      dRho_dt = 0;
-      for ii = obj.DimInclude
-        dRho_dt = dRho_dt - obj.Ik{ii} .* ( jftTemp{ii} );
-      end
+
+    % calc iota diff
+    function [iota] = calcIotaDiff( rhoFtTemp, ik )
+      % "flux" without mobility from diffusion
+      iota  = -real( ifftn( ifftshift( ik .* rhoFtTemp ) ) );
     end
-  end %methods
+    
+    % calc iota total
+    function [iota] = calcIotaTotal(iotaDiff, iotaOther )
+      % "flux" without mobility total
+      iota = iotaDiff + iotaOther;
+    end
+  end % static methods
 end %class
 

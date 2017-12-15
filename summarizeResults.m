@@ -107,7 +107,7 @@ try
       ssEpsilon(ii) =  timeObj.ss_epsilon;
       bc(ii) = systemObj.bc;
       c(ii) = systemObj.c;
-      vD(ii) = particleObj.vD;
+      vD(ii) = particleObj.fD;
       steady(ii) = denRecObj.SteadyState;
       broken(ii) = denRecObj.DidIBreak;
       whatBroke{ii} = denRecObj.whatBroke;

@@ -2,7 +2,7 @@
 %
 % Calculate dRho given a chemical potentionial (FT) muExFt
 %
-function [negDivFluxEx_FT, jx1, jx2, jx3] = ...
+function [negDivFluxEx_FT, iota1, iota2, iota3] = ...
   dRhoIntCalcMu(rho, dMu, systemObj, diffObj, interObj)
 % Allocate and calulate
 n3 = systemObj.n3;
@@ -20,42 +20,42 @@ else
 end
 % coordinate 1
 if interObj.dv1Flag
-  jx1 = - rho .* dMu.dx1;    %Flux in the x1 direction with isostropic diffusion
-  jx1_FT = fftshift(fftn(jx1)); % FFT
+  iota1 = - rho .* dMu.dx1;  %Flux in the x1 direction before diffusion
+  iota1_FT = fftshift(fftn(iota1)); % FFT
   if diffObj.Ani == 0
     negDivFluxEx_FT(:,:,jInd) = ...
-      diffObj.j1f_reps .* jx1_FT(:,:,jInd);
+      diffObj.j1f_reps .* iota1_FT(:,:,jInd);
   else
     negDivFluxEx_FT(:,:,jInd) = ...
-      diffObj.j1f_reps .* jx1_FT(:,:,jInd) + ...
-      diffObj.j1Mm2f_reps .* jx1_FT(:,:,jInd_m2) + ...
-      diffObj.j1Mp2f_reps .* jx1_FT(:,:,jInd_p2);
+      diffObj.j1f_reps .* iota1_FT(:,:,jInd) + ...
+      diffObj.j1Mm2f_reps .* iota1_FT(:,:,jInd_m2) + ...
+      diffObj.j1Mp2f_reps .* iota1_FT(:,:,jInd_p2);
   end
 else
-  jx1 = 0;
+  iota1 = 0;
 end
 % coordinate 2
 if interObj.dv2Flag
-  jx2 = - rho .* dMu.dx2;    %Flux in the x2 direction with isostropic diffusion
-  jx2_FT = fftshift(fftn(jx2));
+  iota2 = - rho .* dMu.dx2;    %Flux in the x2 direction with isostropic diffusion
+  iota2_FT = fftshift(fftn(iota2));
   if diffObj.Ani == 0
     negDivFluxEx_FT(:,:,jInd) = negDivFluxEx_FT(:,:,jInd) + ...
-      diffObj.j2f_reps .* jx2_FT(:,:,jInd);
+      diffObj.j2f_reps .* iota2_FT(:,:,jInd);
   else
     negDivFluxEx_FT(:,:,jInd) = negDivFluxEx_FT(:,:,jInd) +...
-      diffObj.j2f_reps .* jx2_FT(:,:,jInd) + ...
-      diffObj.j2Mm2f_reps .* jx2_FT(:,:,jInd_m2) + ...
-      diffObj.j2Mp2f_reps .* jx2_FT(:,:,jInd_p2);
+      diffObj.j2f_reps .* iota2_FT(:,:,jInd) + ...
+      diffObj.j2Mm2f_reps .* iota2_FT(:,:,jInd_m2) + ...
+      diffObj.j2Mp2f_reps .* iota2_FT(:,:,jInd_p2);
   end
 else
-  jx2 = 0;
+  iota2 = 0;
 end
 % coordinate 3
 if interObj.dv3Flag
-  jx3 = - rho .* dMu.dx3;  %Flux in the angular direction with isostropic diffusion
-  jx3_FT = fftshift(fftn(jx3));
+  iota3 = - rho .* dMu.dx3;  %Flux in the angular direction with isostropic diffusion
+  iota3_FT = fftshift(fftn(iota3));
   negDivFluxEx_FT = negDivFluxEx_FT +...
-    diffObj.j3f_reps .* jx3_FT;
+    diffObj.j3f_reps .* iota3_FT;
 else
-  jx3 = 0;
+  iota3 = 0;
 end

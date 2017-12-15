@@ -16,7 +16,7 @@ for ii = 1:length(files2convert);
     systemObj.bc = ParamObj.bc;
     
     particleObj.lMaj = ParamObj.L_rod;
-    particleObj.vD = ParamObj.vD;
+    particleObj.fD = ParamObj.vD;
 
     runObj.runID = ParamObj.runID;
     runObj.num_trial = ParamObj.num_trial;

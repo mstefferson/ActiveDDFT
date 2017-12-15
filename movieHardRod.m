@@ -109,7 +109,7 @@ try
           end
           % Save Name
           movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-            systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+            systemObj.bc,particleObj.fD,runObj.trialID, runObj.runID);
           % Make movie
           OPMovieMakerTgtherDirAvi(movStr,...
             gridObj.x1,gridObj.x2, OPobj,...
@@ -117,7 +117,7 @@ try
         else
           % Save Name
           movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-            systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+            systemObj.bc,particleObj.fD,runObj.trialID, runObj.runID);
           % make movie
           CMovieMakerAvi(movStr,...
             gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
@@ -172,7 +172,7 @@ try
         % savefig doesn't like decimals so save it and rename it.
         savefig(gcf,figtl)
         figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
         movefile(figtl,[figtl2 '.fig'])
         saveas(gcf, [figtl2 '.jpg'],'jpg')
         movefile([figtl2 '*'], dirFullPath);
@@ -180,7 +180,7 @@ try
       % Plot final slices of final order parameters
       if movieflags.plotSlice
         sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
         sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
           OPobj.NOP_rec(:,:,end), systemObj, ...
           gridObj, rhoFinal, sliceSaveTag )
@@ -191,13 +191,13 @@ try
         if systemObj.n3 > 1
           % Plot max order parameters vs time
           maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-            systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+            systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
           plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
             particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
         else
           % Plot max order parameters vs time
           maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
-            systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+            systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
           plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
         end
         % move it

@@ -72,7 +72,7 @@ if flags.MakeOP && flags.SaveMe == 0
   fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
   flags.SaveMe = 1;
 end
-if particleObj.vD  == 0; flags.Drive = 0; else flags.Drive = 1;end
+if particleObj.fD  == 0; flags.Drive = 0; else flags.Drive = 1;end
 % Get particle mobility
 [particleObj, systemObj] = ...
   particleInit( particleObj, systemObj, flags.DiagLop);

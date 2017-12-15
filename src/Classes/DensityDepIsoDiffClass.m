@@ -56,29 +56,43 @@ classdef DensityDepIsoDiffClass < handle
       end
     end
     
+    % calc d rho
+    function [dRho_dt] = calcDrho( obj, rho, rhoFt, iotaEx )
+      obj.calcDiffNl( rho );
+      % "flux" without mobility
+      dRho_dt = zeros( obj.N1, obj.N2, obj.N3 );
+      for ii = obj.NlDiffComponents
+        iotaDiffTemp  = obj.calcIotaDiff( rhoFt, obj.Ik{ii} );
+        iotaTemp = iotaDiffTemp + iotaEx{ii};
+        iotaFtTemp = fftshift( fftn( ...
+          obj.DNl{ii} .* ( iotaTemp ) ) );
+        dRho_dt = dRho_dt - obj.Ik{ii} .* iotaFtTemp;
+      end
+    end
+  end %methods
+  
+  methods (Static)
     % fix densities that are too low
-    function dCurrent = fixNegativeDiff( obj, dCurrent, dMin )
+    function dCurrent = fixNegativeDiff( dCurrent, dMin )
       logInds = dCurrent < dMin;
-      if isscalar( dMin  )
+      if isscalar( dMin )
         dCurrent( logInds ) = dMin;
       else
         dCurrent( logInds ) = dMin( logInds );
       end
     end
-
-    % calc d rho
-    function [dRho_dt] = calcDrho( obj, rho, rhoFt, jEx )
-      obj.calcDiffNl( rho );
-      % "flux" without mobility
-      dRho_dt = zeros( obj.N1, obj.N2, obj.N3 );
-      for ii = obj.NlDiffComponents
-        jDiffTemp  = -real( ifftn( ifftshift( obj.Ik{ii} .* rhoFt ) ) );
-        jTemp = jDiffTemp + jEx{ii};
-        jftTemp = fftshift( fftn( ...
-          obj.DNl{ii} .* ( jTemp ) ) );
-        dRho_dt = dRho_dt - obj.Ik{ii} .* jftTemp;
-      end
-   end
-  end %methods
+    
+    % calc iota diff
+    function [iota] = calcIotaDiff( rhoFtTemp, ik )
+      % "flux" without mobility from diffusion
+      iota  = -real( ifftn( ifftshift( ik .* rhoFtTemp ) ) );
+    end
+    
+    % calc iota total
+    function [iota] = calcIotaTotal(iotaDiff, iotaOther )
+      % "flux" without mobility total
+      iota = iotaDiff + iotaOther;
+    end
+  end % static methods
 end %class
 

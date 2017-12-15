@@ -31,7 +31,7 @@ opFile1 = matfile( op2load, 'Writable', true );
 % store some parameters
 denRecObj = runFile1.denRecObj;
 checkParamVec1 = [systemObj.n1 systemObj.n2 systemObj.n3 ...
-  systemObj.l1 systemObj.l2 systemObj.bc particleObj.vD  ];
+  systemObj.l1 systemObj.l2 systemObj.bc particleObj.fD  ];
 nt1 = length( denRecObj.TimeRecVec );
 dt1 = timeObj.dt;
 tRec1 = timeObj.t_rec;
@@ -59,7 +59,7 @@ tTot2 = timeObj.t_tot;
 nt2 = length( denRecObj.TimeRecVec );
 % check parameters
 checkParamVec2 = [systemObj.n1 systemObj.n2 systemObj.n3 ...
-  systemObj.l1 systemObj.l2 systemObj.bc particleObj.vD  ];
+  systemObj.l1 systemObj.l2 systemObj.bc particleObj.fD  ];
 % build dir2 files
 runFile2 = matfile( run2load, 'Writable', true );
 opFile2 = matfile( op2load, 'Writable', true );

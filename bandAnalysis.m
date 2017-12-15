@@ -53,7 +53,7 @@ for ii = 1 : numFiles
     sliceInhomoVar( systemObj, C );
   % record parameters and steady state
   output.p1(ii) = systemObj.l2;
-  output.p2(ii) = particleObj.vD;
+  output.p2(ii) = particleObj.fD;
   output.p3(ii) = systemObj.bc;
   output.steady(ii) = denRecObj.SteadyState;
   % run analysis for C,N,P. Be carefule about P

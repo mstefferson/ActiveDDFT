@@ -74,7 +74,7 @@ try
   [diffObj] =  DiffMobCoupCoeffCalc( systemObj.tmp,...
     particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
     gridObj.k1, gridObj.k2, gridObj.k3, ...
-    gridObj.k1rep2, gridObj.k2rep2,particleObj.vD);
+    gridObj.k1rep2, gridObj.k2rep2,particleObj.fD);
   diffRunTime = toc(tDiffID);
   runTime.diff = diffRunTime;
   [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
@@ -248,7 +248,7 @@ try
       if systemObj.n3 == 1
         % Save Name
         movStr = sprintf('Cmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-          systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc,particleObj.fD,runObj.trialID, runObj.runID);
         % Run function
         CMovieMakerAvi(movStr,...
           gridObj.x1,gridObj.x2,particleObj.b .* OPobj.C_rec,...
@@ -256,7 +256,7 @@ try
       else
         % Save Name
         movStr = sprintf('OPmov_bc%.2f_vD%.1f_%.2d_%.2d.avi',...
-          systemObj.bc,particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc,particleObj.fD,runObj.trialID, runObj.runID);
         % Run function
         OPMovieMakerTgtherDirAvi(movStr,...
           gridObj.x1,gridObj.x2,gridObj.x3,OPobj,...
@@ -312,13 +312,13 @@ try
       % savefig doesn't like decimals so save it and rename it.
       savefig(gcf,figtl)
       figtl2 = sprintf('AmpFT_bc%.2f_vD%.0f_%.2d_%.2d',...
-        systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+        systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
       movefile(figtl,[figtl2 '.fig'])
       saveas(gcf, [figtl2 '.jpg'],'jpg')
       % Plot final slices of final order parameters
       if systemObj.n3 > 1
         sliceSaveTag = sprintf('SOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
         if denRecObj.DidIBreak == 0
           sliceOPplot( OPobj.C_rec(:,:,end), OPobj.POP_rec(:,:,end),...
             OPobj.NOP_rec(:,:,end), systemObj, ...
@@ -333,13 +333,13 @@ try
         movefile([sliceSaveTag '*'], dirName);
         % Plot max order parameters vs time
         maxSaveTag = sprintf('MaxOP_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
         plotMaxOPvsTime( OPobj.C_rec, OPobj.POP_rec, OPobj.NOP_rec, ...
           particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       else
         % Plot max order parameters vs time
         maxSaveTag = sprintf('MaxC_bc%.2f_vD%.0f_%.2d_%.2d',...
-          systemObj.bc, particleObj.vD,runObj.trialID, runObj.runID);
+          systemObj.bc, particleObj.fD,runObj.trialID, runObj.runID);
         plotMaxCvsTime( OPobj.C_rec, particleObj.b, OPobj.OpTimeRecVec, maxSaveTag );
       end
       % Move everything else
