@@ -64,7 +64,7 @@ classdef DensityDepAnisoDiffClass < handle
           % build trig
           phi = reshape( phi, [1 1 n3] );
           sinPhi = sin( phi );
-          cosPhi = sin( phi );
+          cosPhi = cos( phi );
           obj.DNlFactPerp = -obj.D0Perp / obj.RhoMax ;
           obj.DNlFact11 = obj.DNlFactPerp * sinPhi .* sinPhi;
           obj.DNlFact12 = -obj.DNlFactPerp * sinPhi .* cosPhi;
