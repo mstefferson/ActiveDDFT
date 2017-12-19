@@ -191,6 +191,7 @@ if shitIsFucked == 0
           runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
           runSave.numSavedRhos = recIndTemp(end);
           jrectemp = 0;
+          jrec = jrecEnd + 1;
         end
       end
       jrectemp = jrectemp + 1;
@@ -205,7 +206,6 @@ if shitIsFucked == 0
           if ~isempty(recIndTemp)
             runSave.Den_rec(:,:,:,recIndTemp) = Density_rec(:,:,:,1:jrectemp);
             runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
-            jrectemp = jrectemp - 1;
             jrec = jrecEnd + 1;
           end
         end
@@ -224,28 +224,26 @@ rho        = real(ifftn(ifftshift(rho_FT)));
 trun = toc;
 %Save everything
 if flags.SaveMe
-  if shitIsFucked == 0 && steadyState == 0;
-    if ( mod(t,timeObj.N_dtRec)== 0 )
-      fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-      % Turn it to a cube if it hasn't been yet
-      if interObj.anyInter == 0 
-        rho_FT = reshape(rhoVec_FT,n1,n2,n3);
-        rho    = real(ifftn(ifftshift(rho_FT)));
-      end
-      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
-      Density_rec(:,:,:,jrectemp)     = rho;
+  if ( mod(t,timeObj.N_dtRec)== 0 )
+    fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
+    % Turn it to a cube if it hasn't been yet
+    if interObj.anyInter == 0 
+      rho_FT = reshape(rhoVec_FT,n1,n2,n3);
+      rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    if ( mod(t, timeObj.N_dtChunk ) == 0 )
-      % Record Density_recs to file
-      jrecEnd = jrec+timeObj.N_recChunk-1;
-      recIndTemp = jrec : jrecEnd;
-      runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
-      runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
-      runSave.numSavedRhos = recIndTemp(end);
-    end
-    jrec = jrec + 1; % Still +1. Programs assumes this always happens
-  end %end recording
-end % end nothing is broken
+    DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+    Density_rec(:,:,:,jrectemp)     = rho;
+  end
+  if ( mod(t, timeObj.N_dtChunk ) == 0 )
+    % Record Density_recs to file
+    jrecEnd = jrec+timeObj.N_recChunk-1;
+    recIndTemp = jrec : jrecEnd;
+    runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
+    runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
+    runSave.numSavedRhos = recIndTemp(end);
+  end
+  jrec = jrecEnd + 1; % Still +1. Programs assumes this always happens
+end %end recording
 % Create vector of recorded times
 jrec = jrec - 1;
 TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
