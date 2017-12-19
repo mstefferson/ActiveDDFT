@@ -133,9 +133,12 @@ interactStr = cell(1,numRuns);
 extStr = cell(1,numRuns);
 noiseStr = cell(1,numRuns);
 % nlDr
-nlDiff = [ particleObj.nlDiff{1} '_' ...
-  num2str( particleObj.nlDiff{2} )...
-  '_' num2str( particleObj.nlDiff{3}, '%d' ) ];
+if isempty( particleObj.nlDiff )
+  nlDiff = '';
+else
+  nlDiff = [ particleObj.nlDiff{1} num2str( particleObj.nlDiff{2} )...
+    num2str( particleObj.nlDiff{3}, '%d' ) ];
+end
 for ii = 1:numRuns
   interactStr{ii} = interactLrVObj.str{ paramInteractInds(ii) };
   extStr{ii} = externVObj.str{ paramExtInds(ii) };

@@ -108,9 +108,9 @@ if shitIsFucked == 0
     %Need to update rho!!!
     rho_FT = rho_FTnext;
     rhoPrev = rho;
-    % Calculate rho if there is driving or interactions
+    % Calculate rho if there is driving or interactions and steady
+    rho    = real(ifftn(ifftshift(rho_FT)));
     if flags.dRhoCalc
-      rho    = real(ifftn(ifftshift(rho_FT)));
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, interObj, systemObj,...
@@ -140,9 +140,6 @@ if shitIsFucked == 0
     end
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
-      if flags.dRhoCalc
-        rho    = real(ifftn(ifftshift(rho_FT)));
-      end
       [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
         BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
       if flags.SaveMe

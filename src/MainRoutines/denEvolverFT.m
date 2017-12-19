@@ -21,8 +21,8 @@
 % ExpoKit. Way Faster.
 %
 function [denRecObj, rho] = denEvolverFT(...
-  rho,systemObj,particleObj,timeObj,gridObj,...
-  diffObj,interObj, polarDrive, noise, densityDepDr,flags,lfid )
+  rho, systemObj, timeObj, gridObj, diffObj, interObj, ...
+  polarDrive, noise, densityDepDr,flags,lfid )
 % global
 global runSave
 % where you at
@@ -120,12 +120,12 @@ fprintf(lfid,'Starting master time loop\n');
 if shitIsFucked == 0 
   for t = 1:timeObj.N_time-1
     %Need to update rho!!!
-    rhoVec_FT      = rhoVec_FTnext;
+    rhoVec_FT = rhoVec_FTnext;
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions
+    rho_FT = reshape(rhoVec_FT,n1,n2,n3);
+    rho = real(ifftn(ifftshift(rho_FT)));
     if flags.dRhoCalc
-      rho_FT = reshape(rhoVec_FT,n1,n2,n3);
-      rho    = real(ifftn(ifftshift(rho_FT)));
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, ...
         interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
@@ -160,7 +160,7 @@ if shitIsFucked == 0
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
       % Turn it to a cube if it hasn't been yet
-      if flags.dRhoCalc == 0 
+      if flags.dRhoCalc == 0
         rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
@@ -188,6 +188,7 @@ if shitIsFucked == 0
           runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
           runSave.numSavedRhos = recIndTemp(end);
           jrectemp = 0;
+          jrec = jrecEnd + 1;
         end
       end
       jrectemp = jrectemp + 1;
@@ -221,27 +222,25 @@ rho        = real(ifftn(ifftshift(rho_FT)));
 trun = toc;
 %Save everything
 if flags.SaveMe
-  if shitIsFucked == 0 && steadyState == 0;
-    if ( mod(t,timeObj.N_dtRec)== 0 )
-      fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-      % Turn it to a cube if it hasn't been yet
-      if flags.dRhoCalc == 0 
-        rho_FT = reshape(rhoVec_FT,n1,n2,n3);
-        rho    = real(ifftn(ifftshift(rho_FT)));
-      end
-      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
-      Density_rec(:,:,:,jrectemp)     = rho;
+  if ( mod(t,timeObj.N_dtRec)== 0 )
+    fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
+    % Turn it to a cube if it hasn't been yet
+    if flags.dRhoCalc == 0 
+      rho_FT = reshape(rhoVec_FT,n1,n2,n3);
+      rho    = real(ifftn(ifftshift(rho_FT)));
     end
-    if ( mod(t, timeObj.N_dtChunk ) == 0 )
-      % Record Density_recs to file
-      jrecEnd = jrec+timeObj.N_recChunk-1;
-      recIndTemp = jrec : jrecEnd;
-      runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
-      runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
-      runSave.numSavedRhos = recIndTemp(end);
-    end
-    jrec = jrec + 1; % Still +1. Programs assumes this always happens
-  end %end recording
+    DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+    Density_rec(:,:,:,jrectemp)     = rho;
+  end
+  if ( mod(t, timeObj.N_dtChunk ) == 0 )
+    % Record Density_recs to file
+    jrecEnd = jrec+timeObj.N_recChunk-1;
+    recIndTemp = jrec : jrecEnd;
+    runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
+    runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
+    runSave.numSavedRhos = recIndTemp(end);
+  end
+  jrec = jrecEnd + 1; % Still +1. Programs assumes this always happens
 end % end nothing is broken
 % Create vector of recorded times
 jrec = jrec - 1;
