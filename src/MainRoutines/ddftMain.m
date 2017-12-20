@@ -173,7 +173,10 @@ try
     paramSave.systemObj = systemObj;
     paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
-    paramSave.denRecObj = denRecObj;
+    paramSave.polarDrive = polarDrive;
+    paramSave.densityDepDiff = densityDepDiff;
+    paramSave.noise = noise;
+    paramSave.interObj = interObj;
   end
   % Run the main code
   tBodyID      = tic;
@@ -329,14 +332,10 @@ try
     fprintf(lfid,'OrderParam Run time = %f\n', opRunTime);
     runTime.op = opRunTime;
   end % if OP
-  % Save how long everything took
-  totRunTime = toc(tMainID);
-  if flags.Verbose
-    fprintf('Run Finished t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, totRunTime);
-  end
-  fprintf(lfid,'Total Run time = %f\n', totRunTime);
-  runTime.tot = totRunTime;
+  % run analysis
+  if flags.movie.analysis == 1
+    movieHardRod(dirId)
+  end  
   % Move saved things
   if flags.SaveMe
     paramSave.runTime = runTime;
@@ -347,10 +346,14 @@ try
       movefile( saveNameOP,dirName);
     end
   end
-  % run analysis
-  if flags.movie.analysis == 1
-    movieHardRod(dirId)
+  % Save how long everything took
+  totRunTime = toc(tMainID);
+  if flags.Verbose
+    fprintf('Run Finished t%d_%d: %.3g \n', ...
+      runObj.trialID, runObj.runID, totRunTime);
   end
+  fprintf(lfid,'Total Run time = %f\n', totRunTime);
+  runTime.tot = totRunTime;
 catch err %Catch errors
   % write the error to file and to screen
   fprintf('%s\n', err.getReport('extended')) ;
