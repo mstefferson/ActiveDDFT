@@ -7,28 +7,35 @@ end
 % Find max vs time
 Nt = length(time);
 % reshape
-C = reshape( max( max( C_rec )  ), [1 Nt] );
-P = reshape( max( max( P_rec ) ), [1 Nt] );
-N = reshape( max( max( N_rec ) ), [1 Nt] );
-% scale C
-C = C .* b;
+Cmax = b .* reshape( max( max( C_rec )  ), [1 Nt] );
+Pmax = reshape( max( max( P_rec ) ), [1 Nt] );
+Nmax = reshape( max( max( N_rec ) ), [1 Nt] );
+Cmin = b .* reshape( min( min( C_rec )  ), [1 Nt] );
+Pmin = reshape( min( min( P_rec ) ), [1 Nt] );
+Nmin = reshape( min( min( N_rec ) ), [1 Nt] );
 % set-up fiugure and plot
 figure()
 %% C
 ax = subplot(1,3,1);
-plot( time, C );
+plot( time, Cmax );
+hold
+plot( time, Cmin );
 xlabel('time'); ylabel('C'); title('Max scaled C');
-fixYLimits( C, ax );
+% fixYLimits( Cmax, ax );
 %% P
 ax = subplot(1,3,2);
-plot( time, P );
+plot( time, Pmax );
+hold
+plot( time, Pmin );
 xlabel('time'); ylabel('Max P'); title('Max Polar Order');
-fixYLimits( P, ax );
+% fixYLimits( Pmax, ax );
 %% N
 ax = subplot(1,3,3);
-plot( time, N );
+plot( time, Nmax );
+hold
+plot( time, Nmin );
 xlabel('time'); ylabel('Max N'); title('Max Nematic Order');
-fixYLimits( N, ax );
+% fixYLimits( Nmax, ax );
 % Save it
 if saveFlag
   savefig( gcf, [saveTag '.fig'] );
