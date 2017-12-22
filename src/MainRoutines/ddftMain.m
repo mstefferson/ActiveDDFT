@@ -10,6 +10,10 @@ set(0,'defaulttextinterpreter','latex')
 % some global
 global runSave
 try
+  % Create a file that holds warning print statements
+  locString = sprintf('Loc_%s.txt', filename(1:end-4));
+  lfid      = fopen(locString,'a+');    % a+ allows to append data
+  fprintf(lfid,'Starting main, current code\n');
   % Set up denRecObj just in case code doesn't finish
   denRecObj.didIrun = 0;
   % Move parameter vector to obj
@@ -29,24 +33,6 @@ try
   systemObj.c = systemObj.bc ./ particleObj.b;
   systemObj.numPart  = systemObj.c * systemObj.l1 * systemObj.l2; % number of particles
   systemObj.lBox = [systemObj.l1 systemObj.l2];
-  % set up the time object
-  dtOrig = timeObj.dt ;
-  if timeObj.scaleDt && particleObj.fD ~=0
-    timeObj.dt = min( timeObj.dt, timeObj.dt * 30  / particleObj.fD );
-  end
-  % Fix the time
-  ss_epsilon = timeObj.ss_epsilon;
-  scaleDt = timeObj.scaleDt;
-  [timeObj]= ...
-    TimeStepRecMaker(timeObj.dt,timeObj.t_tot,...
-    timeObj.t_rec,timeObj.t_write);
-  % Scale ss_epsilon by delta_t. Equivalent to checking d rho /dt has reached
-  % steady state instead of d rho
-  timeObj.ss_epsilon = ss_epsilon;
-  timeObj.ss_epsilon_dt = ss_epsilon .* timeObj.dt;
-  timeObj.scaleDt = scaleDt;
-  timeObj.dt_orig = dtOrig;
-  timeObj.recStartInd = 2; % start at 2 since t = 0 is ind = 1
   % Set-up save paths, file names, and matfile
   if flags.SaveMe
     saveNameRun   = ['run_' filename];
@@ -72,6 +58,7 @@ try
     rhoFinalSave = matfile(saveNameRhoFinal,'Writable',true);
     runSave = matfile(saveNameRun,'Writable',true);
     denRecObj.dirName = dirName; % Just in case
+    denRecObj.dirId = dirId; % Just in case
   else
     dirName = pwd;
   end
@@ -85,38 +72,13 @@ try
   end
   % Record how long things take
   tMainID  = tic;
-  % Create a file that holds warning print statements
-  locString = sprintf('Loc_%s.txt', filename(1:end-4));
-  lfid      = fopen(locString,'a+');    % a+ allows to append data
-  fprintf(lfid,'Starting main, current code\n');
   % Make remaining objects
-  % Make all the grid stuff %
-  tGridID = tic;
-  [gridObj] = GridMakerPBCxk(systemObj.n1,systemObj.n2,systemObj.n3,...
-    systemObj.l1,systemObj.l2,systemObj.l3);
-  gridrunTime = toc(tGridID);
-  if flags.Verbose
-    fprintf('Made grid t%d_%d: %.3g \n', ...
-      runObj.trialID, runObj.runID, gridrunTime);
-  end
-  fprintf(lfid,'Made Grid: %.3g \n', gridrunTime);
-  runTime.grid = gridrunTime;
-  %Make diffusion coeff
-  tDiffID = tic;
-  [diffObj] =  DiffMobCoupCoeffCalc( systemObj.tmp,...
-    particleObj.mob,particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
-    gridObj.k1, gridObj.k2, gridObj.k3, ...
-    gridObj.k1rep2, gridObj.k2rep2,particleObj.fD);
-  diffRunTime = toc(tDiffID);
-  if flags.Verbose
-    fprintf('Made diffusion object t%d_%d: %.3g\n', ...
-      runObj.trialID, runObj.runID, diffRunTime);
-  end
-  fprintf(lfid,'Made diffusion object: %.3g\n', diffRunTime);
-  runTime.diff = diffRunTime;
-  %Initialze density
-  tIntDenID = tic;
+  [timeObj, gridObj, diffObj, interObj, ...
+    noise, polarDrive, densityDepDiff, runTime] ...
+    = buildClassesAndStructures( systemObj, particleObj, ...
+    flags, timeObj, lfid );
   % Build initial density
+  tIntDenID = tic;
   [rho] = MakeConc(systemObj,particleObj,rhoInit,gridObj);
   intDenRunTime = toc(tIntDenID);
   if flags.Verbose
@@ -124,22 +86,7 @@ try
       runObj.trialID, runObj.runID, intDenRunTime);
   end
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
-  runTime.intDen = intDenRunTime;
-  % Set-up interactions and external potentials
-  [interObj] =  interObjMaker( particleObj, systemObj, gridObj );
-  % set-up noise
-  [noise] = DRhoNoiseClass( systemObj.noise, ...
-    systemObj.n1, systemObj.n2, systemObj.n3, systemObj.l1, systemObj.l2, ...
-    systemObj.l3, diffObj.D_pos, diffObj.D_rot, diffObj.ik1rep3, diffObj.ik2rep3, ...
-    diffObj.ik3rep3, timeObj.dt);
-  % set-up driving
-  dRhoDriveFlag = flags.Drive && flags.DiagLop;
-  polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.fD, ...
-  systemObj.n1, systemObj.n2, systemObj.n3, ...
-  gridObj.x3, gridObj.k1rep2, gridObj.k2rep2, diffObj.D_pos, systemObj.tmp  );
-  % build density dep diffusion class
-  densityDepDiff = densityDepDiffClassHandler( ...
-    particleObj, systemObj, gridObj, diffObj, rho  );
+  runTime.intDen = intDenRunTime;  % Save everything before running body of code
   % check all flags to see if you should calc dRhoMaster
   flags.dRhoCalc = interObj.anyInter || polarDrive.Flag || ...
     densityDepDiff.Flag || noise.Flag;
@@ -162,10 +109,6 @@ try
     runSave.DenFT_rec(:,:,:,1) = fftshift(fftn(rho));
     runSave.denRecObj   = denRecObj;
     runSave.numSavedRhos = 1;
-    % Clean up interObj before saving
-    if isfield( interObj, 'FmFt' )
-      runSave.interObj = rmfield(interObj, 'FmFt');
-    end
     % Save params now
     paramSave.flags = flags;
     paramSave.particleObj = particleObj;
@@ -173,10 +116,7 @@ try
     paramSave.systemObj = systemObj;
     paramSave.runObj = runObj;
     paramSave.timeObj = timeObj;
-    paramSave.polarDrive = polarDrive;
-    paramSave.densityDepDiff = densityDepDiff;
-    paramSave.noise = noise;
-    paramSave.interObj = interObj;
+    paramSave.denRecObj = denRecObj;
   end
   % Run the main code
   tBodyID      = tic;
@@ -204,126 +144,9 @@ try
   runTime.body = bodyRunTime;
   % Run movies if you want
   if flags.MakeOP  == 1
-    tOpID           = tic ;
-    % Save
-    if systemObj.n3 > 1
-      % Commonly used trig functions
-      [~,~,phi3D] = meshgrid(gridObj.x2,gridObj.x1,gridObj.x3);
-      cosPhi3d = cos(phi3D);
-      sinPhi3d = sin(phi3D);
-      cos2Phi3d = cosPhi3d .^ 2;
-      sin2Phi3d = sinPhi3d .^ 2;
-      cossinPhi3d = cosPhi3d .* sinPhi3d;
-    else
-      cosPhi3d=0;sinPhi3d=0;cos2Phi3d=0;sin2Phi3d=0;cossinPhi3d=0;
-    end
-    % Build time rec vector
-    if denRecObj.DidIBreak == 0
-      totRec = length( denRecObj.TimeRecVec );
-      opTimeRecVec = denRecObj.TimeRecVec ;
-    else %Don't incldue the blowed up denesity for movies. They don't like it.
-      totRec = length( denRecObj.TimeRecVec ) - 1;
-      opTimeRecVec = denRecObj.TimeRecVec(1:end-1) ;
-    end
-    opSave.OpTimeRecVec = opTimeRecVec;
-    % Set up saving
-    opSave.C_rec    = zeros(systemObj.n1, systemObj.n2, 2);
-    if systemObj.n3 > 1
-      % Distribution slice
-      % currently hardcode out inset
-      sliceRho.plotInset = 0;
-      dotx1 = round( systemObj.n1/4 ); sliceRho.dotx1 = dotx1;
-      doty1 = round( 3 * systemObj.n2/4 ); sliceRho.doty1 = doty1;
-      dotx2 = round( systemObj.n1/2 ); sliceRho.dotx2 = dotx2;
-      doty2 = round( systemObj.n2/2 ); sliceRho.doty2 = doty2;
-      dotx3 = round( 3*systemObj.n1/4 ); sliceRho.dotx3 = dotx3;
-      doty3 = round( systemObj.n2/4 ); sliceRho.doty3 = doty3;
-      nFrames = length( opTimeRecVec ); sliceRho.nFrames = nFrames;
-      sliceRho.slice1 = reshape( runSave.Den_rec( dotx1, doty1, :, 1:nFrames ), ...
-        [ systemObj.n3 nFrames] );
-      sliceRho.slice2 = reshape( runSave.Den_rec( dotx2, doty2, :, 1:nFrames ), ...
-        [ systemObj.n3 nFrames] );
-      sliceRho.slice3 = reshape( runSave.Den_rec( dotx3, doty3, :, 1:nFrames ), ...
-        [ systemObj.n3 nFrames] );
-      sliceRho.phi = gridObj.x3;
-      opSave.sliceRho = sliceRho;
-      opSave.POP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
-      opSave.POPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
-      opSave.POPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-      opSave.NOP_rec  = zeros(systemObj.n1, systemObj.n2, 2);
-      opSave.NOPx_rec = zeros(systemObj.n1, systemObj.n2, 2);
-      opSave.NOPy_rec = zeros(systemObj.n1, systemObj.n2, 2);
-      opSave.aveC_rec = zeros(1,2);
-      opSave.aveP_rec = zeros(1,2);
-      opSave.aveN_rec = zeros(1,2);
-    end
-    % Break it into chunks
-    numChunks = timeObj.N_chunks;
-    sizeChunk = floor( totRec/ numChunks );
-    if sizeChunk > 0
-      numChunks = ceil( totRec/ sizeChunk);
-    else
-      numChunks = 1;
-    end
-    for i = 1:numChunks
-      if i ~= numChunks
-        currInd =  (i-1) * sizeChunk + 1: i * sizeChunk;
-      else
-        if numChunks == 1
-          currInd = 1:totRec;
-        else
-          currInd = (i-1) * sizeChunk:totRec;
-        end
-      end
-      % Make the records
-      [OPObjTemp] = CPNrecMaker(systemObj.n1,systemObj.n2,...
-        systemObj.n3, opTimeRecVec(currInd), runSave.Den_rec(:,:,:,currInd) ,...
-        gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d );
-      % Save it
-      opSave.C_rec(:,:,currInd) = OPObjTemp.C_rec;
-      opSave.aveC_rec(1,currInd) = OPObjTemp.aveC_rec;
-      if systemObj.n3 > 1
-        opSave.POP_rec(:,:,currInd) = OPObjTemp.POP_rec;
-        opSave.POPx_rec(:,:,currInd) = OPObjTemp.POPx_rec;
-        opSave.POPy_rec(:,:,currInd) = OPObjTemp.POPy_rec;
-        opSave.NOP_rec(:,:,currInd) = OPObjTemp.NOP_rec;
-        opSave.NOPx_rec(:,:,currInd) = OPObjTemp.NOPx_rec;
-        opSave.NOPy_rec(:,:,currInd) = OPObjTemp.NOPy_rec;
-        opSave.aveC_rec(1,currInd) = OPObjTemp.aveC_rec;
-        opSave.aveP_rec(1,currInd) = OPObjTemp.aveP_rec;
-        opSave.aveN_rec(1,currInd) = OPObjTemp.aveN_rec;
-      end
-    end % loop over chunks
-    % fix size
-    opSave.C_rec = opSave.C_rec(:,:,1:totRec);
-    opSave.aveC_rec = opSave.aveC_rec(1,1:totRec);
-    if systemObj.n3 > 1
-      opSave.POP_rec  = opSave.POP_rec(:,:,1:totRec);
-      opSave.POPx_rec = opSave.POPx_rec(:,:,1:totRec);
-      opSave.POPy_rec = opSave.POPy_rec(:,:,1:totRec);
-      opSave.NOP_rec  = opSave.NOP_rec(:,:,1:totRec);
-      opSave.NOPx_rec = opSave.NOPx_rec(:,:,1:totRec);
-      opSave.NOPy_rec = opSave.NOPy_rec(:,:,1:totRec);
-      opSave.aveP_rec = opSave.aveP_rec(1,1:totRec);
-      opSave.aveN_rec = opSave.aveN_rec(1,1:totRec);
-    end
-    % Now do it for steady state sol
-    if systemObj.n3 > 1
-      [~,~,phi3D] = meshgrid(1,1,gridObj.x3);
-      cosPhi3d = cos(phi3D);
-      sinPhi3d = sin(phi3D);
-      cos2Phi3d = cosPhi3d .^ 2;
-      sin2Phi3d = sinPhi3d .^ 2;
-      cossinPhi3d = cosPhi3d .* sinPhi3d;
-      % Calc CPN
-      [~,~,~,~,opSave.NOPeq,~,~] = ...
-        OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
-        gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
-      % Save if movies
-      if flags.movie.analysis
-        OPobj.NOPeq = opSave.NOPeq;
-      end
-    end
+    tOpID = tic ;
+    opSave = buildOPs(saveNameOP, systemObj, gridObj, denRecObj, ...
+      timeObj, rhoInit, runSave);
     opRunTime = toc(tOpID);
     if flags.Verbose
       fprintf('Made OP object t%d_%d: %.3g \n', ...
@@ -332,10 +155,6 @@ try
     fprintf(lfid,'OrderParam Run time = %f\n', opRunTime);
     runTime.op = opRunTime;
   end % if OP
-  % run analysis
-  if flags.movie.analysis == 1
-    movieHardRod(dirId)
-  end  
   % Move saved things
   if flags.SaveMe
     paramSave.runTime = runTime;
@@ -346,6 +165,10 @@ try
       movefile( saveNameOP,dirName);
     end
   end
+  % run analysis
+  if flags.movie.analysis == 1
+    movieHardRod(dirId)
+  end  
   % Save how long everything took
   totRunTime = toc(tMainID);
   if flags.Verbose
@@ -360,10 +183,13 @@ catch err %Catch errors
   runSave.err = err;
 end %End try and catch
 % close files
-fclose(lfid);
-delete(locString);
-if flags.Verbose
-  fprintf('Leaving Main for t%d.%d\n', ...
-    runObj.trialID, runObj.runID);
+if exist('lfid','var')
+  fclose(lfid);
+end
+if exist('flags','var')
+  if flags.Verbose
+    fprintf('Leaving Main for t%d.%d\n', ...
+      runObj.trialID, runObj.runID);
+  end
 end
 end % End ddftMain

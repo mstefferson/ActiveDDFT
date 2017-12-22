@@ -203,7 +203,6 @@ if shitIsFucked == 0
           if ~isempty(recIndTemp)
             runSave.Den_rec(:,:,:,recIndTemp) = Density_rec(:,:,:,1:jrectemp);
             runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec(:,:,:,1:jrectemp);
-            jrectemp = jrectemp - 1;
             jrec = jrecEnd + 1;
           end
         end
@@ -241,7 +240,7 @@ if flags.SaveMe
     runSave.numSavedRhos = recIndTemp(end);
   end
   jrec = jrecEnd + 1; % Still +1. Programs assumes this always happens
-end % end nothing is broken
+end %end recording
 % Create vector of recorded times
 jrec = jrec - 1;
 TimeRecVec    = (0:jrec-1) * timeObj.t_rec;
