@@ -21,8 +21,8 @@
 % ExpoKit. Way Faster.
 %
 function [denRecObj, rho] = denEvolverFT(...
-  rho,systemObj,timeObj,gridObj,...
-  diffObj,interObj, polarDrive, noise,flags,lfid )
+  rho, systemObj, timeObj, gridObj, diffObj, interObj, ...
+  polarDrive, noise, flags,lfid )
 % global
 global runSave
 % where you at
@@ -60,7 +60,7 @@ jrec     = timeObj.recStartInd; % Actual index for runSave
 trigFnc.cosPhi3 = 0;
 trigFnc.sinPhi3 = 0;
 %Interactions
-if interObj.anyInter
+if flags.dRhoCalc
   [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT,...     
     interObj, systemObj, diffObj, polarDrive, noise );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
@@ -120,20 +120,17 @@ fprintf(lfid,'Starting master time loop\n');
 if shitIsFucked == 0 
   for t = 1:timeObj.N_time-1
     %Need to update rho!!!
-    rhoVec_FT      = rhoVec_FTnext;
+    rhoVec_FT = rhoVec_FTnext;
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions
-    if interObj.anyInter
-      rho_FT = reshape(rhoVec_FT,n1,n2,n3);
-      rho    = real(ifftn(ifftshift(rho_FT)));
+    rho_FT = reshape(rhoVec_FT,n1,n2,n3);
+    rho = real(ifftn(ifftshift(rho_FT)));
+    if flags.dRhoCalc
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, ...
         interObj, systemObj, diffObj, polarDrive, noise );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
-    %Interactions
-    if interObj.anyInter
-        end
     % Take step
     if( flags.StepMeth == 0 )
       [rhoVec_FTnext, ticExptemp] = DenStepperAB1Pf( ...
@@ -163,7 +160,7 @@ if shitIsFucked == 0
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
       % Turn it to a cube if it hasn't been yet
-      if interObj.anyInter == 0 
+      if flags.dRhoCalc == 0
         rho_FT = reshape(rhoVec_FT,n1,n2,n3);
         rho    = real(ifftn(ifftshift(rho_FT)));
       end
@@ -227,7 +224,7 @@ if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
     % Turn it to a cube if it hasn't been yet
-    if interObj.anyInter == 0 
+    if flags.dRhoCalc == 0 
       rho_FT = reshape(rhoVec_FT,n1,n2,n3);
       rho    = real(ifftn(ifftshift(rho_FT)));
     end

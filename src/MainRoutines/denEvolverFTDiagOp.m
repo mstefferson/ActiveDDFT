@@ -16,7 +16,8 @@
 %
 function [denRecObj,rho]  = ...
   denEvolverFTDiagOp(rho,systemObj,...
-  timeObj,gridObj,diffObj,interObj,polarDrive,noise,flags,lfid)
+  timeObj,gridObj,diffObj,interObj,polarDrive,...
+  noise, flags,lfid)
 % globals
 global runSave
 % where you at
@@ -49,17 +50,16 @@ jrec     = timeObj.recStartInd; % Actual index for runSave
 [lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 prop = exp(lop .* dt);   % Exponentiate the elements
 % Interactions and driving
-if interObj.anyInter || polarDrive.Flag 
+if flags.dRhoCalc
   rho    = real(ifftn(ifftshift(rho_FT)));
   % Calculate dRho from interactions and driving
   [GammaCube_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT, ...
-    interObj, systemObj, diffObj, polarDrive, noise );
+    interObj, systemObj, diffObj, polarDrive, noise);
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
   whatBroke1 = 0; whatBroke2 = 0; whatBroke3 = 0;
   GammaCube_FT = zeros( n1, n2, n3);
 end
-
 % Take the first step- Euler. Element by element mulitplication
 if( flags.StepMeth == 0 ) % AB 1
   NlPf =  dt;
@@ -108,13 +108,13 @@ if shitIsFucked == 0
     %Need to update rho!!!
     rho_FT = rho_FTnext;
     rhoPrev = rho;
-    % Calculate rho if there is driving or interactions
-    if interObj.anyInter || polarDrive.Flag || noise.Flag
-      rho    = real(ifftn(ifftshift(rho_FT)));
+    % Calculate rho if there is driving or interactions and steady
+    rho    = real(ifftn(ifftshift(rho_FT)));
+    if flags.dRhoCalc
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
-        dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise );
+        dRhoMaster( rho, rho_FT, interObj, systemObj,...
+        diffObj, polarDrive, noise );
     end
     % Take a step
     if( flags.StepMeth == 0 )
@@ -140,9 +140,6 @@ if shitIsFucked == 0
     end
     %Save everything
     if ( mod(t,timeObj.N_dtRec) == 0 )
-      if interObj.anyInter == 0 && polarDrive.Flag == 0 && noise.Flag == 0
-        rho    = real(ifftn(ifftshift(rho_FT)));
-      end
       [steadyState,shitIsFuckedTemp2, whatBroke2, maxDrho] = ...
         BrokenSteadyDenTracker(rho, rhoPrev, rho_FT, constConc, timeObj, systemObj);
       if flags.SaveMe
@@ -197,7 +194,7 @@ if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
     % Turn it to a cube if it hasn't been yet
-    if interObj.anyInter == 0 && polarDrive.Flag == 0 && noise.Flag == 0
+    if flags.dRhoCalc
       rho    = real(ifftn(ifftshift(rho_FT)));
     end
     DensityFT_rec(:,:,:,jrectemp)   = rho_FT;

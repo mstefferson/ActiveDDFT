@@ -87,6 +87,8 @@ try
   end
   fprintf(lfid,'Made initial density: %.3g\n', intDenRunTime);
   runTime.intDen = intDenRunTime;  % Save everything before running body of code
+  flags.dRhoCalc = interObj.anyInter || polarDrive.Flag || ...
+    noise.Flag;
   if flags.SaveMe
     runSave.flags    = flags;
     runSave.runObj    = runObj;
