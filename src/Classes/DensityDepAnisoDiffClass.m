@@ -24,10 +24,10 @@ classdef DensityDepAnisoDiffClass < handle
     DNl11 = 0; % nonlinear D11 element of matrix
     DNl12 = 0; % nonlinear D12 element of matrix
     DNl22 = 0; % nonlinear D22 element of matrix
-    DNlRMin = 0; % mininum value for D11 matrix
-    DNl11Min = 0; % mininum value for D11 matrix
-    DNl12Min = 0; % mininum value for D12 matrix
-    DNl22Min = 0; % mininum value for D22 matrix
+    DNlMinR = 0; % mininum value for Dr matrix element
+    DNlMin11 = 0; % mininum value for D11 matrix element
+    DNlMin12 = 0; % mininum value for D12 matrix element
+    DNlMin22 = 0; % mininum value for D22 matrix element
   end
   
   methods
@@ -56,6 +56,7 @@ classdef DensityDepAnisoDiffClass < handle
         obj.N3 = n3;
         % convert rhoMax input, in bc, to rho = c / 2pi
         obj.RhoMax = rhoMax / b / (2*pi);
+        % store constant diffusion coefficients
         obj.D0Perp = d0(1);
         obj.D0R = d0(2);
         % set pre factors based on flag
@@ -69,9 +70,9 @@ classdef DensityDepAnisoDiffClass < handle
           obj.DNlFact11 = obj.DNlFactPerp * sinPhi .* sinPhi;
           obj.DNlFact12 = -obj.DNlFactPerp * sinPhi .* cosPhi;
           obj.DNlFact22 = obj.DNlFactPerp * cosPhi .* cosPhi;
-          obj.DNl11Min = repmat( -obj.D0Perp * sinPhi .* sinPhi, [n1 n2 1] );
-          obj.DNl12Min = repmat( obj.D0Perp * sinPhi .* cosPhi, [n1 n2 1] );
-          obj.DNl22Min = repmat( -obj.D0Perp * cosPhi .* cosPhi, [n1 n2 1] );
+          obj.DNlMin11 = repmat( -obj.D0Perp * sinPhi .* sinPhi, [n1 n2 1] );
+          obj.DNlMin12 = repmat( obj.D0Perp * sinPhi .* cosPhi, [n1 n2 1] );
+          obj.DNlMin22 = repmat( -obj.D0Perp * cosPhi .* cosPhi, [n1 n2 1] );
           obj.DNl11 = zeros(n1,n2,n3);
           obj.DNl12 = zeros(n1,n2,n3);
           obj.DNl22 = zeros(n1,n2,n3);
@@ -85,7 +86,7 @@ classdef DensityDepAnisoDiffClass < handle
         if obj.FlagRot
           obj.DimInclude = unique( [obj.DimInclude 3] );
           obj.DNlFactR = -obj.D0R / obj.RhoMax ;
-          obj.DNlRMin = -obj.D0R;
+          obj.DNlMinR = -obj.D0R;
           obj.DNlR = zeros(n1,n2,n3);
         else
           obj.DNlFactR = 0;
@@ -103,15 +104,15 @@ classdef DensityDepAnisoDiffClass < handle
     function [obj] = calcDiffNl( obj, rho )
       if obj.FlagRot
         obj.DNlR = obj.DNlFactR .* rho;
-        obj.DNlR = obj.fixNegativeDiff( obj.DNlR, obj.DNlRMin );
+        obj.DNlR = obj.fixNegativeDiff( obj.DNlR, obj.DNlMinR );
       end
       if obj.FlagPos
         obj.DNl11 = obj.DNlFact11 .* rho;
         obj.DNl12 = obj.DNlFact12 .* rho;
         obj.DNl22 = obj.DNlFact22 .* rho;
-        obj.DNl11 = obj.fixNegativeDiff( obj.DNl11, obj.DNl11Min );
-        obj.DNl12 = obj.fixNegativeDiff( obj.DNl12, obj.DNl12Min );
-        obj.DNl22 = obj.fixNegativeDiff( obj.DNl22, obj.DNl22Min );
+        obj.DNl11 = obj.fixNegativeDiff( obj.DNl11, obj.DNlMin11 );
+        obj.DNl12 = obj.fixNegativeDiff( obj.DNl12, obj.DNlMin12 );
+        obj.DNl22 = obj.fixNegativeDiff( obj.DNl22, obj.DNlMin22 );
       end
     end
     

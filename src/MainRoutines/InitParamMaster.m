@@ -13,10 +13,10 @@ flagMaster.rndStrtUpSeed = 1; % start with a random seed (1) or startup seed (0)
 flagMaster.scaleDt = 1; % scale dt by velocity
 % 0: AB1 1: AB2 2: HAB1 3: HAB2 4: BHAB1 5: BHAB2 6: phiV- Aniso EE-Iso
 % movie flags
-movieFlagMaster.analysis = 0; % Turn off all plots
-movieFlagMaster.makeMovie = 0; % movies
+movieFlagMaster.analysis = 1; % Turn off all plots
+movieFlagMaster.makeMovie = 1; % movies
 movieFlagMaster.plotInset = 0; % plot inset with movies
-movieFlagMaster.plotMax = 0; % max vs time
+movieFlagMaster.plotMax = 1; % max vs time
 movieFlagMaster.plotAmp = 0; % plot Ft amplitudes
 movieFlagMaster.plotSlice = 0; % plot crysal structure
 movieFlagMaster.plotCrystal = 0; % plot crysal structure
@@ -34,9 +34,8 @@ particleMaster.mob  = 1; % mobility
 particleMaster.type = 'rods'; % rods, disks, spheres 
 particleMaster.interHb = 'mayer'; % Hard body interactions type mayer, spt
 % non-linear diff, 
-% {'iso', bcMax, [dimension] } off if bcMax = 0
-% {'aniso', bcMax, [posFlag rotFlag] } off if bcMax = 0
-particleMaster.nlDiff = {'iso', 0, []}; 
+% {'iso/aniso', 'linear/quad', bcMax, [posFlag rotFlag] } off if bcMax = 0
+particleMaster.nlDiff = {'iso', 'linear', 0, [1 1]}; 
 %  Long range interaction type in MF: 
 % {'ss', 'mf/vir', es1, es2, lr1, lr2}  (softshoulder2d), 
 % {'pa', 'mf/vir', es1} (polaralign2d), 

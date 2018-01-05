@@ -56,5 +56,5 @@ polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.fD, systemObj.n1,.
   systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2 );
 % build density dep diffusion class
 densityDepDiff = densityDepDiffClassHandler( ...
-  particleObj, systemObj, gridObj, diffObj, []  );
+  particleObj, systemObj, gridObj, diffObj );
 

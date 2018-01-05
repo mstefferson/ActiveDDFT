@@ -79,6 +79,8 @@ end
 if polarDrive.Flag
   gammaDrCubeFt = polarDrive.calcDrho( rho );
   gammaCubeFt = gammaCubeFt + gammaDrCubeFt;
+  iotaEx1 = polarDrive.Iota1 + iota1Ex;
+  iotaEx2 = polarDrive.Iota2 + iota2Ex;
 end
 % noise
 if noise.Flag
@@ -88,6 +90,6 @@ end
 % density dep diffusion
 if densityDepDiff.Flag
   gammaDiffFt = densityDepDiff.calcDrho( rho, rho_FT,...
-    {polarDrive.Iota1 + iota1Ex, polarDrive.Iota2 + iota2Ex, iota3Ex} );
+    {iota1Ex, iota2Ex, iota3Ex} );
   gammaCubeFt = gammaCubeFt + gammaDiffFt;
 end
