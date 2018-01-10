@@ -32,8 +32,8 @@ classdef DensityDepIsoDiffClass < handle
     % d0: diffusion constant
     % ik1: sqrt(-1) * k1 vector
     % ik2: sqrt(-1) * k3 vector
-    function obj = DensityDepIsoDiffClass( order, rhoMax, posRotFlag, d0, ik, ...
-        b, n1, n2, n3)
+    function obj = DensityDepIsoDiffClass( order, rhoMax, posRotFlag, ...
+        d0, ik, b, n1, n2, n3)
       if rhoMax == 0
         obj.Flag = 0;
       elseif posRotFlag == 0
@@ -48,7 +48,7 @@ classdef DensityDepIsoDiffClass < handle
         obj.FlagRot = posRotFlag(2);
         obj.Flag = 1;
         obj.Order = order;
-        obj.setOrder()
+        obj.setOrder();
         obj.N1 = n1;
         obj.N2 = n2;
         obj.N3 = n3;
@@ -58,28 +58,16 @@ classdef DensityDepIsoDiffClass < handle
         obj.D0Pos = d0(1);
         obj.D0R = d0(2);
         if obj.FlagPos
-          obj.DimInclude = [ 1:2];
-          if obj.OrderId == 1
-            obj.DNlFactPos(1) = -obj.D0Pos / obj.RhoMax ;
-          else
-            obj.DNlFactPos(1) = -2*obj.D0Pos / obj.RhoMax ;
-            obj.DNlFactPos(2) = obj.D0Pos  / ( obj.RhoMax .^ 2 ) ;
-          end
+          obj.DimInclude = 1:2;
+          [~,obj.DNlFactPos] = obj.calcNlCoeff( obj.D0Pos );
           obj.DNlMinPos = -obj.D0Pos;
           obj.DNlPos = zeros(n1,n2,n3);
         end
         if obj.FlagRot
           obj.DimInclude = unique( [obj.DimInclude 3] );
-          if obj.OrderId == 1
-            obj.DNlFactR(1) = -obj.D0R / obj.RhoMax ;
-          else
-            obj.DNlFactR(1) = -2*obj.D0R / obj.RhoMax ;
-            obj.DNlFactR(2) = obj.D0R / ( obj.RhoMax .^ 2 );
-          end
+          [~,obj.DNlFactR] = obj.calcNlCoeff( obj.D0R );
           obj.DNlMinR = -obj.D0R;
           obj.DNlR = zeros(n1,n2,n3);
-        else
-          obj.DNlFactR = 0;
         end
         nVec = { [n1 1 1], [1 n2 1], [1 1 n3] };
         for ii = obj.DimInclude
@@ -89,30 +77,7 @@ classdef DensityDepIsoDiffClass < handle
       end
     end % constructor
     
-    % Set the nl diffusion coeff
-    function [obj] = calcDiffNl( obj, rho )
-      obj.DNlR = zeros(obj.N1, obj.N2, obj.N3);
-      obj.DNlPos = zeros(obj.N1, obj.N2, obj.N3);
-      inds2calc = rho < obj.RhoMax;
-      for ii = 1:obj.OrderId
-        if obj.FlagRot
-          obj.DNlR(inds2calc) = obj.DNlR(inds2calc) + ...
-            obj.DNlFactR(ii) .* rho(inds2calc) .^ (ii);
-        end
-        if obj.FlagPos
-          obj.DNlPos(inds2calc) = obj.DNlPos(inds2calc) +...
-            obj.DNlFactPos(ii) .* rho(inds2calc) .^ (ii);
-        end
-      end
-      if obj.FlagRot
-        obj.DNlR(~inds2calc) = obj.DNlMinR;
-      end
-      if obj.FlagPos
-        obj.DNlPos(~inds2calc) = obj.DNlMinPos;
-      end  
-    end
-    
-    % Set the nl diffusion coeff
+    % Set the nl diffusion order
     function [obj] = setOrder( obj )
       if strcmp( obj.Order, 'linear' )
         obj.OrderId = 1;
@@ -124,7 +89,40 @@ classdef DensityDepIsoDiffClass < handle
         obj.OrderId = 1;
         fprintf('Incorrect density order. Setting to linear\n')
       end
-    end
+    end % setOrder
+
+    % calc the nl diffusion coefficient factor based on order
+    function [obj, dNlFact] = calcNlCoeff( obj, d0 )
+      if obj.OrderId == 1
+        dNlFact{1} = -d0 / obj.RhoMax ;
+      else
+        dNlFact{1} = -2 * d0 / obj.RhoMax ;
+        dNlFact{2} = d0 / ( obj.RhoMax .^ 2 );
+      end
+    end % calcNlCoeff
+     
+    % Set the nl diffusion coeff
+    function [obj] = calcDiffNl( obj, rho )
+      obj.DNlR = zeros(obj.N1, obj.N2, obj.N3);
+      obj.DNlPos = zeros(obj.N1, obj.N2, obj.N3);
+      inds2calc = rho < obj.RhoMax;
+      for ii = 1:obj.OrderId
+        if obj.FlagRot
+          obj.DNlR(inds2calc) = obj.DNlR(inds2calc) + ...
+            obj.DNlFactR{ii} .* ( rho(inds2calc) .^ ii );
+        end
+        if obj.FlagPos
+          obj.DNlPos(inds2calc) = obj.DNlPos(inds2calc) +...
+            obj.DNlFactPos{ii} .* ( rho(inds2calc) .^ ii );
+        end
+      end
+      if obj.FlagRot
+        obj.DNlR(~inds2calc) = obj.DNlMinR;
+      end
+      if obj.FlagPos
+        obj.DNlPos(~inds2calc) = obj.DNlMinPos;
+      end 
+    end % calcDiffNL
     
     % calc d rho
     function [dRho_dt] = calcDrho( obj, rho, rhoFt, iotaEx )
@@ -156,7 +154,7 @@ classdef DensityDepIsoDiffClass < handle
       for ii = obj.DimInclude
         dRho_dt = dRho_dt - obj.Ik{ii} .* ( iotaFtTemp{ii} );
       end
-    end
+    end % calcDrho
   end %methods
   
   methods (Static)
@@ -183,4 +181,3 @@ classdef DensityDepIsoDiffClass < handle
     end
   end % static methods
 end %class
-
