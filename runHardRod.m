@@ -136,8 +136,8 @@ noiseStr = cell(1,numRuns);
 if isempty( particleObj.nlDiff )
   nlDiff = '';
 else
-  nlDiff = [ particleObj.nlDiff{1} num2str( particleObj.nlDiff{2} )...
-    num2str( particleObj.nlDiff{3}, '%d' ) ];
+  nlDiff = [ particleObj.nlDiff{1} particleObj.nlDiff{2}...
+    num2str( particleObj.nlDiff{4}, '%d' ) 'c' num2str( particleObj.nlDiff{3} ) ];
 end
 for ii = 1:numRuns
   interactStr{ii} = interactLrVObj.str{ paramInteractInds(ii) };

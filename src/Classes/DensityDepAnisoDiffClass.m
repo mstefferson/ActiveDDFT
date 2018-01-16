@@ -7,7 +7,7 @@ classdef DensityDepAnisoDiffClass < handle
     Flag = []; % flag to calculate or not
     FlagPos = []; % flag to calculate or not
     FlagRot = []; % flag to calculate or not
-    Order = []; % 'linear' or 'quad'
+    Order = []; % 'lin' or 'quad'
     OrderId = []; % 1 = linear, 2 = quad
     N1 = []; % grid points in 1
     N2 = []; % grid points in 2
@@ -104,7 +104,7 @@ classdef DensityDepAnisoDiffClass < handle
 
     % Set the nl diffusion order
     function [obj] = setOrder( obj )
-      if strcmp( obj.Order, 'linear' )
+      if strcmp( obj.Order, 'lin' )
         obj.OrderId = 1;
         fprintf('NL diffusion linear in density\n')
       elseif strcmp( obj.Order, 'quad' )
