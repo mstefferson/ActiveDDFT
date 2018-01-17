@@ -53,7 +53,8 @@ runTime.diff = diffRunTime;
 % set-up driving
 dRhoDriveFlag = flags.Drive && flags.DiagLop;
 polarDrive  = DrhoPolarDriveClass( dRhoDriveFlag, particleObj.fD, systemObj.n1,...
-  systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2 );
+  systemObj.n2, systemObj.n3, gridObj.x3, gridObj.k1rep2, gridObj.k2rep2, ...
+  diffObj.D_pos, systemObj.tmp);
 % build density dep diffusion class
 densityDepDiff = densityDepDiffClassHandler( ...
   particleObj, systemObj, gridObj, diffObj );
