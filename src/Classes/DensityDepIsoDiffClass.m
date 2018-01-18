@@ -9,15 +9,14 @@ classdef DensityDepIsoDiffClass < handle
     FlagRot = []; % flag to calculate rotational contribution or not
     Order = []; % 'lin' or 'quad'
     OrderId = []; % 1 = linear, 2 = quad
-    UseConc = []; % flag to use conc (1) or density (0)
-    DnlNVec = []; % vector of gridpoints giving size of Dnl
-    K03 = []; % k = 0 in 3rd dimension
     N1 = []; % grid points in 1
     N2 = []; % grid points in 2
     N3 = []; % grid points in 3
     DimInclude = []; % dimension to include
     D0Pos = 0; % constant diffusion positional
     D0R = 0; % constant diffusion rotational
+    K03 = []; % k = 0 in 3rd dimension
+    DnlNVec = []; % vector of gridpoints denoting size of nl diffusion
     RhoMax = []; % density, c, where rho goes to zero
     DNlFactR = 0; % nonlinear factor Dr element of matrix
     DNlFactPos = 0; % nonlinear factor positional element of matrix
@@ -56,15 +55,9 @@ classdef DensityDepIsoDiffClass < handle
         obj.N2 = n2;
         obj.N3 = n3;
         % convert rhoMax input, in bc, to rho = c / 2pi
-        obj.UseConc = 1;
         obj.K03 = n3 / 2 + 1;
-        if obj.UseConc
-          obj.RhoMax = rhoMax / b;
-          obj.DnlNVec = [n1, n2];
-        else
-          obj.RhoMax = rhoMax / b / (2*pi);
-          obj.DnlNVec = [n1, n2, n3];
-        end
+        obj.RhoMax = rhoMax / b;
+        obj.DnlNVec = [n1, n2];
         % store constant diffusion coefficients
         obj.D0Pos = d0(1);
         obj.D0R = d0(2);
@@ -101,7 +94,7 @@ classdef DensityDepIsoDiffClass < handle
         fprintf('Incorrect density order. Setting to linear\n')
       end
     end % setOrder
-
+    
     % calc the nl diffusion coefficient factor based on order
     function [obj, dNlFact] = calcNlCoeff( obj, d0 )
       if obj.OrderId == 1
@@ -111,7 +104,7 @@ classdef DensityDepIsoDiffClass < handle
         dNlFact{2} = d0 / ( obj.RhoMax .^ 2 );
       end
     end % calcNlCoeff
-     
+    
     % Set the nl diffusion coeff
     function [obj] = calcDiffNl( obj, rho )
       obj.DNlR = zeros( obj.DnlNVec );
@@ -132,17 +125,13 @@ classdef DensityDepIsoDiffClass < handle
       end
       if obj.FlagPos
         obj.DNlPos(~inds2calc) = obj.DNlMinPos;
-      end 
+      end
     end % calcDiffNL
     
     % calc d rho
-    function [dRho_dt] = calcDrho( obj, rho, rhoFt, iotaEx )
+    function [dRho_dt] = calcDrho( obj, rhoFt, iotaEx )
       % calculate Dnl
-      if obj.UseConc
-        c = 2*pi / obj.N3 * ifftn(ifftshift( rhoFt(:,:,obj.K03) ) );
-      else
-        c = rho;
-      end
+      c = 2*pi / obj.N3 * ifftn(ifftshift( rhoFt(:,:,obj.K03) ) );
       obj.calcDiffNl( c );
       % "flux" without mobility
       iotaTemp = cell( 1, 3 );

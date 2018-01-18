@@ -9,12 +9,11 @@ classdef DensityDepAnisoDiffClass < handle
     FlagRot = []; % flag to calculate or not
     Order = []; % 'lin' or 'quad'
     OrderId = []; % 1 = linear, 2 = quad
-    UseConc = []; % flag to use conc (1) or density (0)
-    DnlNVec = []; % vector of gridpoints giving size of Dnl
-    K03 = []; % k = 0 in 3rd dimension
     N1 = []; % grid points in 1
     N2 = []; % grid points in 2
     N3 = []; % grid points in 3
+    K03 = []; % k = 0 in 3rd dimension
+    DnlNVec = []; % vector of gridpoints denoting size of nl diffusion
     RhoMax = []; % density, c, where rho goes to zero
     DimInclude = []; % dimension to include
     Ik = cell(1,3); % sqrt(-1) * k1 vec
@@ -62,15 +61,9 @@ classdef DensityDepAnisoDiffClass < handle
         obj.N2 = n2;
         obj.N3 = n3;
         % convert rhoMax input, in bc, to rho = c / 2pi
-        obj.UseConc = 1;
         obj.K03 = n3 / 2 + 1;
-        if obj.UseConc
-          obj.RhoMax = rhoMax / b;
-          obj.DnlNVec = [n1, n2];
-        else
-          obj.RhoMax = rhoMax / b / (2*pi);
-          obj.DnlNVec = [n1, n2, n3];
-        end
+        obj.RhoMax = rhoMax / b;
+        obj.DnlNVec = [n1, n2];
         % store constant diffusion coefficients
         obj.D0Perp = d0(1);
         obj.D0R = d0(2);
@@ -112,7 +105,7 @@ classdef DensityDepAnisoDiffClass < handle
         end
       end
     end
-
+    
     % Set the nl diffusion order
     function [obj] = setOrder( obj )
       if strcmp( obj.Order, 'lin' )
@@ -126,7 +119,7 @@ classdef DensityDepAnisoDiffClass < handle
         fprintf('Incorrect density order. Setting to linear\n')
       end
     end % setOrder
-  
+    
     % calc the nl diffusion coefficient factor based on order
     function [obj, dNlFact] = calcNlCoeff( obj, d0 )
       if obj.OrderId == 1
@@ -136,14 +129,13 @@ classdef DensityDepAnisoDiffClass < handle
         dNlFact{2} = d0 / ( obj.RhoMax .^ 2 );
       end
     end % calcNlCoeff
-
     
     % build diffusion matrix elements and cells for each order
     function dNlFact = buildDiffMatElement( obj, dNl, trigFunction )
       dNlFact = cell(1,2);
       for ii = 1:obj.OrderId
-       dNlFact{ii} = dNl{ii} * trigFunction;
-       dNlFact{ii} = repmat( dNlFact{ii}, [obj.N1, obj.N2, 1] );
+        dNlFact{ii} = dNl{ii} * trigFunction;
+        dNlFact{ii} = repmat( dNlFact{ii}, [obj.N1, obj.N2, 1] );
       end
     end % buildDiffMatElement
     
@@ -176,17 +168,13 @@ classdef DensityDepAnisoDiffClass < handle
         obj.DNl11(~inds2calc) = obj.DNlMin11(~inds2calc);
         obj.DNl12(~inds2calc) = obj.DNlMin12(~inds2calc);
         obj.DNl22(~inds2calc) = obj.DNlMin22(~inds2calc);
-      end 
+      end
     end % calcDiffNl
     
     % calc d rho
-    function [dRho_dt] = calcDrho( obj, rho, rhoFt, iotaEx )
+    function [dRho_dt] = calcDrho( obj, rhoFt, iotaEx )
       % calculate Dnl
-      if obj.UseConc
-        c = 2*pi / obj.N3 * ifftn(ifftshift( rhoFt(:,:,obj.K03) ) );
-      else
-        c = rho;
-      end
+      c = 2*pi / obj.N3 * ifftn(ifftshift( rhoFt(:,:,obj.K03) ) );
       obj.calcDiffNl( c );
       % "flux" without mobility
       iotaTemp = cell( 1, 3 );
@@ -228,7 +216,7 @@ classdef DensityDepAnisoDiffClass < handle
         dCurrent( logInds ) = dMin( logInds );
       end
     end
-
+    
     % calc iota diff
     function [iota] = calcIotaDiff( rhoFtTemp, ik )
       % "flux" without mobility from diffusion
