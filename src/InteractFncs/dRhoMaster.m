@@ -68,19 +68,19 @@ if calcGamma
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
-  [gammaCubeFt, iota1Ex, iota2Ex, iota3Ex] = dRhoIntCalcMu( ...
+  [gammaCubeFt, iotaEx1, iotaEx2, iotaEx3] = dRhoIntCalcMu( ...
     rho, dVmaster, systemObj, diffObj, interObj);
 elseif densityDepDiff.Flag
-  iota1Ex = 0; 
-  iota2Ex = 0; 
-  iota3Ex = 0;
+  iotaEx1 = 0; 
+  iotaEx2 = 0; 
+  iotaEx3 = 0;
 end
 % driving
 if polarDrive.Flag
   gammaDrCubeFt = polarDrive.calcDrho( rho );
   gammaCubeFt = gammaCubeFt + gammaDrCubeFt;
-  iotaEx1 = polarDrive.Iota1 + iota1Ex;
-  iotaEx2 = polarDrive.Iota2 + iota2Ex;
+  iotaEx1 = polarDrive.Iota1 + iotaEx1;
+  iotaEx2 = polarDrive.Iota2 + iotaEx2;
 end
 % noise
 if noise.Flag
@@ -90,6 +90,6 @@ end
 % density dep diffusion
 if densityDepDiff.Flag
   gammaDiffFt = densityDepDiff.calcDrho( rho, rho_FT,...
-    {iota1Ex, iota2Ex, iota3Ex} );
+    {iotaEx1, iotaEx2, iotaEx3} );
   gammaCubeFt = gammaCubeFt + gammaDiffFt;
 end
