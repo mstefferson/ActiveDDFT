@@ -98,8 +98,11 @@ else
   error('No stepping method selected');
 end
 %% Error check
+dbMe = 1;
+if dbMe
 checkNlDiff( n3, gridObj, GammaCube_FT, lop, rho_FT, rho, ...
   polarDrive, densityDepDiff )
+end
 %%
 % Initialize some things and start time loop
 tic
@@ -109,8 +112,9 @@ whatBroke2 = [];
 fprintf(lfid,'Starting master time loop\n');
 if shitIsFucked == 0
   for t = 1:timeObj.N_time-1
-    if t == round( timeObj.N_time / 20 )
-      checkNlDiff( n3, gridObj, GammaCube_FT, lop, rho_FT, rho, polarDrive )
+    if t == 50 && dbMe
+      checkNlDiff( n3, gridObj, GammaCube_FT, lop, rho_FT, rho, ...
+        polarDrive, densityDepDiff)
     end
     %Need to update rho!!!
     rho_FT = rho_FTnext;

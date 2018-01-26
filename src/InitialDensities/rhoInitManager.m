@@ -76,14 +76,17 @@ elseif strcmp( rhoInit.intCond{1}, 'crys' )
 elseif strcmp( rhoInit.intCond{1}, 'gauss' )
   fprintf('Setting IC to gauss\n')
   rhoInitObj = buildGaussIcObj( rhoInit.intCond, systemObj );
+  rhoInitObj.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
   rhoInitObj.intCondInput = rhoInit.intCond;
 elseif strcmp( rhoInit.intCond{1}, 'lorenz' )
   fprintf('Setting IC to lorenztian\n');
   rhoInitObj = buildLorenzianIcObj( rhoInit.intCond, systemObj );
+  rhoInitObj.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
   rhoInitObj.intCondInput = rhoInit.intCond;
 else
   fprintf('Cannot find initial density. Setting to iso\n' );
   rhoInitObj.type = 'iso';
+  rhoInitObj.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
 end
 
 % perturbations

@@ -106,12 +106,6 @@ if systemObj.n3 > 1
 end
 % Now do it for steady state sol
 if systemObj.n3 > 1
-  %[~,~,phi3D] = meshgrid(1,1,gridObj.x3);
-  %cosPhi3d = cos(phi3D);
-  %sinPhi3d = sin(phi3D);
-  %cos2Phi3d = cosPhi3d .^ 2;
-  %sin2Phi3d = sinPhi3d .^ 2;
-  %cossinPhi3d = cosPhi3d .* sinPhi3d;
   % Calc CPN
   [~,~,~,~,opSave2.NOPeq,~,~] = ...
     OpCPNCalc(1, 1, reshape( rhoInit.feq, [1,1,systemObj.n3] ), ...
