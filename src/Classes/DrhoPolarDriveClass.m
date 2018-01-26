@@ -17,7 +17,7 @@ classdef DrhoPolarDriveClass < handle
   
   methods
     % Constructor
-    function obj = DrhoPolarDriveClass( flag, fd, n1, n2, n3, ...
+    function obj = DrhoPolarDriveClass( flag, fd, n3, ...
         phi, k1m2d, k2m2d, Dpos, kbT )
       % set properties
       obj.Flag = flag;
@@ -33,10 +33,9 @@ classdef DrhoPolarDriveClass < handle
         obj.Mob = Dpos ./ kbT;
         obj.Ikx = sqrt(-1) * k1m2d;
         obj.Iky = sqrt(-1) * k2m2d;
-        phiReshape = zeros( 1, 1, n3 );
-        phiReshape(1,1,:) = phi;
-        cosPhi3 = cos( repmat( phiReshape, [n1, n2, 1] ) );
-        sinPhi3 = sin( repmat( phiReshape, [n1, n2, 1] ) );
+        phiReshape = reshape( phi, [1 1 n3] );
+        cosPhi3 = cos( phiReshape );
+        sinPhi3 = sin( phiReshape );
         obj.IotaFac1 = fd ./ kbT .* cosPhi3;
         obj.IotaFac2 = fd ./ kbT .* sinPhi3;
       end
