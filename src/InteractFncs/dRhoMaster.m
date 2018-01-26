@@ -70,7 +70,7 @@ if calcGamma
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
   [gammaCubeFt, iotaEx1, iotaEx2, iotaEx3] = dRhoIntCalcMu( ...
     rho, dVmaster, systemObj, diffObj, interObj);
-elseif densityDepDiff.Flag
+else
   iotaEx1 = 0; 
   iotaEx2 = 0; 
   iotaEx3 = 0;

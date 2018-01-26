@@ -157,9 +157,129 @@ classdef DensityDepIsoDiffClass < handle
       end
       % minus divergence of flux
       dRho_dt = 0;
+      dRho_dt_Ft = cell(1,2);
+      dRho_dt_real = cell(1,2);
       for ii = obj.DimInclude
         dRho_dt = dRho_dt - obj.Ik{ii} .* ( iotaFtTemp{ii} );
+        dRho_dt_Ft{ii} = - obj.Ik{ii} .* ( iotaFtTemp{ii} );
+        dRho_dt_real{ii} = real( ifftn( ifftshift( dRho_dt_Ft{ii} ) ) );
+        disp(ii)
       end
+      dRho_dt_sum = real( ifftn( ifftshift( dRho_dt ) ) );
+      %% plot flux
+      figure()
+      subplot(2,2,1)
+      sum1 = sum( iotaTemp{1}, 3 );
+      imagesc( sum1 ); colorbar
+      subplot(2,2,2)
+      plot( sum1(:,obj.K03) )
+      hold
+      plot( sum1(obj.K03,:) )
+      hold
+      title( 'flux 1' )
+      subplot(2,2,3)
+      sum2 = sum( iotaTemp{2}, 3 );
+      imagesc( sum2 ); colorbar
+      subplot(2,2,4)
+      plot( sum2(:,obj.K03) )
+      hold
+      plot( sum2(obj.K03,:) )
+      hold
+      title( 'flux 2' )      
+      %% plot dRho
+      figure()
+      subplot(2,2,1)
+      sum1 = sum( dRho_dt_real{1}, 3 );
+      imagesc( sum1 ); colorbar
+      title( 'dRho1' )
+      subplot(2,2,2)
+      plot( sum1(:,obj.K03) )
+      hold
+      plot( sum1(obj.K03,:) )
+      hold
+      subplot(2,2,3)
+      sum2 = sum( dRho_dt_real{2}, 3 );
+      imagesc( sum2 ); colorbar
+      title( 'dRho1' )
+      subplot(2,2,4)
+      plot( sum2(:,obj.K03) )
+      hold
+      plot( sum2(obj.K03,:) )
+      hold
+      title( 'dRho2' )
+      %% Quick and dirty derivative
+      figure()
+      dIota1 = obj.N1 / 10 * reshape( ...
+        iotaTemp{1}(2:end,:,:) - iotaTemp{1}(1:end-1,:,:), [obj.N1-1 obj.N2 obj.N3] ) ;
+      dIota2 = obj.N2 / 10 * reshape( ...
+        iotaTemp{2}(:,2:end,:) - iotaTemp{2}(:,1:end-1,:), [obj.N1 obj.N2-1 obj.N3] );
+      subplot(2,2,1)
+      sum1 = sum( dIota1,3 );
+      imagesc( sum1 ); colorbar
+      title( 'dRho1 manual' )
+      subplot(2,2,2)
+      plot( sum1(:,obj.K03) )
+      hold
+      plot( sum1(obj.K03,:) )
+      hold
+      title( 'dRho1 manual' )
+      subplot(2,2,3)
+      sum2 = sum( dIota2,3 );
+      imagesc( sum2 ); colorbar
+      title( 'dRho2 manual' )
+      subplot(2,2,4)
+      plot( sum2(:,obj.K03) )
+      hold
+      plot( sum2(obj.K03,:) )
+      hold
+      title( 'dRho2 manual' )
+      %% Check in k-space
+      ind = 1;
+      figure()
+      % 1
+      temp1 = iotaTemp{1}(:,:,ind);
+      subplot(2,3,1)
+      imagesc( temp1 ); colorbar
+      temp1Ft = fftshift( fftn( temp1 ) );
+      dtemp1Ft = obj.Ik{1} .* temp1Ft;
+      dtemp1 = real( ifftn( ifftshift( dtemp1Ft ) ) );
+      subplot(2,3,2)
+      imagesc( dtemp1 ); colorbar
+      dtemp1_v2 = real( ifftn( ifftshift( obj.Ik{1} .* iotaFtTemp{1}(:,:,obj.K03) ) ) );
+      subplot(2,3,3)
+      imagesc( dtemp1_v2 ); colorbar 
+      % 2
+      temp2 = iotaTemp{2}(:,:,ind);
+      subplot(2,3,4)
+      imagesc( temp2 ); colorbar
+      temp2Ft = fftshift( fftn( temp2 ) );
+      dtemp2Ft = obj.Ik{2} .* temp2Ft;
+      dtemp2 = real( ifftn( ifftshift( dtemp2Ft ) ) );
+      subplot(2,3,5)
+      imagesc( dtemp2 ); colorbar  
+      dtemp2_v2 = real( ifftn( ifftshift( obj.Ik{2} .* iotaFtTemp{2}(:,:,obj.K03) ) ) );
+      subplot(2,3,6)
+      imagesc( dtemp2_v2 ); colorbar 
+      %% compare ft
+      figure()
+      subplot( 2,2,1 )
+      imagesc( imag( temp1Ft ) ); colorbar
+      title('temp1')
+      subplot( 2,2,2 )
+      imagesc( imag( iotaFtTemp{1}(:,:,obj.K03) ) ); colorbar
+      title('iotaFt(1)')
+      subplot( 2,2,3 )
+      imagesc( imag( temp2Ft ) ); colorbar
+      title('temp2')
+      subplot( 2,2,4 )
+      imagesc( imag( iotaFtTemp{2}(:,:,obj.K03) ) ); colorbar
+      title('iotaFt(2)')
+      %% ifft temp
+      %%
+      figure()
+      plot( reshape( imag( iotaFtTemp{1}(obj.K03+1,obj.K03+1,:) ), [1 obj.N3] ) )
+      %%
+      keyboard
     end % calcDrho
   end %methods
   
