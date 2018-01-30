@@ -1,16 +1,17 @@
 function checkNlDiff( n3, gridObj, GammaCube_FT, lop, rho_FT, rho, ...
   polarDrive, densityDepDiff )
 gammaExReal = real( ifftn( ifftshift( GammaCube_FT ) ) );
-gammaExSqReal = trapz_periodic( gammaExReal, 3 );
-gammaExPhiReal =  reshape( trapz_periodic( trapz_periodic(...
-  gammaExReal,1 ),2 ), [1 n3] );
+gammaExSqReal = trapz_periodic( gridObj.x3, gammaExReal, 3 );
+gammaExPhiReal =  reshape( trapz_periodic( gridObj.x2, trapz_periodic(...
+  gridObj.x1, gammaExReal,1 ),2 ), [1 n3] );
 gammaDiff = lop .* rho_FT;
 gammaDiffReal = real( ifftn( ifftshift( gammaDiff ) ) );
-gammaDiffSqReal =  trapz_periodic( gammaDiffReal, 3 );
-gammaDiffPhiReal =  reshape( trapz_periodic( trapz_periodic(...
-  gammaDiffReal,1 ),2 ), [1 n3] );
+gammaDiffSqReal =  trapz_periodic( gridObj.x3, gammaDiffReal, 3 );
+gammaDiffPhiReal =  reshape( trapz_periodic( gridObj.x2, trapz_periodic(...
+  gridObj.x1, gammaDiffReal,1 ),2 ), [1 n3] );
 c = trapz_periodic( rho, 3 );
-f = reshape( trapz_periodic( trapz_periodic( rho, 1 ), 2 ), [1 n3] );
+f = reshape( trapz_periodic( gridObj.x2, ...
+  trapz_periodic( gridObj.x1, rho, 1 ), 2 ), [1 n3] );
 % plot it
 %% spatial
 figure()
@@ -32,7 +33,7 @@ imagesc( sumGamm )
 title('Sum')
 colorbar
 %% angle
-if 0
+if 1
   figure()
   subplot(2,1,1)
   plot( gridObj.x3, gammaDiffPhiReal,...
@@ -102,10 +103,32 @@ if 0
   colorbar
   title('Total 2')
 end
+%
+figure()
+%% figure out weird bump in angle
+indsWrap = [n3 1:n3 n3];
+quick2ndDeriv = ...
+      rho( :,:,indsWrap( 1:(end-2) ) )...
+- 2 * rho( :,:,indsWrap( 2:(end-1) ) )... 
++     rho( :,:,indsWrap( 3:(end) ) )... 
++     rho( :,indsWrap( 1:(end-2) ),: )...
+- 2 * rho( :,indsWrap( 2:(end-1) ),: )... 
++     rho( :,indsWrap( 3:(end) ),: ) ...
++     rho( indsWrap( 1:(end-2) ),:,: )...
+- 2 * rho( indsWrap( 2:(end-1) ),:,: )... 
++     rho( indsWrap( 3:end ),:,: ) ;
+ind1 = 30;
+ind2 = 24;
+subplot(1,3,1)
+plot( gridObj.x3, reshape( gammaDiffReal( ind1, ind2, : ), [1 n3]) )
+subplot(1,3,2)
+plot( gridObj.x3, reshape( rho( ind1, ind2, : ), [1 n3]) )
+subplot(1,3,3)
+plot( gridObj.x3, reshape( quick2ndDeriv ( ind1, ind2, : ), [1 n3]) )
 %%
-%   figure()
-%   imagesc( densityDepDiff.DNlPos ); colorbar
-%     subplot(1,3,3)
-%   imagesc( densityDepDiff.DNlPos )
+%% figure out weird bump in angle
+% ind1 = 19;
+% ind2 = 23;
+
 %%
 keyboard

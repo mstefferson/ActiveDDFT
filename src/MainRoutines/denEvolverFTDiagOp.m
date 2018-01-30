@@ -98,7 +98,7 @@ else
   error('No stepping method selected');
 end
 %% Error check
-dbMe = 1;
+dbMe = 0;
 if dbMe
 checkNlDiff( n3, gridObj, GammaCube_FT, lop, rho_FT, rho, ...
   polarDrive, densityDepDiff )
