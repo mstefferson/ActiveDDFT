@@ -242,32 +242,35 @@ classdef DensityDepAnisoDiffClass < handle
   end %methods
   
   methods (Static)
-    % fix densities that are too low
-    function dCurrent = fixNegativeDiff( dCurrent, dMin )
-      logInds = dCurrent < dMin;
-      if isscalar( dMin )
-        dCurrent( logInds ) = dMin;
-      else
-        dCurrent( logInds ) = dMin( logInds );
-      end
+   
+    % calc iota diff
+    function [iota] = calcIotaDiff( rhoFtTemp, ik )
+      % "flux" without mobility from diffusion
+      iota  = -real( ifftn( ifftshift( ik .* rhoFtTemp ) ) );
+    end
+    
+    % calc iota total
+    function [iota] = calcIotaTotal(iotaDiff, iotaOther )
+      % "flux" without mobility total
+      iota = iotaDiff + iotaOther;
     end
 
-    % c cell of scalars
+    % calcDnl with rods function.
     function dnl = calcDnlRods( c, conc )
       dnl = c{1} .* (  1 ./ ( 1  + ( conc / c{2} ).^2 ) - 1 );
     end
 
-    % c cell of scalars
+    % calcDnl with exp function.
     function dnl = calcDnlExp( c, conc )
       dnl = c{1} .* (  exp( -conc / c{2} ) - 1 );
     end
 
-    % c cell of scalars
+    % calcDnl with tanh function.
     function dnl = calcDnlTanh( c, conc )
       dnl = -c{1} .* tanh( conc / c{2} );
     end
 
-    % c cell of scalars
+    % calcDnl with power series function.
     function dnl = calcDnlPower( nlNVec, c, numTerm, conc, conc_max, dnlMin )
         dnl = zeros( nlNVec );
         % only calculate it for density less than max
@@ -280,18 +283,5 @@ classdef DensityDepAnisoDiffClass < handle
         % for densities about density max, set to min value
         dnl( ~inds2calc ) = dnlMin;
     end
-    
-    
-    % calc iota diff
-    function [iota] = calcIotaDiff( rhoFtTemp, ik )
-      % "flux" without mobility from diffusion
-      iota  = -real( ifftn( ifftshift( ik .* rhoFtTemp ) ) );
-    end
-    
-    % calc iota total
-    function [iota] = calcIotaTotal(iotaDiff, iotaOther )
-      % "flux" without mobility total
-      iota = iotaDiff + iotaOther;
-    end
-  end % static methods
+   end % static methods
 end %class
