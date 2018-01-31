@@ -8,7 +8,7 @@ classdef DensityDepIsoDiffClass < handle
     FlagPos = []; % flag to calculate position contribution or not
     FlagRot = []; % flag to calculate rotational contribution or not
     Type = []; % 'lin' or 'quad'
-    TypeId = []; % 1 = linear, 2 = quad 3 = tanh
+    TypeId = []; % 1=lin, 2=quad, 3=tanh, 4=exp, 5=rods
     PosTerms =[]; % number of coefficients in position terms
     RotTerms = []; % number of coefficients in position terms
     N1 = []; % grid points in 1
@@ -36,7 +36,7 @@ classdef DensityDepIsoDiffClass < handle
     % d0: diffusion constant
     % ik1: sqrt(-1) * k1 vector
     % ik2: sqrt(-1) * k3 vector
-    function obj = DensityDepIsoDiffClass( order, rhoMax, posRotFlag, ...
+    function obj = DensityDepIsoDiffClass( type, rhoMax, posRotFlag, ...
         d0, ik, b, n1, n2, n3)
       if rhoMax == 0
         obj.Flag = 0;
@@ -51,7 +51,7 @@ classdef DensityDepIsoDiffClass < handle
         obj.FlagPos = posRotFlag(1);
         obj.FlagRot = posRotFlag(2);
         obj.Flag = 1;
-        obj.Type = order;
+        obj.Type = type;
         obj.setType();
         obj.N1 = n1;
         obj.N2 = n2;
@@ -85,80 +85,78 @@ classdef DensityDepIsoDiffClass < handle
       end
     end % constructor
     
-    % Set the nl diffusion order
+    % Set the nl diffusion type
     function [obj] = setType( obj )
-      if strcmp( obj.Type, 'lin' )
+      if strcmp( obj.Type, 'lin' ) % linear in density dnl~c
         obj.TypeId = 1;
-      elseif strcmp( obj.Type, 'quad' )
+      elseif strcmp( obj.Type, 'quad' ) % quad in density dnl~c+c^2
         obj.TypeId = 2;
-      elseif strcmp( obj.Type, 'tanh' )
+      elseif strcmp( obj.Type, 'tanh' ) % tanh in density dnl~tanh(c)
         obj.TypeId = 3;
+      elseif strcmp( obj.Type, 'exp' ) % exp in density dnl~tanh(c)
+        obj.TypeId = 4;
+      elseif strcmp( obj.Type, 'rods' ) % thin rod form in density dnl~1/(1+c^2)
+        obj.TypeId = 5;
       else
         obj.TypeId = 1;
         obj.Type = 'lin';
-        fprintf('Incorrect density order. Setting to linear\n')
+        fprintf('Incorrect density type. Setting to linear\n')
       end
       fprintf('Id: %d; Type: %s\n', obj.TypeId, obj.Type )
     end % setType
     
-    % calc the nl diffusion coefficient factor based on order
+    % calc the nl diffusion coefficient factor based on type
     function [obj, dNlFact] = calcNlCoeff( obj, d0 )
       % linear
       if obj.TypeId == 1
-        dNlFact{1} = -d0 / obj.RhoMax ;
+        dNlFact{1} = -d0 / obj.RhoMax ; % linear coeff
       % quad
       elseif obj.TypeId == 2
-        dNlFact{1} = -2 * d0 / obj.RhoMax ;
-        dNlFact{2} = d0 / ( obj.RhoMax .^ 2 );
-      % tanh
-      elseif obj.TypeId == 3
-        dNlFact{1} = -d0;
-        dNlFact{2} = obj.RhoMax;
+        dNlFact{1} = -2 * d0 / obj.RhoMax ; % linear coeff
+        dNlFact{2} = d0 / ( obj.RhoMax .^ 2 ); % quad coeff
+      % tanh/exp/rods
+      elseif obj.TypeId == 3 || obj.TypeId == 4 || obj.TypeId == 5
+        dNlFact{1} = d0; % amplitude
+        dNlFact{2} = obj.RhoMax; % scale
       end
     end % calcNlCoeff
     
     % Set the nl diffusion coeff
     function [obj] = calcDiffNl( obj, rho )
-      obj.DNlR = zeros( obj.DnlNVec );
-      obj.DNlPos = zeros( obj.DnlNVec );
+      % calc Dnl by type
       if obj.TypeId == 1 || obj.TypeId == 2
-        inds2calc = rho < obj.RhoMax;
-      else
-        try
-          inds2calc = logical( rho );
-        catch err
-          keyboard
+        if obj.FlagRot
+          obj.DNlR = obj.calcDnlPower( obj.DnlNVec, obj.DNlFactR, ...
+            obj.RotTerms, rho, obj.RhoMax, obj.DNlMinR );
         end
-      end
-      % calc rotational Dnl
-      if obj.TypeId == 1 || obj.TypeId == 2
-        for ii = 1:obj.RotTerms
-          obj.DNlR(inds2calc) = obj.DNlR(inds2calc) + ...
-            obj.DNlFactR{ii} .* ( rho(inds2calc) .^ ii );
-        end
-        % calc positional Dnl
-        for ii = 1:obj.PosTerms
-          obj.DNlPos(inds2calc) = obj.DNlPos(inds2calc) +...
-            obj.DNlFactPos{ii} .* ( rho(inds2calc) .^ ii );
+        if obj.FlagPos
+          obj.DNlPos = obj.calcDnlPower( obj.DnlNVec, obj.DNlFactPos, ...
+            obj.PosTerms, rho, obj.RhoMax, obj.DNlMinPos );
         end
       elseif obj.TypeId == 3
         if obj.FlagRot
-          obj.DNlR(inds2calc) = obj.DNlR(inds2calc) + ...
-            obj.DNlFactR{1} .* tanh( rho(inds2calc) / obj.DNlFactR{2} );
+          obj.DNlR = obj.calcDnlTanh( obj.DNlFactR, rho );
         end
         if obj.FlagPos
-          obj.DNlPos(inds2calc) = obj.DNlPos(inds2calc) +...
-            obj.DNlFactPos{1} .* tanh( rho(inds2calc) / obj.DNlFactPos{2} );
+          obj.DNlPos = obj.calcDnlTanh( obj.DNlFactPos, rho );
         end
-      end
-      if obj.FlagRot
-        obj.DNlR(~inds2calc) = obj.DNlMinR;
-      end
-      if obj.FlagPos
-        obj.DNlPos(~inds2calc) = obj.DNlMinPos;
-      end
+      elseif obj.TypeId == 4
+        if obj.FlagRot
+          obj.DNlR = obj.calcDnlExp( obj.DNlFactR, rho );
+        end
+        if obj.FlagPos
+          obj.DNlPos = obj.calcDnlExp( obj.DNlFactPos, rho );
+        end
+      elseif obj.TypeId == 5
+        if obj.FlagRot
+          obj.DNlR = obj.calcDnlRods( obj.DNlFactR, rho );
+        end
+        if obj.FlagPos
+          obj.DNlPos = obj.calcDnlRods( obj.DNlFactPos, rho );
+        end
+      end % end types
     end % calcDiffNL
-    
+
     % calc d rho
     function [dRho_dt] = calcDrho( obj, rhoFt, iotaEx )
       % calculate Dnl
@@ -336,5 +334,35 @@ classdef DensityDepIsoDiffClass < handle
       % "flux" without mobility total
       iota = iotaDiff + iotaOther;
     end
+
+    % c cell of scalars
+    function dnl = calcDnlRods( c, conc )
+      dnl = c{1} .* (  1 ./ ( 1  + ( conc / c{2} ).^2 ) - 1 );
+    end
+
+    % c cell of scalars
+    function dnl = calcDnlExp( c, conc )
+      dnl = c{1} .* (  exp( -conc / c{2} ) - 1 );
+    end
+
+    % c cell of scalars
+    function dnl = calcDnlTanh( c, conc )
+      dnl = -c{1} .* tanh( conc / c{2} );
+    end
+
+    % c cell of scalars
+    function dnl = calcDnlPower( nlNVec, c, numTerm, conc, conc_max, dnlMin )
+        dnl = zeros( nlNVec );
+        % only calculate it for density less than max
+        inds2calc = conc < conc_max;
+        % calc positional Dnl
+        for ii = 1:numTerm
+          dnl(inds2calc) = dnl(inds2calc) +...
+            c{ii} .* ( conc(inds2calc) .^ ii );
+        end
+        % for densities about density max, set to min value
+        dnl( ~inds2calc ) = dnlMin;
+    end
+    
   end % static methods
 end %class

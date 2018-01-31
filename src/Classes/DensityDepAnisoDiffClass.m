@@ -7,8 +7,10 @@ classdef DensityDepAnisoDiffClass < handle
     Flag = []; % flag to calculate or not
     FlagPos = []; % flag to calculate or not
     FlagRot = []; % flag to calculate or not
-    Order = []; % 'lin' or 'quad'
-    OrderId = []; % 1 = linear, 2 = quad
+    Type = []; % 'lin' or 'quad'
+    TypeId = []; % 1 = linear, 2 = quad
+    PosTerms =[]; % number of coefficients in position terms
+    RotTerms = []; % number of coefficients in position terms
     N1 = []; % grid points in 1
     N2 = []; % grid points in 2
     N3 = []; % grid points in 3
@@ -41,7 +43,7 @@ classdef DensityDepAnisoDiffClass < handle
     % n1,2,3: number of grid points in 1, 2, 3
     % d0: diffusion constant (perp, rotational )
     % ik: sqrt(-1) * k3 vector (cell)
-    function obj = DensityDepAnisoDiffClass( order, rhoMax, posRotFlag, d0, ik, ...
+    function obj = DensityDepAnisoDiffClass( type, rhoMax, posRotFlag, d0, ik, ...
         b, n1, n2, n3, phi)
       if rhoMax == 0
         obj.Flag = 0;
@@ -55,8 +57,8 @@ classdef DensityDepAnisoDiffClass < handle
         % flag
         obj.FlagPos = posRotFlag(1);
         obj.FlagRot = posRotFlag(2);
-        obj.Order = order;
-        obj.setOrder();
+        obj.Type = type;
+        obj.setType();
         obj.N1 = n1;
         obj.N2 = n2;
         obj.N3 = n3;
@@ -87,6 +89,7 @@ classdef DensityDepAnisoDiffClass < handle
             repmat( obj.D0Perp * sinPhi .* cosPhi, [n1 n2 1] );
           obj.DNlMin22 = ...
             repmat( -obj.D0Perp * cosPhi .* cosPhi, [n1 n2 1] );
+          obj.PosTerms = 1:length(obj.DNlFact11);
           obj.DNl11 = zeros(obj.DnlNVec);
           obj.DNl12 = zeros(obj.DnlNVec);
           obj.DNl22 = zeros(obj.DnlNVec);
@@ -94,6 +97,7 @@ classdef DensityDepAnisoDiffClass < handle
         if obj.FlagRot
           obj.DimInclude = unique( [obj.DimInclude 3] );
           [~,obj.DNlFactR] = obj.calcNlCoeff( obj.D0R );
+          obj.RotTerms = 1:length(obj.DNlFactR);
           obj.DNlMinR = -obj.D0R;
           obj.DNlR = zeros(obj.DnlNVec);
         end
@@ -106,69 +110,100 @@ classdef DensityDepAnisoDiffClass < handle
       end
     end
     
-    % Set the nl diffusion order
-    function [obj] = setOrder( obj )
-      if strcmp( obj.Order, 'lin' )
-        obj.OrderId = 1;
-        fprintf('NL diffusion linear in density\n')
-      elseif strcmp( obj.Order, 'quad' )
-        obj.OrderId = 2;
-        fprintf('NL diffusion quadratic in density\n')
+    % Set the nl diffusion type
+    function [obj] = setType( obj )
+      if strcmp( obj.Type, 'lin' ) % linear in density dnl~c
+        obj.TypeId = 1;
+      elseif strcmp( obj.Type, 'quad' ) % quad in density dnl~c+c^2
+        obj.TypeId = 2;
+      elseif strcmp( obj.Type, 'tanh' ) % tanh in density dnl~tanh(c)
+        obj.TypeId = 3;
+      elseif strcmp( obj.Type, 'exp' ) % exp in density dnl~tanh(c)
+        obj.TypeId = 4;
+      elseif strcmp( obj.Type, 'rods' ) % thin rod form in density dnl~1/(1+c^2)
+        obj.TypeId = 5;
       else
-        obj.OrderId = 1;
-        fprintf('Incorrect density order. Setting to linear\n')
+        obj.TypeId = 1;
+        obj.Type = 'lin';
+        fprintf('Incorrect density type. Setting to linear\n')
       end
-    end % setOrder
+      fprintf('Id: %d; Type: %s\n', obj.TypeId, obj.Type )
+    end % setType
     
-    % calc the nl diffusion coefficient factor based on order
+    % calc the nl diffusion coefficient factor based on type
     function [obj, dNlFact] = calcNlCoeff( obj, d0 )
-      if obj.OrderId == 1
-        dNlFact{1} = -d0 / obj.RhoMax ;
-      else
-        dNlFact{1} = -2 * d0 / obj.RhoMax ;
-        dNlFact{2} = d0 / ( obj.RhoMax .^ 2 );
+      % linear
+      if obj.TypeId == 1
+        dNlFact{1} = -d0 / obj.RhoMax ; % linear coeff
+        % quad
+      elseif obj.TypeId == 2
+        dNlFact{1} = -2 * d0 / obj.RhoMax ; % linear coeff
+        dNlFact{2} = d0 / ( obj.RhoMax .^ 2 ); % quad coeff
+        % tanh/exp/rods
+      elseif obj.TypeId == 3 || obj.TypeId == 4 || obj.TypeId == 5
+        dNlFact{1} = d0; % amplitude
+        dNlFact{2} = obj.RhoMax; % scale
       end
     end % calcNlCoeff
     
-    % build diffusion matrix elements and cells for each order
+    % build diffusion matrix elements and cells for each type
     function dNlFact = buildDiffMatElement( obj, dNl, trigFunction )
       dNlFact = cell(1,2);
-      for ii = 1:obj.OrderId
-        dNlFact{ii} = dNl{ii} * trigFunction;
-        dNlFact{ii} = repmat( dNlFact{ii}, [obj.N1, obj.N2, 1] );
+      if obj.TypeId == 1 || obj.TypeId == 2
+        for ii = 1:length(dNl)
+          dNlFact{ii} = dNl{ii} * trigFunction;
+          dNlFact{ii} = repmat( dNlFact{ii}, [obj.N1, obj.N2, 1] );
+        end
+      else
+        dNlFact{1} = dNl{1} * trigFunction;
+        dNlFact{2} = dNl{2};
       end
     end % buildDiffMatElement
     
     % Set the nl diffusion coeff
     function [obj] = calcDiffNl( obj, rho )
-      obj.DNlR = zeros(obj.DnlNVec);
-      obj.DNl11 = zeros(obj.DnlNVec);
-      obj.DNl12 = zeros(obj.DnlNVec);
-      obj.DNl22 = zeros(obj.DnlNVec);
-      inds2calc = rho < obj.RhoMax;
-      for ii = 1:obj.OrderId
+      % calc Dnl by type
+      if obj.TypeId == 1 || obj.TypeId == 2
         if obj.FlagRot
-          obj.DNlR(inds2calc) = obj.DNlR(inds2calc) + ...
-            obj.DNlFactR{ii} .* ( rho(inds2calc) .^ ii );
+          obj.DNlR = obj.calcDnlPower( obj.DnlNVec, obj.DNlFactR, ...
+            obj.RotTerms, rho, obj.RhoMax, obj.DNlMinR );
         end
         if obj.FlagPos
-          obj.DNl11(inds2calc) = obj.DNl11(inds2calc) +...
-            obj.DNlFact11{ii}(inds2calc) .* ( rho(inds2calc) .^ ii );
-          obj.DNl12(inds2calc) = obj.DNl12(inds2calc) +...
-            obj.DNlFact12{ii}(inds2calc) .* ( rho(inds2calc) .^ ii );
-          obj.DNl22(inds2calc) = obj.DNl22(inds2calc) +...
-            obj.DNlFact22{ii}(inds2calc) .* ( rho(inds2calc) .^ ii );
+          obj.DNl11 = obj.calcDnlPower( obj.DnlNVec, obj.DNlFact11, ...
+            obj.PosTerms, rho, obj.RhoMax, obj.DNlMin11 );
+          obj.DNl12 = obj.calcDnlPower( obj.DnlNVec, obj.DNlFact12, ...
+            obj.PosTerms, rho, obj.RhoMax, obj.DNlMin11 );
+          obj.DNl22 = obj.calcDnlPower( obj.DnlNVec, obj.DNlFact22, ...
+            obj.PosTerms, rho, obj.RhoMax, obj.DNlMin22 );
         end
-      end
-      % fix negative
-      if obj.FlagRot
-        obj.DNlR(~inds2calc) = obj.DNlMinR;
-      end
-      if obj.FlagPos
-        obj.DNl11(~inds2calc) = obj.DNlMin11(~inds2calc);
-        obj.DNl12(~inds2calc) = obj.DNlMin12(~inds2calc);
-        obj.DNl22(~inds2calc) = obj.DNlMin22(~inds2calc);
-      end
+      elseif obj.TypeId == 3
+        if obj.FlagRot
+          obj.DNlR = obj.calcDnlTanh( obj.DNlFactR, rho );
+        end
+        if obj.FlagPos
+          obj.DNl11 = obj.calcDnlTanh( obj.DNlFact11, rho );
+          obj.DNl12 = obj.calcDnlTanh( obj.DNlFact12, rho );
+          obj.DNl22 = obj.calcDnlTanh( obj.DNlFact22, rho );
+        end
+      elseif obj.TypeId == 4
+        if obj.FlagRot
+          obj.DNlR = obj.calcDnlExp( obj.DNlFactR, rho );
+        end
+        if obj.FlagPos
+          obj.DNl11 = obj.calcDnlExp( obj.DNlFact11, rho );
+          obj.DNl12 = obj.calcDnlExp( obj.DNlFact12, rho );
+          obj.DNl22 = obj.calcDnlExp( obj.DNlFact22, rho );
+        end
+      elseif obj.TypeId == 5
+        if obj.FlagRot
+          obj.DNlR = obj.calcDnlRods( obj.DNlFactR, rho );
+        end
+        if obj.FlagPos
+          obj.DNl11 = obj.calcDnlRods( obj.DNlFact11, rho );
+          obj.DNl12 = obj.calcDnlRods( obj.DNlFact12, rho );
+          obj.DNl22 = obj.calcDnlRods( obj.DNlFact22, rho );
+        end
+      end % end types
     end % calcDiffNl
     
     % calc d rho
@@ -216,6 +251,36 @@ classdef DensityDepAnisoDiffClass < handle
         dCurrent( logInds ) = dMin( logInds );
       end
     end
+
+    % c cell of scalars
+    function dnl = calcDnlRods( c, conc )
+      dnl = c{1} .* (  1 ./ ( 1  + ( conc / c{2} ).^2 ) - 1 );
+    end
+
+    % c cell of scalars
+    function dnl = calcDnlExp( c, conc )
+      dnl = c{1} .* (  exp( -conc / c{2} ) - 1 );
+    end
+
+    % c cell of scalars
+    function dnl = calcDnlTanh( c, conc )
+      dnl = -c{1} .* tanh( conc / c{2} );
+    end
+
+    % c cell of scalars
+    function dnl = calcDnlPower( nlNVec, c, numTerm, conc, conc_max, dnlMin )
+        dnl = zeros( nlNVec );
+        % only calculate it for density less than max
+        inds2calc = conc < conc_max;
+        % calc positional Dnl
+        for ii = 1:numTerm
+          dnl(inds2calc) = dnl(inds2calc) +...
+            c{ii} .* ( conc(inds2calc) .^ ii );
+        end
+        % for densities about density max, set to min value
+        dnl( ~inds2calc ) = dnlMin;
+    end
+    
     
     % calc iota diff
     function [iota] = calcIotaDiff( rhoFtTemp, ik )
