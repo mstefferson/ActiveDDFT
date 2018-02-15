@@ -1,6 +1,6 @@
 % Executeable for HardRod
 % Date
-function checkInitRho()
+function rho = checkInitRho()
 dateTime =  datestr(now);
 fprintf('Starting checkRhoInit: %s\n', dateTime);
 % Add Subroutine path
@@ -87,7 +87,7 @@ if systemObj.n3 > 1
     OpCPNCalc(systemObj.n1,systemObj.n2,rho,...
     gridObj.x3,cosPhi3d,sinPhi3d,cos2Phi3d,sin2Phi3d,cossinPhi3d);
   cScale = particleObj.b;
-  plotOps( OPs, gridObj.x1, gridObj.x2, cScale, 'docked' )
+  plotOps( OPs, gridObj.x1, gridObj.x2, cScale, 'normal' )
   % plot a slice
   figure()
   hold

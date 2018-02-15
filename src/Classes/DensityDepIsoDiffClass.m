@@ -217,7 +217,7 @@ classdef DensityDepIsoDiffClass < handle
 
     % calcDnl with rods function.
     function dnl = calcDnlRods( c, conc )
-      dnl = c{1} .* (  1 ./ ( 1  + ( conc / c{2} ).^2 ) - 1 );
+      dnl = c{1} .* (  1 ./ ( 1  + conc / c{2} ) .^2 - 1 );
     end
 
     % calcDnl with exp function.
