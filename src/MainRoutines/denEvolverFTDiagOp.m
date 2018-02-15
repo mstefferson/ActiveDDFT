@@ -47,8 +47,9 @@ end
 jrectemp = 1; % Temporary holder for Density_rec
 jrec     = timeObj.recStartInd; % Actual index for runSave
 %Set up Diffusion operator, discrete k-space propagator, and interaction
-[lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
-prop = exp(lop .* dt);   % Exponentiate the elements
+%[lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
+lop = 0;
+prop = 1;   % Turn off propagator
 % Interactions and driving
 if flags.dRhoCalc
   rho    = real(ifftn(ifftshift(rho_FT)));
