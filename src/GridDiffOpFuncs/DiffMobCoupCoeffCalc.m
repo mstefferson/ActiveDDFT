@@ -5,7 +5,7 @@
 %
 function [diffObj] = DiffMobCoupCoeffCalc(...
   T,Mob,Mob_par,Mob_perp,Mob_rot,...
-  kx,ky,km,kx2D,ky2D,vd) 
+  kx,ky,km,kx2D,ky2D,vd, phi) 
 % Use Einstein diffusion relations
 diffObj.Mob_pos  = Mob;
 diffObj.Mob_par  = Mob_par;
@@ -15,7 +15,25 @@ diffObj.D_pos = Mob_perp * T; % Perpendicular coeff
 diffObj.D_par  = Mob_par * T; % Parallel diffusion coeff
 diffObj.D_perp = Mob_perp * T; % Perpendicular coeff
 diffObj.D_rot  = Mob_rot * T; % Rotational diffusion
-%Aniso rods diffusion coupling
+% Build the actual mobility matrix
+phi = reshape( phi, [1 1 length(phi) ] );
+cosphi = cos(phi);
+sinphi = sin(phi);
+if Mob_par == Mob_perp % iso
+  diffObj.Ani == 0 
+  diffObj.MobMat11 = diffObj.Mob_par;
+  diffObj.MobMat12 = 0;
+  diffObj.MobMat22 = diffObj.Mob_par;
+else % aniso
+  diffObj.Ani == 1 
+  diffObj.MobMat11 = diffObj.Mob_par .* cosphi .^ 2 
+    + diffObj.Mob_perp  .* sinphi .^ 2;
+  diffObj.MobMat12 = (diffObj.Mob_par - diffObj.Mob_perp) / 2 * cosphi .* sinphi;
+  diffObj.MobMat22 = diffObj.Mob_par .* sinphi .^ 2 
+    + diffObj.Mob_perp  .* cosphi .^ 2;
+end
+diffObj.MobMat33 = diffObj.Mob_rot; 
+% Aniso rods diffusion coupling
 % Constant in front of cross terms
 CrossTermFactor = (diffObj.Mob_par - diffObj.Mob_perp)/4; 
 % Coupling coefficent
@@ -28,58 +46,8 @@ else
   diffObj.CfMplus2 = CrossTermFactor.*(ky2D - 1i.*kx2D).^2; 
   diffObj.CfMminus2 = CrossTermFactor.*(ky2D + 1i.*kx2D).^2; 
 end
-% Driven part
-if vd == 0
-  diffObj.dr = 0;
-  diffObj.CfMplus1  = 0;
-  diffObj.CfMminus1 = 0;
-else
-  diffObj.dr = 1;
-  diffObj.CfMplus1  = -vd/2 * ( 1i .* kx2D - ky2D  ) ;
-  diffObj.CfMminus1 = -vd/2 * ( 1i .* kx2D + ky2D  ) ;
-end
-% Multiply by derivatives in k space repeatedily,
-% they are large, but shouild be worth allocating
-[ diffObj.ik2rep3, diffObj.ik1rep3, diffObj.ik3rep3 ] = ...
-  meshgrid(ky,kx,km);
-% 3d k vectors
-diffObj.ik1rep3 = sqrt(-1) .* diffObj.ik1rep3;
-diffObj.ik2rep3 = sqrt(-1) .* diffObj.ik2rep3;
-diffObj.ik3rep3 = sqrt(-1) .* diffObj.ik3rep3;
-% NL couplings
-% key: jiMm2f = ji m -2 coupling factor
-% jx
-n3 = length(km);
-j1f    = - ( diffObj.Mob_par + diffObj.Mob_perp ) .* ...
-  ( sqrt(-1) * kx2D ) / 2;
-diffObj.j1f_reps = repmat( j1f, [1,1,n3]);
-if diffObj.Ani == 0 || diffObj.Mob_perp == diffObj.Mob_par
-  diffObj.j1Mm2f_reps = 0;
-  diffObj.j1Mp2f_reps = 0;
-else
-  jxMm2f = - ( diffObj.Mob_par - diffObj.Mob_perp ) .* ...
-    ( sqrt(-1) * kx2D + ky2D ) / 4;
-  jxMp2f = - ( diffObj.Mob_par - diffObj.Mob_perp ) .* ...
-    ( sqrt(-1) * kx2D - ky2D ) / 4;
-  diffObj.j1Mm2f_reps = repmat( jxMm2f, [1,1,n3]);
-  diffObj.j1Mp2f_reps = repmat( jxMp2f, [1,1,n3]);
-end
-% jy
-j2f    = - ( diffObj.Mob_perp + diffObj.Mob_par ) .* ...
-  ( sqrt(-1) * ky2D ) / 2;
-diffObj.j2f_reps = repmat( j2f, [1,1,n3]);
-if diffObj.Ani == 0 || diffObj.Mob_perp == diffObj.Mob_par
-  diffObj.j2Mm2f_reps = 0;
-  diffObj.j2Mp2f_reps = 0;
-else
-  jyMm2f = - ( diffObj.Mob_perp - diffObj.Mob_par ) .* ...
-    ( sqrt(-1) * ky2D - kx2D ) / 4;
-  jyMp2f = - ( diffObj.Mob_perp - diffObj.Mob_par ) .* ...
-    ( sqrt(-1) * ky2D + kx2D ) / 4;
-  diffObj.j2Mm2f_reps = repmat( jyMm2f, [1,1,n3]);
-  diffObj.j2Mp2f_reps = repmat( jyMp2f, [1,1,n3]);
-end
-% jm
-diffObj.j3f_reps = - diffObj.ik3rep3 .* diffObj.Mob_rot;
-
+% k vector for gradient
+diffObj.ik1 = sqrt(-1) .* reshape( kx, [ systemObj.n1 1 ] );
+diffObj.ik2 = sqrt(-1) .* reshape( ky, [ 1 systemObj.n2 ] );
+diffObj.ik3 = sqrt(-1) .* reshape( km, [ 1 1 systemObj.n3 ] );
 end

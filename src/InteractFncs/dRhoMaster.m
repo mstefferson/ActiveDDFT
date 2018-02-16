@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [gammaCube_FT, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  interObj,  systemObj, diffObj, polarDrive, noise )
+  interObj,  systemObj, diffObj, polarDrive, noise, dRhoFlux )
 % Initialize
 gammaCube_FT = 0;
 shitIsFucked = 0;
@@ -68,13 +68,20 @@ if calcGamma
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
-  gammaCube_FT = dRhoIntCalcMu( rho, dVmaster, systemObj, diffObj, interObj);
+  [iota1, iota2, iota3] = fluxMu( rho, dVmaster, interObj );
+else
+  iota1 = 0;
+  iota2 = 0;
+  iota3 = 0;
 end
 % driving
 if polarDrive.Flag
-  gammaDrCube_FT = polarDrive.calcDrho( rho );
-  gammaCube_FT = gammaCube_FT + gammaDrCube_FT;
+  polarDrive.calcIota( rho );
+  iota1 = iota1 + polarDrive.Iota1;
+  iota2 = iota2 + polarDrive.Iota2;
 end
+% calculate gamma from fluxes
+gammaCube_FT = dRhoFlux( iota1, iota2, iota3 );
 % noise
 if noise.Flag
   gammaNoiseFT = noise.calcDrho( rho ); 
