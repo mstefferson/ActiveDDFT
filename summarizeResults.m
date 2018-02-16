@@ -48,7 +48,7 @@ try
     numModesPert3 = zeros( numFiles, 1 );
     bc = zeros( numFiles, 1 );
     c = zeros( numFiles, 1 );
-    vD = zeros( numFiles, 1 );
+   .fD = zeros( numFiles, 1 );
     steady = zeros( numFiles, 1 );
     broken = zeros( numFiles, 1 );
     whatBroke = cell( numFiles, 1 );
@@ -107,7 +107,7 @@ try
       ssEpsilon(ii) =  timeObj.ss_epsilon;
       bc(ii) = systemObj.bc;
       c(ii) = systemObj.c;
-      vD(ii) = particleObj.vD;
+     .fD(ii) = particleObj.vD;
       steady(ii) = denRecObj.SteadyState;
       broken(ii) = denRecObj.DidIBreak;
       whatBroke{ii} = denRecObj.whatBroke;
@@ -179,7 +179,7 @@ try
     kPosKa{ii} = cryPeaks.ka;
     T = table( counter, filename, particleType, shortRange, longRange, diagOp, ...
       iC, sM, trId, rId, longL1, longL2, longE1, longE2, n1, n2, n3,...
-      l1, l2, l3, dt, tTot, ssEpsilon, bc, c, vD, steady, broken, whatBroke, ...
+      l1, l2, l3, dt, tTot, ssEpsilon, bc, c,.fD, steady, broken, whatBroke, ...
       simtime, kPosNumPeaks, kPosDist, kPosPeaks, realLatticeSpacing, kPosKa,...
       kAngNumPeaks, kAngDist, kAngPeaks, angLatticeSpacing, kAngKa,...
       spatPhase, angPhase, comments );

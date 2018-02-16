@@ -21,7 +21,7 @@ if flags.AnisoDiff
     [diffObj] =  DiffMobCoupCoeffCalc( systemObj.Tmp,...
       particleObj.mobPar,particleObj.mobPerp,particleObj.mobRot,...
       gridObj.k1, gridObj.k2, gridObj.km, ...
-      kx2D, ky2D,particleObj.vD);
+      kx2D, ky2D,particleObj.fD);
     Dpar = diffObj.D_par;
     Dperp = diffObj.D_perp;
     D.xx = Dpar.*cos2 + Dperp.*sin2;
@@ -66,7 +66,7 @@ jposMagInt = sqrt( jposMagInt );
 
 % Flux from driving
 [jxDr, jyDr, jphiDr] = ...
-  fluxDrive( rho, particleObj.vD, systemObj, cosPhi, sinPhi );
+  fluxDrive( rho, particleObj.fD, systemObj, cosPhi, sinPhi );
 jxDrAve = trapz_periodic( gridObj.x3, jxDr, 3);
 jyDrAve = trapz_periodic( gridObj.x3, jyDr, 3);
 % jphiDrAve = trapz_periodic( gridObj.x3, jphiDr, 3);

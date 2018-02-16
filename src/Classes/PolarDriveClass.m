@@ -10,8 +10,7 @@ classdef PolarDriveClass < handle
   
   methods
     % Constructor
-    function obj = DrhoPolarDriveClass( flag, fd, n3, ...
-        phi, k1m2d, k2m2d )
+    function obj = PolarDriveClass( flag, fd, n1, n2, n3, phi)
       % set properties
       obj.Flag = flag;
       if fd == 0
@@ -26,6 +25,8 @@ classdef PolarDriveClass < handle
         sinPhi3 = sin( phiReshape );
         obj.IotaFac1 = fd .* cosPhi3;
         obj.IotaFac2 = fd .* sinPhi3;
+        obj.Iota1 = zeros( n1, n2, n3);
+        obj.Iota1 = zeros( n1, n2, n3);
       end
     end % constructor
     % calc preflux iota ( j = D iota )

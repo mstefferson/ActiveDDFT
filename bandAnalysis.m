@@ -11,7 +11,7 @@ numFiles = length( dirlist );
 % params and such
 output.p1name = 'l2';
 output.p1 = zeros( 1, numFiles );
-output.p2name = 'vD';
+output.p2name = .fD';
 output.p2 = zeros( 1, numFiles );
 output.p3name = 'bc';
 output.p3 = zeros( 1, numFiles );
@@ -53,7 +53,7 @@ for ii = 1 : numFiles
     sliceInhomoVar( systemObj, C );
   % record parameters and steady state
   output.p1(ii) = systemObj.l2;
-  output.p2(ii) = particleObj.vD;
+  output.p2(ii) = particleObj.fD;
   output.p3(ii) = systemObj.bc;
   output.steady(ii) = denRecObj.SteadyState;
   % run analysis for C,N,P. Be carefule about P

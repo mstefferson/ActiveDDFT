@@ -6,7 +6,7 @@ function [paramMat, numRuns] = MakeParamMat( systemObj, particleObj, ...
   runObj, potInds, interInds, noiseInds, flags )
 
 % Create Paramater matrix
-% paramMat columns: (n1, n2, n3, l1, l2, vD, bc, IC, SM, runID)
+% paramMat columns: (n1, n2, n3, l1, l2,.fD, bc, IC, SM, runID)
 % runID vector
 runID = runObj.runID + (0:(runObj.numTrial-1) );
 % handle all Ns the same and square box
@@ -33,7 +33,7 @@ else
   l2 = systemObj.l2;
 end
 % Create parameter matrix using combvec
-paramMat = combvec( n1, n2, n3, l1, l2, particleObj.vD, systemObj.bc, ...
+paramMat = combvec( n1, n2, n3, l1, l2, particleObj.fD, systemObj.bc, ...
   flags.StepMeth, runID, ...
   interInds, potInds, noiseInds);
 

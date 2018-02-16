@@ -50,9 +50,3 @@ classdef PolarExternalVClass
     end
   end %methods (Static)
 end %class
-
-
-
-
-
-

@@ -22,7 +22,7 @@ try
   systemObj.n3 = paramVec(3);
   systemObj.l1 = paramVec(4);
   systemObj.l2 = paramVec(5);
-  particleObj.vD = paramVec(6);
+  particleObj.fD = paramVec(6);
   systemObj.bc = paramVec(7);
   flags.StepMeth = paramVec(8);
   runObj.runID = paramVec(9);

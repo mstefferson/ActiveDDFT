@@ -13,7 +13,7 @@
 % paramVec(9) = lrL1
 % paramVec(10) = lrL2
 % paramVec(11) = c
-% paramVec(12) = vD
+% paramVec(12) =.fD
 %
 function [stabInfo] = stabilityDrivenSoftIso( paramVec, plotMe )
 % set plot to zero if no specified
@@ -55,8 +55,8 @@ for ii = 1:n1
     k2 = gridObj.k2(jj);
     ckFixedK = ck(ii,jj) * deltaM0;
     omegaDiag = -( k1 .^ 2 + k2 .^ 2 + k3 .^ 2) .* ( 1 - c .*  ckFixedK );
-    p1Prefac = -vD / 2 * ( sqrt(-1) * k1 - k2 );
-    m1Prefac = -vD / 2 * ( sqrt(-1) * k1 + k2 );
+    p1Prefac = .fD / 2 * ( sqrt(-1) * k1 - k2 );
+    m1Prefac = .fD / 2 * ( sqrt(-1) * k1 + k2 );
     omegaP1 = p1Prefac * ones(n3,1);
     omegaM1 = m1Prefac * ones(n3,1);
     % build the mat

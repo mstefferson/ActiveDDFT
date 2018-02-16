@@ -72,7 +72,7 @@ if flags.MakeOP && flags.SaveMe == 0
   fprintf('Turning on saving, you must be saving to make OPs (due to matfile)\n');
   flags.SaveMe = 1;
 end
-if particleObj.vD  == 0; flags.Drive = 0; else flags.Drive = 1;end
+if particleObj.fD  == 0; flags.Drive = 0; else flags.Drive = 1;end
 % Get particle mobility
 [particleObj, systemObj] = ...
   particleInit( particleObj, systemObj, flags.DiagLop);
@@ -117,7 +117,7 @@ disp(runObj); disp(flags); disp(particleObj); disp(systemObj); disp(timeObj); di
 % For some reason, param_mat gets "sliced". Create vectors to get arround
 paramn1  = paramMat(1,:); paramn2  = paramMat(2,:);
 paramn3  = paramMat(3,:); paraml1  = paramMat(4,:);
-paraml2  = paramMat(5,:); paramvD  = paramMat(6,:);
+paraml2  = paramMat(5,:); paramfD  = paramMat(6,:);
 parambc  = paramMat(7,:); paramSM  = paramMat(8,:); 
 paramRun = paramMat(9,:);
 paramInteractInds = paramMat(10,:);
@@ -152,10 +152,11 @@ end
 denRecObj = cell(numRuns,1);
 fprintf('Starting loop over runs\n');
 ticID = tic;
-parfor (ii = 1:numRuns, numWorkers)
+%parfor (ii = 1:numRuns, numWorkers)
+for ii = 1:numRuns
   % Assign parameters
   paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
-    paraml2(ii) paramvD(ii) parambc(ii) paramSM(ii)  paramRun(ii)...
+    paraml2(ii) paramfD(ii) parambc(ii) paramSM(ii)  paramRun(ii)...
     paramInteractInds(ii) paramExtInds(ii) paramNoiseInds(ii) ];
   % Name the file
   filename = [ 'Hr' ptype, interHb, ...
@@ -163,7 +164,7 @@ parfor (ii = 1:numRuns, numWorkers)
     '_diag' num2str( diagOp ) ...
     '_N' num2str( paramn1(ii) ) num2str( paramn2(ii) ) num2str( paramn3(ii) )  ...
     '_ls' num2str( paraml1(ii) ) num2str( paraml2(ii) )...
-    '_bc' num2str( parambc(ii), '%.2f' ) '_vD' num2str( paramvD(ii), '%.3g' ) ...
+    '_bc' num2str( parambc(ii), '%.2f' ) '_fD' num2str( paramfD(ii), '%.3g' ) ...
     noiseStr{ii}, ...
     '_IC' initStr '_SM' num2str( paramSM(ii), '%d'  ) ...
     '_t' num2str( trial,'%.2d' ) '.' num2str( paramRun(ii), '%.2d' ) '.mat' ];
