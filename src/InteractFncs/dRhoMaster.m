@@ -63,8 +63,7 @@ end
 % calculate gamma once
 if calcGamma
   dMu = dVCalc(muExFt, diffObj, ...
-    interObj.dv1IntFlag, interObj.dv2IntFlag, interObj.dv3IntFlag, ...
-    interObj.intInd1, interObj.intInd2, interObj.intInd3);
+    interObj.dv1Flag, interObj.dv2Flag, interObj.dv3Flag);
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
