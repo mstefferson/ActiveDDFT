@@ -152,8 +152,7 @@ end
 denRecObj = cell(numRuns,1);
 fprintf('Starting loop over runs\n');
 ticID = tic;
-%parfor (ii = 1:numRuns, numWorkers)
-for ii = 1:numRuns
+parfor (ii = 1:numRuns, numWorkers)
   % Assign parameters
   paramvec = [ paramn1(ii) paramn2(ii) paramn3(ii) paraml1(ii) ...
     paraml2(ii) paramfD(ii) parambc(ii) paramSM(ii)  paramRun(ii)...
