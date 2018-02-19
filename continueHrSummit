@@ -1,0 +1,41 @@
+# ./submitHr jobName 
+
+# Hard code working dir
+runDir=/scratch/summit/mist7261/Hardrod/
+homeDir=`pwd`;
+
+echo "In $homeDir. Making a temp directory in $runDir"
+
+# Variables from inputs
+if [ $# -le 0 ]
+then
+  echo "no jobname given"
+  jobName=hardrod
+  echo "jobname is $jobName"
+else
+  jobName=$1;
+  echo "jobname is $jobName"
+fi
+
+# Go into all directories in rundir and see if they are done
+cd $runDir
+echo "In $runDir"
+# Check status of job by seeing what's up with run_*.mat
+statusFile=jobRunning.txt
+for i in `ls`; 
+  do 
+  cd $i;
+  echo "In $i";
+  if [ -f $statusFile ]; then
+    # submit!
+    echo "sbatch --job-name=$jobName summitSlurmCont.sh"
+    sbatch --job-name=$jobName summitSlurmCont.sh
+  else
+    echo "Job finished, nothing to continue"
+  fi
+  cd ../
+done
+  
+
+
+

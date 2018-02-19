@@ -11,7 +11,7 @@ numFiles = length( dirlist );
 % params and such
 output.p1name = 'l2';
 output.p1 = zeros( 1, numFiles );
-output.p2name = 'vD';
+output.p2name = .fD';
 output.p2 = zeros( 1, numFiles );
 output.p3name = 'bc';
 output.p3 = zeros( 1, numFiles );

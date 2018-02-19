@@ -22,7 +22,7 @@
 %
 function [denRecObj, rho] = denEvolverFT(...
   rho, systemObj, timeObj, gridObj, diffObj, interObj, ...
-  polarDrive, noise, densityDepDr,flags,lfid )
+  polarDrive, noise, densityDepDiff, dRhoFlux,flags,lfid )
 % global
 global runSave
 % where you at
@@ -45,8 +45,8 @@ else
 end
 %Initialize matrices that change size the +1 is to include initial density
 if flags.SaveMe == 1
-  Density_rec       = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
-  DensityFT_rec      = zeros( n1, n2, n3, timeObj.N_recChunk );   % Store k-space amplitdues
+  Density_rec = zeros( n1, n2, n3, timeObj.N_recChunk );    % Store density amplitudes
+  DensityFT_rec = zeros( n1, n2, n3, timeObj.N_recChunk );   % Store k-space amplitdues
 else
   Density_rec = 0;
   DensityFT_rec = 0;
@@ -62,7 +62,7 @@ trigFnc.sinPhi3 = 0;
 %Interactions
 if flags.dRhoCalc
   [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT,...     
-    interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
+    interObj, systemObj, diffObj, polarDrive, noise, dRhoFlux, densityDepDiff );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
@@ -127,8 +127,8 @@ if shitIsFucked == 0
     rho = real(ifftn(ifftshift(rho_FT)));
     if flags.dRhoCalc
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
-        dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise, densityDepDr );
+        dRhoMaster( rho, rho_FT, interObj, systemObj, ...
+        diffObj, polarDrive, noise, dRhoFlux, densityDepDiff );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
     % Take step

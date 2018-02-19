@@ -6,7 +6,7 @@ function [paramMat, numRuns] = MakeParamMat( systemObj, particleObj, ...
   runObj, potInds, interInds, noiseInds, flags )
 
 % Create Paramater matrix
-% paramMat columns: (n1, n2, n3, l1, l2, vD, bc, IC, SM, runID)
+% paramMat columns: (n1, n2, n3, l1, l2,.fD, bc, IC, SM, runID)
 % runID vector
 runID = runObj.runID + (0:(runObj.numTrial-1) );
 % handle all Ns the same and square box

@@ -203,19 +203,19 @@ else
     interObj.lrInd1 = floor(systemObj.n1/2) + 1;
   else
     interObj.lrInd1 = 1:systemObj.n1;
-    interObj.dv1IntFlag = 2;
+    interObj.dv1IntFlag = 1;
   end
   if vn2 == 1
     interObj.lrInd2 = floor(systemObj.n2/2) + 1;
   else
     interObj.lrInd2 = 1:systemObj.n2;
-    interObj.dv2IntFlag = 2;
+    interObj.dv2IntFlag = 1;
   end
   if vn3 == 1
     interObj.lrInd3 = floor(systemObj.n3/2) + 1;
   else
     interObj.lrInd3 = 1:systemObj.n3;
-    interObj.dv3IntFlag = 2;
+    interObj.dv3IntFlag = 1;
   end
   % store it
   interObj.v = v;

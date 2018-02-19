@@ -1,6 +1,6 @@
 % Handles all the dRho contributions that are not in Lop
 function [gammaCubeFt, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
-  interObj,  systemObj, diffObj, polarDrive, noise, densityDepDiff )
+  interObj,  systemObj, diffObj, polarDrive, noise, dRhoFlux, densityDepDiff )
 % Initialize
 gammaCubeFt = 0;
 shitIsFucked = 0;
@@ -63,25 +63,24 @@ end
 % calculate gamma once
 if calcGamma
   dMu = dVCalc(muExFt, diffObj, ...
-    interObj.dv1IntFlag, interObj.dv2IntFlag, interObj.dv3IntFlag, ...
-    interObj.intInd1, interObj.intInd2, interObj.intInd3);
+    interObj.dv1Flag, interObj.dv2Flag, interObj.dv3Flag);
   dVmaster.dx1 = dMu.dx1  + dVmaster.dx1;
   dVmaster.dx2 = dMu.dx2  + dVmaster.dx2;
   dVmaster.dx3 = dMu.dx3  + dVmaster.dx3;
-  [gammaCubeFt, iotaEx1, iotaEx2, iotaEx3] = dRhoIntCalcMu( ...
-    rho, dVmaster, systemObj, diffObj, interObj);
+  [iota1, iota2, iota3] = fluxMu( rho, dVmaster, interObj );
 else
-  iotaEx1 = 0; 
-  iotaEx2 = 0; 
-  iotaEx3 = 0;
+  iota1 = 0;
+  iota2 = 0;
+  iota3 = 0;
 end
 % driving
 if polarDrive.Flag
-  gammaDrCubeFt = polarDrive.calcDrho( rho );
-  gammaCubeFt = gammaCubeFt + gammaDrCubeFt;
-  iotaEx1 = polarDrive.Iota1 + iotaEx1;
-  iotaEx2 = polarDrive.Iota2 + iotaEx2;
+  polarDrive.calcIota( rho );
+  iota1 = iota1 + polarDrive.Iota1;
+  iota2 = iota2 + polarDrive.Iota2;
 end
+% calculate gamma from fluxes
+gammaCube_FT = dRhoFlux.calcDrho( iota1, iota2, iota3 );
 % noise
 if noise.Flag
   gammaNoiseFt = noise.calcDrho( rho );
@@ -90,6 +89,6 @@ end
 % density dep diffusion
 if densityDepDiff.Flag
   gammaDiffFt = densityDepDiff.calcDrho( rho_FT,...
-    {iotaEx1, iotaEx2, iotaEx3} );
+    {iota1, iota2, iota3} );
   gammaCubeFt = gammaCubeFt + gammaDiffFt;
 end
