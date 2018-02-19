@@ -48,7 +48,7 @@ try
     numModesPert3 = zeros( numFiles, 1 );
     bc = zeros( numFiles, 1 );
     c = zeros( numFiles, 1 );
-   .fD = zeros( numFiles, 1 );
+    fD = zeros( numFiles, 1 );
     steady = zeros( numFiles, 1 );
     broken = zeros( numFiles, 1 );
     whatBroke = cell( numFiles, 1 );
@@ -107,7 +107,7 @@ try
       ssEpsilon(ii) =  timeObj.ss_epsilon;
       bc(ii) = systemObj.bc;
       c(ii) = systemObj.c;
-     .fD(ii) = particleObj.vD;
+      fD(ii) = particleObj.fD;
       steady(ii) = denRecObj.SteadyState;
       broken(ii) = denRecObj.DidIBreak;
       whatBroke{ii} = denRecObj.whatBroke;
