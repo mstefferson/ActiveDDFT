@@ -4,12 +4,6 @@ function [cStats, pStats, nStats] = ...
 [cStats.maxV, cStats.minV, cStats.aveV, ...
   cStats.vdiff, cStats.fwhd, maxInd] = ...
   bandStats( Cslice, Lvar, NposVar ) ;
-% Scale c's 
-cStats.maxV = cStats.maxV / pi;
-cStats.minV = cStats.minV / pi;
-cStats.aveV = cStats.aveV / pi;
-cStats.vdiff = cStats.vdiff / cStats.aveV;
-
 % P slice: two peaks so be careful
  deltaInd = round( cStats.fwhd / Lvar .* NposVar);
 if maxInd > length(Pslice) / 2
