@@ -2,16 +2,33 @@ if exist( 'bandTable', 'var') == 0
   dir2check = 'analyzedfiles/BandAnalysis';
   [bandSum, bandTable] = bandAnalysis(dir2check);
 end
-%% phase diagram
+% functional guess
+cIN = 1.5;
+cStart = min( bandTable.c );
+c = linspace( 1.5, 1.7*1.5 );
+cS = c / cIN;
+cEnd = max(cS) * cIN;
+fUnstable = sqrt(2 * ( cS.^2 - 1 ) ) .* ( cS + 1 ) ./ ...
+  ( cS .^ 2 + cS - 1 ); % actve nematic
+%fUnstable2 = sqrt( ( cS.^2 - 1 ) ); % self-regulation
+fPlot = sqrt( bandTable.fd / 6) ;
+cPlot = bandTable.c ./ cIN;
+% phase diagram
 figure()
 markSize = 20;
-p = scatter( bandTable.c, bandTable.fd, 10, bandTable.cPeak );
+p = scatter( cPlot, fPlot, 10, bandTable.cPeak );
 p.Marker = '.';
 p.SizeData = 1000;
 colorbar
+hold on
+plot( cS, fUnstable )
+hold off
 title('Band Phase diagram');
 xlabel('$$c^*$$');
-ylabel('$$f^d$$');
+ylabel('$$ \sqrt{ \frac{ f_d } { 6 } }$$');
+ax = gca;
+ax.XLim = [cStart, cEnd] ./  cIN;
+ax.YLim = [0 1.4];
 %% band slices
 % get data
 cWant = 1.55;
