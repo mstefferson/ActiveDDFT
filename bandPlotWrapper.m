@@ -32,7 +32,7 @@ end
 if plotMyBand
   % plot band
   filename = ...
-    'Hr_rods_mayer_diag1_N160160160_ls1010_bc1.55_fD10_ICeq_p_SM6_t20180217_01';
+    'Hr_rods_mayer_diag1_N160160160_ls1010_bc1.55_fD10_ICload_SM6_t20180222.02';
   plotBand( [dir2check '/' filename] );
   if saveMe
     saveTitle = 'band_example';
