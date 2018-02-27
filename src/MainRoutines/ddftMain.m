@@ -22,7 +22,7 @@ try
   systemObj.n3 = paramVec(3);
   systemObj.l1 = paramVec(4);
   systemObj.l2 = paramVec(5);
-  particleObj.vD = paramVec(6);
+  particleObj.fD = paramVec(6);
   systemObj.bc = paramVec(7);
   flags.StepMeth = paramVec(8);
   runObj.runID = paramVec(9);
@@ -73,7 +73,7 @@ try
   % Record how long things take
   tMainID  = tic;
   % Make remaining objects
-  [timeObj, gridObj, diffObj, interObj, noise, polarDrive, runTime] ...
+  [timeObj, gridObj, diffObj, interObj, noise, polarDrive, dRhoFlux, runTime] ...
     = buildClassesAndStructures( systemObj, particleObj, ...
     flags, timeObj, lfid );
   % Build initial density
@@ -121,11 +121,11 @@ try
   if flags.DiagLop == 1
     [denRecObj, rho]  = denEvolverFTDiagOp( ...
       rho, systemObj, timeObj, gridObj, diffObj, interObj, ...
-      polarDrive, noise, flags, lfid);
+      polarDrive, noise, dRhoFlux, flags, lfid);
   else
     [denRecObj, rho]  = denEvolverFT( ...
       rho, systemObj, timeObj, gridObj, diffObj, interObj, ...
-      polarDrive, noise, flags, lfid);
+      polarDrive, noise, dRhoFlux, flags, lfid);
   end
   bodyRunTime  = toc(tBodyID);
   % Save it

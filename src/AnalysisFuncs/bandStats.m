@@ -1,7 +1,6 @@
 % Feed it a slice (1D vec)
 function [maxF, minF, aveF, diffMaxMin, fwhd, maxInd] = ...
   bandStats( F, Lvar, NposVar )
-
 % turn it into a row vector
 [r, c] = size( F );
 if r > c

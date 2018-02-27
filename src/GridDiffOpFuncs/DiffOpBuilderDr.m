@@ -16,25 +16,6 @@ Lop_kcube = -( ( (diffObj.D_par + diffObj.D_perp)./ 2 ) .* ...
 Lop = spdiags( reshape( Lop_kcube, N3, 1 ), 0, N3, N3 );
 
 %%%%%%%%%%%%%%% COMPLEX CONJUGATION!!!!!!!!!!!!!!%%%%%%%%%%%%%%%%
-
-%Handle the cross terms of the PDE for +/- 1 coupling
-if diffObj.dr == 1
-  CpMplus1Vec  = reshape( repmat( diffObj.CfMplus1,  [1 1 n3]), 1, N3 );
-  CpMminus1Vec = reshape( repmat( diffObj.CfMminus1, [1 1 n3]), 1, N3 );
-  % Put them in the matrix
-  Mplus1Mtx  = spdiags( [ zeros(1,N2) CpMplus1Vec( 1:(N2*(n3-1)) ) ].', N2, N3, N3 );
-  Mminus1Mtx = spdiags( [ CpMminus1Vec(1:(N2*(n3-1))) zeros(1,N2) ].' , -N2, N3, N3 );
-  
-  %Periodic terms
-  %m = N coupling to m = 1
-  Mplus1Mtx =  Mplus1Mtx  + ...
-    spdiags( [ CpMplus1Vec( (N2*(n3-1)+1):N3 ) zeros( 1, N2*(n3-1) ) ].' , -(N2*(n3-1)), N3, N3 );
-  %m = 1 coupling to m = N
-  Mminus1Mtx = Mminus1Mtx + ...
-    spdiags( [ zeros( 1, N2*(n3-1) ) CpMminus1Vec( (N2*(n3-1)+1):N3 ) ].', N2*(n3-1), N3, N3 ) ;
-  Lop = Lop + Mplus1Mtx + Mminus1Mtx;
-end
-
 %Handle the cross terms of the PDE for +/- 2 coupling
 if diffObj.Ani == 1
   CpMplus2Vec  = reshape( repmat( diffObj.CfMplus2,  [1 1 n3]), 1, N3 );

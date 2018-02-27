@@ -22,7 +22,7 @@
 %
 function [denRecObj, rho] = denEvolverFT(...
   rho, systemObj, timeObj, gridObj, diffObj, interObj, ...
-  polarDrive, noise, flags,lfid )
+  polarDrive, noise, dRhoFlux, flags,lfid )
 % global
 global runSave
 % where you at
@@ -62,7 +62,7 @@ trigFnc.sinPhi3 = 0;
 %Interactions
 if flags.dRhoCalc
   [GammaEx_FT, shitIsFucked, whatBroke1] = dRhoMaster( rho, rho_FT,...     
-    interObj, systemObj, diffObj, polarDrive, noise );
+    interObj, systemObj, diffObj, polarDrive, noise, dRhoFlux );
   GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
 else
   shitIsFucked = 0; shitIsFuckedTemp1 =0; shitIsFuckedTemp2 = 0;
@@ -128,7 +128,7 @@ if shitIsFucked == 0
     if flags.dRhoCalc
       [GammaEx_FT, shitIsFuckedTemp1, whatBroke1] = ...
         dRhoMaster( rho, rho_FT, ...
-        interObj, systemObj, diffObj, polarDrive, noise );
+        interObj, systemObj, diffObj, polarDrive, noise, dRhoFlux );
       GammaExVec_FT  = reshape( GammaEx_FT, N3,1);
     end
     % Take step
