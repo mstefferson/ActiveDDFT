@@ -93,7 +93,7 @@ elseif( flags.StepMeth == 5 ) % BHAB2
 elseif( flags.StepMeth == 6 ) % Exponential Euler
   gamProp = ( prop - 1 ) ./ lop;
   gamProp( isnan( gamProp) ) = timeObj.dt;
-%   gamProp( gridObj.k1ind0, gridObj.k2ind0, gridObj.k3ind0 ) = 0;
+  %   gamProp( gridObj.k1ind0, gridObj.k2ind0, gridObj.k3ind0 ) = 0;
   [rho_FTnext] = DenStepperEEM1c( prop, gamProp, rho_FT,GammaCube_FT);
 else
   error('No stepping method selected');
@@ -111,6 +111,7 @@ if shitIsFucked == 0
     rhoPrev = rho;
     % Calculate rho if there is driving or interactions and steady
     rho    = real(ifftn(ifftshift(rho_FT)));
+    % keyboard
     if flags.dRhoCalc
       % Calculate dRho from interactions and driving
       [GammaCube_FT,shitIsFuckedTemp1, whatBroke1] = ...
@@ -194,21 +195,23 @@ trun = toc;
 if flags.SaveMe
   if ( mod(t,timeObj.N_dtRec)== 0 )
     fprintf(lfid,'%f percent done\n',t./timeObj.N_time*100);
-    % Turn it to a cube if it hasn't been yet
-    if flags.dRhoCalc
-      rho    = real(ifftn(ifftshift(rho_FT)));
+    % Save it is there is unsaved data
+    if jrectemp > 0
+      if flags.dRhoCalc
+        rho    = real(ifftn(ifftshift(rho_FT)));
+      end
+      DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
+      Density_rec(:,:,:,jrectemp)     = rho;
+      % Record Density_recs to file
+      if ( mod(t, timeObj.N_dtChunk ) == 0 )
+        jrecEnd = jrec+timeObj.N_recChunk-1;
+        recIndTemp = jrec : jrecEnd;
+        runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
+        runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
+        runSave.numSavedRhos = recIndTemp(end);
+      end
+      jrec = jrecEnd + 1; % Still +1. Programs assumes this always happens
     end
-    DensityFT_rec(:,:,:,jrectemp)   = rho_FT;
-    Density_rec(:,:,:,jrectemp)     = rho;
-    % Record Density_recs to file
-    if ( mod(t, timeObj.N_dtChunk ) == 0 )
-      jrecEnd = jrec+timeObj.N_recChunk-1;
-      recIndTemp = jrec : jrecEnd;
-      runSave.Den_rec(:,:,:,recIndTemp) = Density_rec;
-      runSave.DenFT_rec(:,:,:,recIndTemp) = DensityFT_rec;
-      runSave.numSavedRhos = recIndTemp(end);
-    end
-    jrec = jrecEnd + 1; % Still +1. Programs assumes this always happens
   end
 end %end recording
 % Create vector of recorded times
