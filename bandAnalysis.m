@@ -89,16 +89,18 @@ cVec = cVec(sortInd);
 % Reshape
 steady = steady(sortInd);
 % c
-[cSlice, cPeak, cMax, cMin, cAve, cDiff, cFDWHD ] = ...
+[cSlice, cMax, cMin, cAve, cDiff, cFDWHD ] = ...
   sortData( cSlice, cMax, cMin, cAve, cDiff, cFDWHD, sortInd );
 % scale c
-cPeak = cPeak ./ cVec;
+cPeak = cMax ./ cVec;
 % p
-[pSlice, pPeak, pMax, pMin, pAve, pDiff, pFDWHD ] = ...
+[pSlice, pMax, pMin, pAve, pDiff, pFDWHD ] = ...
   sortData( pSlice, pMax, pMin, pAve, pDiff, pFDWHD, sortInd );
+pPeak = pMax;
 % n
-[nSlice, nPeak, nMax, nMin, nAve, nDiff, nFDWHD ] = ...
+[nSlice, nMax, nMin, nAve, nDiff, nFDWHD ] = ...
   sortData( nSlice, nMax, nMin, nAve, nDiff, nFDWHD, sortInd );
+nPeak = nMax;
 % summary
 output.fd = fdVec;
 output.c = cVec;
@@ -145,10 +147,9 @@ tSum.Properties.VariableNames = {'fd', 'c', 'steady', ...
   'pPeak', 'pSlice', 'pMax', 'pMin', 'pAve', 'pDiff', 'pFDWHD',...
   'nPeak', 'nSlice', 'nMax', 'nMin', 'nAve', 'nDiff', 'nFDWHD'};
 
-  function [tempSlice, tempPeak, tempMax, tempMin, tempAve, tempDiff, tempFDWHD ] = ...
+  function [tempSlice, tempMax, tempMin, tempAve, tempDiff, tempFDWHD ] = ...
       sortData( tempSlice, tempMax, tempMin, tempAve, tempDiff, tempFDWHD, sortInd )
     tempSlice = tempSlice(sortInd);
-    tempPeak = tempMax(sortInd);
     tempMax = tempMax(sortInd);
     tempMin = tempMin(sortInd);
     tempAve = tempAve(sortInd);

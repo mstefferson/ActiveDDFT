@@ -1,4 +1,4 @@
-function plotBandPhase( bandTable, plotTheory, plotScaled )
+function plotBandPhase( bandTable, plotIN, plotTheory, plotScaled )
 % plot phase
 cIN = 1.5;
 % set-up figure
@@ -19,7 +19,7 @@ if plotScaled
   fPlot = sqrt( bandTable.fd / 6) ;
   cPlot = bandTable.c ./ cIN;
   plotPhaseDiagram( cPlot, fPlot, bandTable.cPeak, cTheory2plot, fUnstable,...
-    plotTheory, xLabel, yLabel)
+    plotIN, plotTheory, xLabel, yLabel)
   % Unscaled Pe and concentration
 else
   xLabel = 'Concentration $$  C^* $$';
@@ -32,12 +32,12 @@ else
   %fUnstable2 = sqrt( ( cS.^2 - 1 ) ); % self-regulation
   fPlot = bandTable.fd;
   cPlot = bandTable.c;
-  plotPhaseDiagram( cPlot, fPlot, bandTable.cPeak, cTheory2plot, fUnstable,...
-    plotTheory, xLabel, yLabel)
+  plotPhaseDiagram( cPlot, fPlot, bandTable.cMax, cTheory2plot, fUnstable,...
+    plotIN, plotTheory, xLabel, yLabel)
 end
 %% functions
   function plotPhaseDiagram( cPlot, fPlot, cPeak, cTheory2plot, fUnstable,...
-      plotTheory, xLabel, yLabel)
+      plotIN, plotTheory, xLabel, yLabel)
     % theory  lines
     circleSize = 75;
     lineIN = ':';
@@ -49,8 +49,9 @@ end
     ax = gca;
     axis square
     hold on
+    legCell = {'Homo.', 'Band'};
     % plot failed
-    failInd = cPeak < threshold;
+    failInd = cPeak < threshold .* cPlot;
     p = scatter( cPlot(failInd), fPlot(failInd), 10, cPeak(failInd) );
     p.Marker = 'o';
     p.SizeData = circleSize;
@@ -59,9 +60,12 @@ end
     p.Marker = 'o';
     p.SizeData =  circleSize;
     % plot IN transtion
-    bigSlope = 1000000;
-    plot( cTheory2plot, bigSlope * (cTheory2plot - cTheory2plot(1)), ...
+    if plotIN
+      bigSlope = 1000000;
+      plot( cTheory2plot, bigSlope * (cTheory2plot - cTheory2plot(1)), ...
       'Color', lineColorIN, 'LineStyle', lineIN )
+      legCell{end+1} = 'IN trans.';
+    end
     if plotTheory
       plot( cTheory2plot, fUnstable, ...
         'Color', lineColorTheory, 'LineStyle', lineTheory )
@@ -70,20 +74,16 @@ end
       plot( cTheory2plot, bigSlope * (cTheory2plot - cTheory2plot(1)), ...
         'Color', lineColorIN, 'LineStyle', lineIN )
       % legend
-      legCell = {'Homo.', 'Band', 'IN trans.', 'Theory',};
+      legCell{end+1} = 'Theory';
+      legPos = [0.5570 0.6946 0.2003 0.2195];
     else
-      % legend
-      legCell = {'Homo.', 'Band', 'IN trans.'};
+      legPos = [0.5918 0.8005 0.1652 0.1136];
       cTheory2plot = cPlot;
     end
     % axis
     % set-up axis properties
     h = colorbar;
-    h.Label.Interpreter = 'latex';
-    h.Label.String = '$$ \frac{ c_{peak} }{ c^* } $$';
     h.TickLabelInterpreter = 'latex';
-    h.Label.Position = [4.5 1.75 0 ];
-    h.Label.Rotation = 0;
     hold off
     xlabel(ax, xLabel);
     ylabel(ax, yLabel);
@@ -97,6 +97,6 @@ end
     [hl] = legend(legCell, ...
       'location', 'best');
     hl.Interpreter = 'latex';
-    hl.Position = [0.5570 0.6946 0.2003 0.2195];
+    hl.Position = legPos;
   end
 end
