@@ -1,3 +1,4 @@
+% long range interaction and external potential manager
 function [potObj] =  potRunManager( pot, interactPotFlag )
 % Build potObj
 numPot = length(pot);
@@ -13,10 +14,16 @@ if numPot
     % if no correlation function given, assume MF
     if interactPotFlag
       if isstr(potTemp{2})
+        if ~strcmp( potTemp{2}, 'mf' ) || ~strcmp( potTemp{2}, 'mf' ) 
+          fprintf('Erroneous correlation, setting to mf \n')
+           potTemp{2} = 'mf';
+           correlation{ii} = 'mf';
+        end
         strNum = 2;
         paramInd = 3;
         correlation{ii} = potTemp{2};
       else
+        fprintf('Erroneous correlation, setting to mf \n')
         correlation{ii} = 'mf';
         strNum = 1;
         paramInd = 2;
