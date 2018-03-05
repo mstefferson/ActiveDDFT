@@ -266,6 +266,25 @@ else
         interObj.externalV{ii} = vTemp;
         addPot = 1;
       end
+    elseif strcmp( currPot{1}, 'cosV' )
+      % run a dim check just in case
+      if nVec( currPot{2}(1) ) > 1
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = CosVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), currPot{2}(3), posVecs{ currPot{2}(1) } );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+      end
+    elseif strcmp( currPot{1}, 'cosbumpV' )
+      % run a dim check just in case
+      if nVec( currPot{2}(1) ) > 1
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = CosBumpVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), currPot{2}(3), currPot{2}(4), ...
+          posVecs{ currPot{2}(1) } );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+      end
     elseif strcmp( currPot{1}, 'nemV' ) % nematic
       % run a dim check just in case
       if nVec( 3 ) > 1
