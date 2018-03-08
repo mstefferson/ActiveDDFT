@@ -4,4 +4,7 @@ delete('*.fig');
 delete('*.mat');
 delete('*.jpg');
 delete('*.avi');
+delete('*.png');
+delete('*.pdf');
+delete('*.svg');
 delete('*.out');
