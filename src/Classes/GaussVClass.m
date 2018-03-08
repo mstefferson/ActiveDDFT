@@ -1,11 +1,11 @@
-classdef CosBumpVClass
+classdef GaussVClass
   properties
     Str = '';
     Dim = 0;
     Es1 = 1;
+    Ls1 = 1;
     N = 1;
     L = [];
-    Ls1 = [];
     Center = [];
     ShiftAmount = 0;
     Xv = [];
@@ -20,16 +20,16 @@ classdef CosBumpVClass
   
   methods
     % Constructor
-    function obj = CosBumpVClass( str, dim, a, l, x0, x )
+    function obj = GaussVClass( str, dim, a, sig, x0, x )
       if nargin == 6
         obj.Str = str;
         obj.N = length(x);
         obj.Dim = dim;
         obj.Es1 = a;
+        obj.Ls1 = sig;
         obj.Xv = x;
         obj.L = x(end) - 2*x(1) + x(2);
         obj.Center = mod( x0 + obj.L / 2, obj.L) - obj.L / 2;
-        obj.Ls1 = l;
         obj.ShiftAmount = round( obj.N * obj.Center / obj.L );
         % reshape inds
         if dim == 1
@@ -49,21 +49,14 @@ classdef CosBumpVClass
     end
     % make V
     function obj = makeV(obj)
-      obj.Vv = -obj.Es1 * cos( pi / obj.Ls1 * obj.Xv ) .^ 2;
-      obj.Vv( obj.Xv > obj.Ls1 / 2 )  = 0;
-      obj.Vv( obj.Xv < -obj.Ls1 / 2 )  = 0;
+      obj.Vv = -obj.Es1 * exp( -obj.Xv .^ 2 ./ (2 .* obj.Ls1.^2 ) );
       obj.Vv = circshift(obj.Vv, obj.ShiftAmount);
       obj.VvReshape = reshape( obj.Vv, obj.ReshapeInds ) ;
     end
     % make Derivative
     function obj = makeDerivative(obj)
-      % take derivative
-      dv = obj.Es1 * pi / obj.Ls1 * cos( pi / obj.Ls1 * obj.Xv ) ...
-        .* sin( pi / obj.Ls1 * obj.Xv );
-      % set outside of well to zero
-      dv( obj.Xv > obj.Ls1 / 2 ) = 0;
-      dv( obj.Xv < -obj.Ls1 / 2 ) = 0;
-      % shift it
+      dv = obj.Es1 .* obj.Xv  ./ obj.Ls1 ^2 .* ...
+        exp( -obj.Xv  .^ 2 ./ (2 .* obj.Ls1.^2 ) );
       dv = circshift(dv, obj.ShiftAmount);
       obj.Dv = dv;
       if obj.Dim == 1

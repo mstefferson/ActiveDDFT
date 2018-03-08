@@ -2,7 +2,7 @@ classdef CosVClass
   properties
     Str = '';
     Dim = 0;
-    A = 1;
+    Es1 = 1;
     N = 1;
     L = [];
     Center = [];
@@ -24,10 +24,10 @@ classdef CosVClass
         obj.Str = str;
         obj.N = length(x);
         obj.Dim = dim;
-        obj.A = a;
+        obj.Es1 = a;
         obj.Xv = x;
-        obj.Center = x0;
         obj.L = x(end) - 2*x(1) + x(2);
+        obj.Center = mod( x0 + obj.L / 2, obj.L) - obj.L / 2;
         obj.ShiftAmount = round( obj.N * obj.Center / obj.L );
         % reshape inds
         if dim == 1
@@ -47,15 +47,14 @@ classdef CosVClass
     end
     % make V
     function obj = makeV(obj)
-      x = 2 * pi / obj.N * ( -obj.N/2:obj.N/2-1 );
-      obj.Vv = obj.A * cos( x/2 ) .^ 2;
+      obj.Vv = -obj.Es1 * cos( pi / obj.L * obj.Xv ) .^ 2;
       obj.Vv = circshift(obj.Vv, obj.ShiftAmount);
       obj.VvReshape = reshape( obj.Vv, obj.ReshapeInds ) ;
     end
     % make Derivative
     function obj = makeDerivative(obj)
-      x = 2 * pi / obj.N * ( -obj.N/2:obj.N/2-1 );
-      dv = obj.A * cos( x/2 ) .* sin( x/2 );
+      dv = obj.Es1 * pi / obj.L .*...
+      cos( pi / obj.L * obj.Xv ) .* sin( pi / obj.L * obj.Xv );
       dv = circshift(dv, obj.ShiftAmount);
       obj.Dv = dv;
       if obj.Dim == 1
