@@ -1,9 +1,5 @@
-%
+function plotPlotWrapper( plotMyBand, plotMySlice, plotMyPhase, saveMe )
 addpath( genpath( './src' ) );
-saveMe = 1;
-plotMyBand = 1;
-plotMySlice = 1;
-plotMyPhase = 1;
 dir2check = 'analyzedfiles/BandAnalysis';
 if exist( 'bandTable', 'var') == 0
   [bandSum, bandTable] = bandAnalysis(dir2check);

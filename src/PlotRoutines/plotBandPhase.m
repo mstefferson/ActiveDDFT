@@ -93,10 +93,19 @@ end
     ax.XAxis.TickLabelInterpreter = 'latex';
     ax.YAxis.TickLabelInterpreter = 'latex';
     box on
-    % legend
-    [hl] = legend(legCell, ...
-      'location', 'best');
-    hl.Interpreter = 'latex';
-    hl.Position = legPos;
+    % legend Turn off for now
+    if 0
+      [hl] = legend(legCell, ...
+        'location', 'best');
+      hl.Interpreter = 'latex';
+      hl.Position = legPos;
+    end
+    textFontSize = 30;
+    th1 = text( 1.35, 17.5, 'I');
+    th2 = text( 1.65, 2, 'N' );
+    th3 = text( 1.65, 17.5, 'B' );
+    th1.FontSize = textFontSize;
+    th2.FontSize = textFontSize;
+    th3.FontSize = textFontSize;
   end
 end
