@@ -14,9 +14,9 @@
 *.jpg
 *.mat
 *.out
+*.png
 *.svg
 *.pdf
-*.png
 
 # Directories
 Outputs/
