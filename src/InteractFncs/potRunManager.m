@@ -57,11 +57,15 @@ if numPot
     for jj = 1:numPot
       if interactPotFlag
         runTemp{jj} = { names{jj}, correlation{jj}, paramSepCell{ii,jj} };
-        strTemp = [  strTemp names{jj} correlation{jj} num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
+        strTemp = [  strTemp names{jj} correlation{jj} ...
+          num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
       else
         runTemp{jj} = { names{jj}, paramSepCell{ii,jj} };
-        strTemp = [  strTemp names{jj}  num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
+        strTemp = [  strTemp names{jj}  ...
+          num2str( paramSepCell{ii,jj}, '_%.2f') '_' ];
       end
+      % get rid of blanks just in case
+      strTemp = strTemp( strTemp ~= ' ');
     end
     % fix str
     strTemp(end) = [];
