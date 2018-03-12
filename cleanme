@@ -7,3 +7,4 @@ rm ./*.jpg
 rm ./*.png
 rm ./*.pdf
 rm ./*.svg
+rm ./*.fig
