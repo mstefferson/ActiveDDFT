@@ -3,6 +3,7 @@ function plotBandSlice( cWant, fWant, bandTable )
 myTitle = {'A', 'B', 'C'};
 yLabels = { 'Concentration $$ C^* $$', 'Polar order $$ P $$', ...
   'Nematic order $$ N $$'};
+xLabel = 'y';
 % band slices
 % get data
 fd2Plot = bandTable.fd( bandTable.c == cWant ...
@@ -28,11 +29,11 @@ fig = figure();
 fig.WindowStyle = 'normal';
 fig.Position = [104 368 1015 263];
 ax1 = subplot(1,3,1);
-setAxBandSlice( ax1, yLabels{1}, myTitle{1} );
+setAxBandSlice( ax1, xLabel, yLabels{1}, myTitle{1} );
 ax2 = subplot(1,3,2);
-setAxBandSlice( ax2, yLabels{2}, myTitle{2} );
+setAxBandSlice( ax2, xLabel, yLabels{2}, myTitle{2} );
 ax3 = subplot(1,3,3);
-setAxBandSlice( ax3, yLabels{3}, myTitle{3} );
+setAxBandSlice( ax3, xLabel, yLabels{3}, myTitle{3} );
 %
 for ii = 1:length(fd2Plot)
   %%
@@ -53,11 +54,11 @@ hl = legend( legendCell, 'location', 'best' );
 hl.Interpreter = 'latex';
 hl.Position = [0.9013 0.3592 0.0872 0.3494];
 %% functions
-  function setAxBandSlice( ax, yLabel, myTitle )
+  function setAxBandSlice( ax, xLabel, yLabel, myTitle )
     fontSize = 16;
     ax.FontSize = fontSize;
     axis square
-    xlabel(ax, '$$ x $$')
+    xlabel(ax, xLabel)
     ylabel(yLabel)
     ax.TickLabelInterpreter = 'latex';
     axis(ax, 'square')

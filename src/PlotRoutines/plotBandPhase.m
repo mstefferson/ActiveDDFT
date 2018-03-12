@@ -1,42 +1,38 @@
-function plotBandPhase( bandTable, plotIN, plotTheory, plotScaled )
+function plotBandPhase( bandTable, featureStr, plotIN, plotTheory )
 % plot phase
 cIN = 1.5;
 % set-up figure
 fig = figure();
 fig.WindowStyle = 'normal';
 fig.Position = [360 278 560 420];
-% Scaled Pe and concentration
-if plotScaled
-  xLabel = '$$ c^* / c_{IN} $$';
-  yLabel = '$$ \sqrt{ \frac{ Pe } { 6 } }$$';
-  % functional guess
-  c = linspace( 1.5, 1.4*1.5 );
-  cS = c / cIN;
-  cTheory2plot = cS;
-  fUnstable = sqrt(2 * ( cS.^2 - 1 ) ) .* ( cS + 1 ) ./ ...
-    ( cS .^ 2 + cS - 1 ); % actve nematic
-  %fUnstable2 = sqrt( ( cS.^2 - 1 ) ); % self-regulation
-  fPlot = sqrt( bandTable.fd / 6) ;
-  cPlot = bandTable.c ./ cIN;
-  plotPhaseDiagram( cPlot, fPlot, bandTable.cPeak, cTheory2plot, fUnstable,...
-    plotIN, plotTheory, xLabel, yLabel)
-  % Unscaled Pe and concentration
-else
-  xLabel = 'Concentration $$  C^* $$';
-  yLabel = 'P\''eclet Number $$ Pe $$';
-  c = linspace( 1.5, 1.4*1.5 );
-  cS = c/cIN;
-  cTheory2plot = c;
-  fUnstable = 12 * ( cS.^2 - 1 )  .* ( cS + 1 ) .^2 ./ ...
-    ( cS .^ 2 + cS - 1 ) .^ 2; % actve nematic
-  %fUnstable2 = sqrt( ( cS.^2 - 1 ) ); % self-regulation
-  fPlot = bandTable.fd;
-  cPlot = bandTable.c;
-  plotPhaseDiagram( cPlot, fPlot, bandTable.cMax, cTheory2plot, fUnstable,...
-    plotIN, plotTheory, xLabel, yLabel)
+% grab feature
+fPlot = bandTable.fd;
+cPlot = bandTable.c;
+if strcmp( featureStr, 'cMax' )
+  featurePlot = bandTable.cMax;
+  % plot failed
+  threshold = 1.01;
+  failInds = featurePlot < threshold .* cPlot;
+elseif strcmp( featureStr, 'cFWHM' )
+  featurePlot = bandTable.cFWHM;
+  % plot failed
+  threshold = 0.99;
+  failInds = featurePlot > threshold * max( featurePlot ) ;
 end
+% Scaled Pe and concentration
+xLabel = 'Concentration $$  C^* $$';
+yLabel = 'P\''eclet Number $$ Pe $$';
+c = linspace( 1.5, 1.4*1.5 );
+cS = c/cIN;
+cTheory2plot = c;
+fUnstable = 12 * ( cS.^2 - 1 )  .* ( cS + 1 ) .^2 ./ ...
+  ( cS .^ 2 + cS - 1 ) .^ 2; % actve nematic
+%fUnstable2 = sqrt( ( cS.^2 - 1 ) ); % self-regulation
+plotPhaseDiagram( cPlot, fPlot, featurePlot, failInds, cTheory2plot, fUnstable,...
+  plotIN, plotTheory, xLabel, yLabel)
+
 %% functions
-  function plotPhaseDiagram( cPlot, fPlot, cPeak, cTheory2plot, fUnstable,...
+  function plotPhaseDiagram( cPlot, fPlot, feature2plot, failInds, cTheory2plot, fUnstable,...
       plotIN, plotTheory, xLabel, yLabel)
     % theory  lines
     circleSize = 75;
@@ -44,26 +40,26 @@ end
     lineTheory = '-';
     lineColorIN = [0 0 0];
     lineColorTheory = [0 0 0];
-    threshold = 1.01;
+    scatterMarkSize = 10;
     % phase diagram
     ax = gca;
     axis square
     hold on
     legCell = {'Homo.', 'Band'};
-    % plot failed
-    failInd = cPeak < threshold .* cPlot;
-    p = scatter( cPlot(failInd), fPlot(failInd), 10, cPeak(failInd) );
+    p = scatter( cPlot(failInds), fPlot(failInds), scatterMarkSize, ...
+      feature2plot(failInds) );
     p.Marker = 'o';
     p.SizeData = circleSize;
     % plot success
-    p = scatter( cPlot(~failInd), fPlot(~failInd), 10, cPeak(~failInd), 'filled' );
+    p = scatter( cPlot(~failInds), fPlot(~failInds), scatterMarkSize,...
+      feature2plot(~failInds), 'filled' );
     p.Marker = 'o';
     p.SizeData =  circleSize;
     % plot IN transtion
     if plotIN
       bigSlope = 1000000;
       plot( cTheory2plot, bigSlope * (cTheory2plot - cTheory2plot(1)), ...
-      'Color', lineColorIN, 'LineStyle', lineIN )
+        'Color', lineColorIN, 'LineStyle', lineIN )
       legCell{end+1} = 'IN trans.';
     end
     if plotTheory

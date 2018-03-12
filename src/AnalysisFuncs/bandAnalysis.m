@@ -19,14 +19,14 @@ cMax = zeros( 1, numFiles ); % Max C
 cMin = zeros( 1, numFiles ); % Min C
 cAve = zeros( 1, numFiles ); % Ave C
 cDiff = zeros( 1, numFiles ); % C Max - C Min scaled by input bc
-cFDWHD = zeros( 1, numFiles ); % C full width half (max - min)
+cFWHM = zeros( 1, numFiles ); % C full width half (max - min)
 % p
 pSlice = cell( 1, numFiles ); % store a slice
 pMax = zeros( 1, numFiles ); % Max P
 pMin = zeros( 1, numFiles ); % Min P
 pAve = zeros( 1, numFiles ); % Ave P
 pDiff = zeros( 1, numFiles ); % P Max - P Min spaled by input bp
-pFDWHD = zeros( 1, numFiles ); % P full width half (max - min)
+pFWHM = zeros( 1, numFiles ); % P full width half (max - min)
 pP2P = zeros( 1, numFiles ); % P peak to peak distance
 %n
 nSlice = cell( 1, numFiles ); % store a slice
@@ -34,7 +34,7 @@ nMax = zeros( 1, numFiles ); % Max N
 nMin = zeros( 1, numFiles ); % Min N
 nAve = zeros( 1, numFiles ); % Ave N
 nDiff = zeros( 1, numFiles ); % N Max - N Min snaled by input bn
-nFDWHD = zeros( 1, numFiles ); % N full width half (max - min)
+nFWHM = zeros( 1, numFiles ); % N full width half (max - min)
 % Starting loop over files
 fprintf('Starting loop over %d files\n', numFiles );
 for ii = 1 : numFiles
@@ -65,14 +65,14 @@ for ii = 1 : numFiles
   cMin(ii) = cStats.minV;
   cAve(ii) = cStats.aveV;
   cDiff(ii) = cStats.vdiff;
-  cFDWHD(ii) = cStats.fwhd;
+  cFWHM(ii) = cStats.fwhd;
   %p
   pSlice{ii} = P(rows,cols);
   pMax(ii) = pStats.maxV;
   pMin(ii) = pStats.minV;
   pAve(ii) = pStats.aveV;
   pDiff(ii) = pStats.vdiff;
-  pFDWHD(ii) = pStats.fwhd;
+  pFWHM(ii) = pStats.fwhd;
   pP2P(ii) = pStats.p2p;
   %n
   nSlice{ii} = N(rows,cols);
@@ -80,7 +80,7 @@ for ii = 1 : numFiles
   nMin(ii) = nStats.minV;
   nAve(ii) = nStats.aveV;
   nDiff(ii) = nStats.vdiff;
-  nFDWHD(ii) = nStats.fwhd;
+  nFWHM(ii) = nStats.fwhd;
 end % loop over files
 fprintf('Finished loop over files. Storing data\n');
 % sort the parameters in case they are out of order
@@ -89,17 +89,17 @@ cVec = cVec(sortInd);
 % Reshape
 steady = steady(sortInd);
 % c
-[cSlice, cMax, cMin, cAve, cDiff, cFDWHD ] = ...
-  sortData( cSlice, cMax, cMin, cAve, cDiff, cFDWHD, sortInd );
+[cSlice, cMax, cMin, cAve, cDiff, cFWHM ] = ...
+  sortData( cSlice, cMax, cMin, cAve, cDiff, cFWHM, sortInd );
 % scale c
 cPeak = cMax ./ cVec;
 % p
-[pSlice, pMax, pMin, pAve, pDiff, pFDWHD ] = ...
-  sortData( pSlice, pMax, pMin, pAve, pDiff, pFDWHD, sortInd );
+[pSlice, pMax, pMin, pAve, pDiff, pFWHM ] = ...
+  sortData( pSlice, pMax, pMin, pAve, pDiff, pFWHM, sortInd );
 pPeak = pMax;
 % n
-[nSlice, nMax, nMin, nAve, nDiff, nFDWHD ] = ...
-  sortData( nSlice, nMax, nMin, nAve, nDiff, nFDWHD, sortInd );
+[nSlice, nMax, nMin, nAve, nDiff, nFWHM ] = ...
+  sortData( nSlice, nMax, nMin, nAve, nDiff, nFWHM, sortInd );
 nPeak = nMax;
 % summary
 output.fd = fdVec;
@@ -113,7 +113,7 @@ output.cMax = cMax;
 output.cMin = cMin;
 output.cAve = cAve;
 output.cDiff = cDiff;
-output.cFDWHD = cFDWHD;
+output.cFWHM = cFWHM;
 % p
 output.pSlice = pSlice;
 output.pPeak = pPeak;
@@ -121,7 +121,7 @@ output.pMax = pMax;
 output.pMin = pMin;
 output.pAve = pAve;
 output.pDiff = pDiff;
-output.pFDWHD = pFDWHD;
+output.pFWHM = pFWHM;
 % n
 output.nSlice = nSlice;
 output.nPeak = nPeak;
@@ -129,23 +129,23 @@ output.nMax = nMax;
 output.nMin = nMin;
 output.nAve = nAve;
 output.nDiff = nDiff;
-output.nFDWHD = nFDWHD;
+output.nFWHM = nFWHM;
 % build a table
 
 %%
 tSum = table( output.fd', output.c', output.steady', ...
-  output.cPeak', output.cSlice', output.cMax', output.cMin',...
-  output.cAve', output.cDiff', output.cFDWHD',...
+  output.cPeak', output.cSlice', output.cMax', ...
+  output.cMin', output.cAve', output.cDiff', output.cFWHM',...
   output.pPeak', output.pSlice', output.pMax',...
-  output.pMin', output.pAve', output.pDiff', output.pFDWHD',...
+  output.pMin', output.pAve', output.pDiff', output.pFWHM',...
   output.nPeak', output.nSlice', output.nMax', ...
-  output.nMin', output.nAve', output.nDiff', output.nFDWHD');
+  output.nMin', output.nAve', output.nDiff', output.nFWHM');
 %%
 
 tSum.Properties.VariableNames = {'fd', 'c', 'steady', ...
-  'cPeak', 'cSlice', 'cMax', 'cMin', 'cAve', 'cDiff', 'cFDWHD',...
-  'pPeak', 'pSlice', 'pMax', 'pMin', 'pAve', 'pDiff', 'pFDWHD',...
-  'nPeak', 'nSlice', 'nMax', 'nMin', 'nAve', 'nDiff', 'nFDWHD'};
+  'cPeak', 'cSlice', 'cMax', 'cMin', 'cAve', 'cDiff', 'cFWHM',...
+  'pPeak', 'pSlice', 'pMax', 'pMin', 'pAve', 'pDiff', 'pFWHM',...
+  'nPeak', 'nSlice', 'nMax', 'nMin', 'nAve', 'nDiff', 'nFWHM'};
 
   function [tempSlice, tempMax, tempMin, tempAve, tempDiff, tempFDWHD ] = ...
       sortData( tempSlice, tempMax, tempMin, tempAve, tempDiff, tempFDWHD, sortInd )

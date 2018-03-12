@@ -1,6 +1,6 @@
 % Feed it a slice (1D vec)
-function [maxF, minF, aveF, diffMaxMin, fwhd, maxInd] = ...
-  bandStats( F, Lvar, NposVar )
+function [maxF, minF, aveF, diffMaxMin, fwhm, maxInd] = ...
+  bandStats( F, lVar, NposVar )
 % turn it into a row vector
 [r, c] = size( F );
 if r > c
@@ -18,4 +18,5 @@ F = circshift( F, lF2 - maxInd , 2 );
 [~, halfmax]= min( abs( F - (maxF + minF) / 2 ) );
 deltaIndhd = abs( halfmax - lF2 );
 % want full width
-fwhd = 2 .* deltaIndhd  .* Lvar./ NposVar;
+fwhm = 2 .* deltaIndhd  .* lVar./ NposVar;
+fwhm = min( fwhm, lVar / 2);
