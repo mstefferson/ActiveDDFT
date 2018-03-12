@@ -1,4 +1,5 @@
 %
+addpath( genpath( './src' ) );
 saveMe = 1;
 plotMyBand = 1;
 plotMySlice = 1;
