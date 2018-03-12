@@ -4,4 +4,6 @@ rm ./*.txt
 rm ./*.mat
 rm ./*.avi
 rm ./*.jpg
-rm ./*.fig
+rm ./*.png
+rm ./*.pdf
+rm ./*.svg
