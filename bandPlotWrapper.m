@@ -2,11 +2,25 @@
 plotMyBand = 0;
 plotMySlice = 0;
 plotMyPhase = 1;
+bandThres = 0.01;
 saveMe = 0;
+dockStyle = 'normal';
 addpath( genpath( './src' ) );
 dir2check = 'analyzedfiles/BandAnalysis';
-if exist( 'bandTable', 'var') == 0
-  [~, bandTable] = bandAnalysis(dir2check);
+overrideBandTable = 0;
+if overrideBandTable
+  fprintf('Overridding bandTable variable. Savin and using\n')
+  [~, bandTable] = bandAnalysis(dir2check, bandThres);
+  save('bandTable', 'bandTable')  
+elseif exist( 'bandTable', 'var')
+  fprintf('Found bandTable variable. Using that\n')
+elseif exist( 'bandTable.mat', 'file')
+  fprintf('Found saved bandTable file. Using that\n')
+  load('bandTable.mat')
+else
+  fprintf('Cannot fine bandTable variable. Saving and using\n')
+  [~, bandTable] = bandAnalysis(dir2check, bandThres);
+  save('bandTable', 'bandTable')
 end
 
 %%
@@ -18,6 +32,8 @@ if plotMyBand
     'Hr_rods_mayer_diag1_N160160160_ls1010_bc1.55_fD10_ICload_SM6_t20180222.02';
   fprintf('Starting plotBand\n')
   plotBand( [dir2check '/' filename] );
+  fig = gcf;
+  fig.WindowStyle = dockStyle;
   fprintf('Finished plotBand\n')
   if saveMe
     saveTitle = 'band_example';   
@@ -32,6 +48,8 @@ if plotMySlice
   fWant = [0, 5, 10 30];
   fprintf('Starting plotBandSlice\n')
   plotBandSlice( cWant, fWant, bandTable );
+  fig = gcf;
+  fig.WindowStyle = dockStyle;
   fprintf('Finished plotBandSlice\n')
   if saveMe
     saveTitle = 'band_analysis';
@@ -48,6 +66,8 @@ if plotMyPhase
   plotIN = 0;
   fprintf('Starting plotBandPhase\n')
   plotBandPhase( bandTable, 'cMax', plotIN, plotTheory )
+  fig = gcf;
+  fig.WindowStyle = dockStyle;
   fprintf('Finished plotBandPhase cPeak\n')
   if saveMe
     saveTitle = 'phase_diagram_peak';
@@ -55,9 +75,24 @@ if plotMyPhase
     fprintf('Saved\n')
   end
   plotBandPhase( bandTable, 'cFWHM', plotIN, plotTheory )
+  fig = gcf;
+  fig.WindowStyle = dockStyle;
   fprintf('Finished plotBandPhase cFWHM\n')
   if saveMe
-    saveTitle = 'phase_diagram_peak';
+    saveTitle = 'phase_diagram_width';
+    saveas( gcf, saveTitle, saveExt )
+    fprintf('Saved\n')
+  end
+end
+
+%% Phase sub
+if plotMyPhase
+  plotBandPhaseSub( bandTable, 'cMax','cFWHM', plotIN, plotTheory )
+  fig = gcf;
+  fig.WindowStyle = dockStyle;
+  fprintf('Finished plotBandPhaseSub\n')
+  if saveMe
+    saveTitle = 'phase_diagram_peak_width';
     saveas( gcf, saveTitle, saveExt )
     fprintf('Saved\n')
   end

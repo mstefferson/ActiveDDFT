@@ -19,4 +19,7 @@ F = circshift( F, lF2 - maxInd , 2 );
 deltaIndhd = abs( halfmax - lF2 );
 % want full width
 fwhm = 2 .* deltaIndhd  .* lVar./ NposVar;
-fwhm = min( fwhm, lVar / 2);
+%fwhm = min( fwhm, lVar);
+% if fwhm >= lVar / 2
+%   keyboard
+% end

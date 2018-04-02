@@ -1,4 +1,4 @@
-function [output,tSum] = bandAnalysis( dirpath )
+function [output,tSum] = bandAnalysis( dirpath, bandThres )
 fprintf('Running %s\n',mfilename);
 % add paths
 addpath( genpath( pwd ) );
@@ -13,6 +13,7 @@ fprintf('Scaling c by b = %f\n', b );
 fdVec = zeros( 1, numFiles );
 cVec = zeros( 1, numFiles );
 steady = zeros( 1, numFiles );
+band = zeros( 1, numFiles );
 % c
 cSlice = cell( 1, numFiles ); % store a slice
 cMax = zeros( 1, numFiles ); % Max C
@@ -59,6 +60,12 @@ for ii = 1 : numFiles
   C =  C(rows,cols) * b;
   [cStats, pStats, nStats] = ...
     bandStatsCPNwrap(  C, P(rows,cols), N(rows,cols), Lvar, NposVar );
+  % see if its band
+  if ( cStats.maxV - cStats.minV ) / cVec(ii) > bandThres
+    band(ii) = 1;
+  else
+    band(ii) = 0;
+  end
   % put them in a vector
   cSlice{ii} = C;
   cMax(ii) = cStats.maxV;
@@ -86,6 +93,7 @@ fprintf('Finished loop over files. Storing data\n');
 % sort the parameters in case they are out of order
 [fdVec, sortInd] =  sort( fdVec );
 cVec = cVec(sortInd);
+band = band( sortInd );
 % Reshape
 steady = steady(sortInd);
 % c
@@ -105,6 +113,7 @@ nPeak = nMax;
 output.fd = fdVec;
 output.c = cVec;
 output.steady = steady;
+output.band = band;
 output.sortInd = sortInd;
 % c
 output.cSlice = cSlice;
@@ -133,7 +142,7 @@ output.nFWHM = nFWHM;
 % build a table
 
 %%
-tSum = table( output.fd', output.c', output.steady', ...
+tSum = table( output.fd', output.c', output.steady', output.band',...
   output.cPeak', output.cSlice', output.cMax', ...
   output.cMin', output.cAve', output.cDiff', output.cFWHM',...
   output.pPeak', output.pSlice', output.pMax',...
@@ -142,7 +151,7 @@ tSum = table( output.fd', output.c', output.steady', ...
   output.nMin', output.nAve', output.nDiff', output.nFWHM');
 %%
 
-tSum.Properties.VariableNames = {'fd', 'c', 'steady', ...
+tSum.Properties.VariableNames = {'fd', 'c', 'steady', 'band' ...
   'cPeak', 'cSlice', 'cMax', 'cMin', 'cAve', 'cDiff', 'cFWHM',...
   'pPeak', 'pSlice', 'pMax', 'pMin', 'pAve', 'pDiff', 'pFWHM',...
   'nPeak', 'nSlice', 'nMax', 'nMin', 'nAve', 'nDiff', 'nFWHM'};
