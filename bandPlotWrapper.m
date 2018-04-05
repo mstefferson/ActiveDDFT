@@ -2,8 +2,8 @@
 plotMyBand = 0;
 plotMySlice = 0;
 plotMyPhase = 1;
-bandThres = 0.01;
-saveMe = 0;
+bandThres = 0.05;
+saveMe = 1;
 dockStyle = 'normal';
 addpath( genpath( './src' ) );
 dir2check = 'analyzedfiles/BandAnalysis';
@@ -18,7 +18,7 @@ elseif exist( 'bandTable.mat', 'file')
   fprintf('Found saved bandTable file. Using that\n')
   load('bandTable.mat')
 else
-  fprintf('Cannot fine bandTable variable. Saving and using\n')
+  fprintf('Cannot find bandTable variable. Saving and using\n')
   [~, bandTable] = bandAnalysis(dir2check, bandThres);
   save('bandTable', 'bandTable')
 end
