@@ -49,7 +49,9 @@ jrec     = timeObj.recStartInd; % Actual index for runSave
 %Set up Diffusion operator, discrete k-space propagator, and interaction
 %[lop] = DiffOpBuilderIsoDiffCube(diffObj,gridObj,n1,n2,n3);
 lop = 0;
-prop = 1;   % Turn off propagator
+% prop = eye(n1*n2*n3);   % Turn off propagator
+% prop = ones(n1, n2, n3);   % Turn off propagator
+prop = 1;
 % Interactions and driving
 if flags.dRhoCalc
   rho    = real(ifftn(ifftshift(rho_FT)));
@@ -94,7 +96,7 @@ elseif( flags.StepMeth == 6 ) % Exponential Euler
   gamProp = ( prop - 1 ) ./ lop;
   gamProp( isnan( gamProp) ) = timeObj.dt;
   %   gamProp( gridObj.k1ind0, gridObj.k2ind0, gridObj.k3ind0 ) = 0;
-  [rho_FTnext] = DenStepperEEM1c( prop, gamProp, rho_FT,GammaCube_FT);
+  [rho_FTnext] = DenStepperEEM1c(prop, gamProp, rho_FT,GammaCube_FT);
 else
   error('No stepping method selected');
 end
