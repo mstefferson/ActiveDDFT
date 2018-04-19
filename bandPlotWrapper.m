@@ -1,7 +1,8 @@
 %%
 plotMyBand = 0;
 plotMySlice = 0;
-plotMyPhase = 1;
+plotMyPhase = 0;
+plotMyIN = 1;
 bandThres = 0.05;
 saveMe = 1;
 dockStyle = 'normal';
@@ -93,6 +94,21 @@ if plotMyPhase
   fprintf('Finished plotBandPhaseSub\n')
   if saveMe
     saveTitle = 'phase_diagram_peak_width';
+    saveas( gcf, saveTitle, saveExt )
+    fprintf('Saved\n')
+  end
+end
+%%
+if plotMyIN
+  saveExt = 'png';
+  xLabel = '$$c^*$$';
+  yLabel = '$$ N $$';
+  plotOrderParam( bandTable, 'c', 'nAve', xLabel, yLabel )
+  fig = gcf;
+  fig.WindowStyle = dockStyle;
+  fprintf('Finished plot\n')
+  if saveMe
+    saveTitle = 'in_trans';
     saveas( gcf, saveTitle, saveExt )
     fprintf('Saved\n')
   end
