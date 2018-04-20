@@ -182,10 +182,10 @@ else
     if strcmp( currPot{strInd}, 'gauss' )
       foundV = 1;
       % build potential
-      vTemp = PolarAlignGaussClass( currPot{strInd}, currPot{corrInd},...
+      vTemp = GaussianClass( currPot{strInd}, currPot{corrInd},...
         currPot{paramInd}(1), currPot{paramInd}(2),...
-        systemObj.tmp, systemObj.n1, systemObj.n2, systemObj.n3, ...
-        systemObj.l1, systemObj.l2, systemObj.l3);
+        systemObj.tmp, systemObj.n1, systemObj.n2,...
+        systemObj.l1, systemObj.l2);
     end
     if foundV
       interObj.anyInter = 1;
@@ -263,6 +263,45 @@ else
         fprintf('Along dim %d\n', currPot{2}(1) );
         vTemp = QuadVClass( currPot{1}, currPot{2}(1), ...
           currPot{2}(2), posVecs{ currPot{2}(1) } );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+      end
+    elseif strcmp( currPot{1}, 'cosV' )
+      % run a dim check just in case
+      if nVec( currPot{2}(1) ) > 1
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = CosVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), currPot{2}(3), posVecs{ currPot{2}(1) } );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+      end
+    elseif strcmp( currPot{1}, 'gaussV' )
+      % run a dim check just in case
+      if nVec( currPot{2}(1) ) > 1
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = GaussVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), currPot{2}(3), currPot{2}(4),...
+          posVecs{ currPot{2}(1) } );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+      end
+    elseif strcmp( currPot{1}, 'tanhstepV' )
+      % run a dim check just in case
+      if nVec( currPot{2}(1) ) > 1
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = TanhStepVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), currPot{2}(3), currPot{2}(4),...
+          [], posVecs{ currPot{2}(1) } );
+        interObj.externalV{ii} = vTemp;
+        addPot = 1;
+      end
+    elseif strcmp( currPot{1}, 'cosbumpV' )
+      % run a dim check just in case
+      if nVec( currPot{2}(1) ) > 1
+        fprintf('Along dim %d\n', currPot{2}(1) );
+        vTemp = CosBumpVClass( currPot{1}, currPot{2}(1), ...
+          currPot{2}(2), currPot{2}(3), currPot{2}(4), ...
+          posVecs{ currPot{2}(1) } );
         interObj.externalV{ii} = vTemp;
         addPot = 1;
       end

@@ -4,20 +4,13 @@ function [cStats, pStats, nStats] = ...
 [cStats.maxV, cStats.minV, cStats.aveV, ...
   cStats.vdiff, cStats.fwhd, maxInd] = ...
   bandStats( Cslice, Lvar, NposVar ) ;
-% Scale c's 
-cStats.maxV = cStats.maxV / pi;
-cStats.minV = cStats.minV / pi;
-cStats.aveV = cStats.aveV / pi;
-cStats.vdiff = cStats.vdiff / cStats.aveV;
-
 % P slice: two peaks so be careful
  deltaInd = round( cStats.fwhd / Lvar .* NposVar);
-if maxInd > length(Pslice) / 2;
+if maxInd > length(Pslice) / 2
   pInd = max(1, maxInd-deltaInd):maxInd;
 else
   pInd = maxInd:min( maxInd+deltaInd, NposVar );
 end
-
 [pStats.maxV, pStats.minV, pStats.aveV, ...
   pStats.vdiff, pStats.fwhd,~] = ...
   bandStats( Pslice(pInd), Lvar, NposVar ) ;
@@ -27,6 +20,5 @@ pStats.p2p = polarPeakDist( Pslice, Lvar );
 [nStats.maxV, nStats.minV, nStats.aveV, ...
   nStats.vdiff, nStats.fwhd,~] = ...
   bandStats( Nslice, Lvar, NposVar ) ;
-
 end
 

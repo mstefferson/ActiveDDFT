@@ -14,8 +14,8 @@ classdef GaussianClass
   methods
     % Constructor
     function obj = GaussianClass( str, corr, es1, ...
-        ls2, kbT, n1, l1, n2, l2 )
-      if nargin == 11
+        ls1, kbT, n1, n2, l1, l2 )
+      if nargin == 9
         obj.Str = str;
         obj.CorrStr = corr;
         obj.Beta = 1 / kbT;

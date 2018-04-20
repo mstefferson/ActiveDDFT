@@ -157,9 +157,9 @@ try
   % Move saved things
   if flags.SaveMe
     paramSave.runTime = runTime;
-    movefile(saveNameRun,dirName);
-    movefile( saveNameRhoFinal,dirName);
-    movefile( saveNameParams,dirName);
+    movefile( saveNameRun, dirName);
+    movefile( saveNameRhoFinal, dirName);
+    movefile( saveNameParams, dirName);
     if flags.MakeOP == 1
       movefile( saveNameOP,dirName);
     end

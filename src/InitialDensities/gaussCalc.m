@@ -40,10 +40,9 @@ if systemObj.n3 > 1
     rho, xcgIndShift1, 1 ), xcgIndShift2, 2 ), xcgIndShift3, 3 );
 else
   [x2mesh, x1mesh] = meshgrid( x2, x1 );
-  rho = gaussParams.amp ./ ( pi * var1Norm * var1Norm ) * ...
+  rho = gaussParams.amp ./ ( sqrt(2*pi) * var1Norm * var2Norm ) * ...
     exp( -1/2 * ( (x1mesh / var1) .^ 2 + (x2mesh / var2) .^ 2 ) );
   % shift it
   rho = circshift( circshift( rho, xcgIndShift1, 1 ), xcgIndShift2, 2 );
 end
 end
-
