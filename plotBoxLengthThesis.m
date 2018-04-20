@@ -2,13 +2,12 @@
 dirname = '/Users/mike/Projects/ActiveDDFT/analyzedfiles/BoxSize';
 my_dirs = dir([dirname '/Hr*']);
 saveName = 'box_size_compare';
-saveMe = 0;
-%%
+saveMe = 1;
 % titles
 fig = figure();
-fig.WindowStyle = 'docked';
-fig.Position = [472 -206 1036 646];
-myTitle = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'};
+fig.WindowStyle = 'normal';
+fig.Position = [126 53 752 644];
+myTitle = {'A', 'B', 'C', 'D'};
 % set some figur parameters
 numRow = 2;
 numCol = 2;
@@ -46,20 +45,27 @@ for ii = 1:numT
   nPlot = length(ind2plot);
   myColors = viridis(nPlot);
   my_leg = cell(nPlot,1);
+%   lbox_temp = round(x2(end)-x2(1));
   hold on
   for nn = 1:nPlot
     plotid = ind2plot(nn);
-    p = plot(x2, C_slice(:,plotid));
+%     x2plot = x2 ./ lbox_temp;
+    x2plot = x2;
+    p = plot(x2plot, C_slice(:,plotid));
     p.Color = myColors(nn,:);
     my_leg{nn} = ['$$ t = $$' num2str(paramLoad.timeObj.t_rec * (plotid-1))];
   end
-  axh1.XLim = [x2(1) x2(end)];
+  axh1.XLim = 1/2 * round(2*[x2plot(1) x2plot(end)]);
+  box on
   xlabel('Position $$x$$')
-  ylabel('$$C(x,t)$$')
-  title(['l = ' num2str(paramLoad.systemObj.l2)])
+  ylabel('Concentration $$C(x,t)$$')
+  ht = title(axh1, myTitle{ii}, 'Units', 'normalized', ...
+   'Position', [0 1 0], 'HorizontalAlignment', 'left');
+  %title(['l = ' num2str(paramLoad.systemObj.l2)])
   if ii == numT
     hl = legend(my_leg);
     hl.Interpreter = 'latex';
+    hl.Position = [0.8841 0.2327 0.1124 0.1427];
   end
 end
 if saveMe
