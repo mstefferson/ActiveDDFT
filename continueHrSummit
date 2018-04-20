@@ -1,7 +1,7 @@
 # ./submitHr jobName 
 
 # Hard code working dir
-runDir=/scratch/summit/mist7261/Hardrod/
+runDir=/scratch/summit/mist7261/Hardrod/continueMe/
 homeDir=`pwd`;
 
 echo "In $homeDir. Making a temp directory in $runDir"
