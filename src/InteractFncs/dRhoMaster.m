@@ -80,7 +80,7 @@ if polarDrive.Flag
   iota2 = iota2 + polarDrive.Iota2;
 end
 % calculate gamma from fluxes
-gammaCube_FT = dRhoFlux.calcDrho( iota1, iota2, iota3 );
+gammaCubeFt = dRhoFlux.calcDrho( iota1, iota2, iota3 );
 % noise
 if noise.Flag
   gammaNoiseFt = noise.calcDrho( rho );
