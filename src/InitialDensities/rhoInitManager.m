@@ -13,17 +13,13 @@ if strcmp( particleObj.type, 'rods') && strcmp( particleObj.interHb, 'mayer' )
   else
     rhoInitObj.bc = systemObj.bc;
   end
-  if systemObj.n3 == 1
-    rhoInitObj.feq = [];
-  else
-  % Calculate coeff
-  phi = 2*pi/systemObj.n3 * (0:systemObj.n3-1);
-  [Coeff_best,~] = CoeffCalcExpCos2D(Nc,phi,rhoInitObj.bc); 
-  % Build equil distribution
-  rhoInitObj.feq = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);
+  if systemObj.n3 ~= 1
+    % Calculate coeff
+    phi = 2*pi/systemObj.n3 * (0:systemObj.n3-1);
+    [Coeff_best,~] = CoeffCalcExpCos2D(Nc,phi,rhoInitObj.bc);
+    % Build equil distribution
+    rhoInitObj.feq = DistBuilderExpCos2Dsing(Nc,phi,Coeff_best);
   end
-else
-  rhoInitObj.feq  = 1 / ( systemObj.l3 ) .* ones( systemObj.n3, 1 );
 end
 
 % int cond
@@ -140,6 +136,10 @@ else
 end % if perturbations
 % build str
 rhoInitObj.fileStr = [rhoInitObj.type rhoInitObj.perturbIds];
+if isfield(rhoInitObj,'feq') == 0
+  rhoInitObj.feq  = 1 / ( systemObj.l3 ) .* ...
+    ones( systemObj.n3, 1 );
+end
 end
 
 %%%% functions
