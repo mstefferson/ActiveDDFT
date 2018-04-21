@@ -3,6 +3,7 @@ dirname = '/Users/mike/Projects/ActiveDDFT/analyzedfiles/BoxSize';
 my_dirs = dir([dirname '/Hr*']);
 saveName = 'box_size_compare';
 saveMe = 1;
+  ind2plot = [1 2 3 4 5 7 9];
 % titles
 fig = figure();
 fig.WindowStyle = 'normal';
@@ -41,7 +42,6 @@ for ii = 1:numT
   nt = size(C, 3);
   C_slice = reshape( C(1,:,:), [length(x2), nt] );
   %% Concentration
-  ind2plot = [1 2 5 nt];
   nPlot = length(ind2plot);
   myColors = viridis(nPlot);
   my_leg = cell(nPlot,1);
@@ -49,9 +49,12 @@ for ii = 1:numT
   hold on
   for nn = 1:nPlot
     plotid = ind2plot(nn);
-%     x2plot = x2 ./ lbox_temp;
     x2plot = x2;
-    p = plot(x2plot, C_slice(:,plotid));
+    if plotid > nt
+       p = plot(x2plot, C_slice(:,nt));
+    else
+      p = plot(x2plot, C_slice(:,plotid));
+    end
     p.Color = myColors(nn,:);
     my_leg{nn} = ['$$ t = $$' num2str(paramLoad.timeObj.t_rec * (plotid-1))];
   end

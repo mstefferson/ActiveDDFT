@@ -101,8 +101,8 @@ end
 %%
 if plotMyIN
   saveExt = 'png';
-  xLabel = '$$c^*$$';
-  yLabel = '$$ N $$';
+  xLabel = 'Concentration $$c^*$$';
+  yLabel = 'Global nematic order $$ N $$';
   plotOrderParam( bandTable, 'c', 'nAve', xLabel, yLabel )
   fig = gcf;
   fig.WindowStyle = dockStyle;

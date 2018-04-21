@@ -152,9 +152,9 @@ shading(ax,'interp');
 xlabel(ax,'$$ x $$'); ylabel(ax,'$$ y $$')
 ht = title(ax, myTitle);
 % hack in title position
-ht.Position(1) = ht.Position(1) - 8*ht.Position(3);
-ht.Position(2) = ht.Position(2) - 0.5;
-ht.FontSize = 12;
+ht.Position(1) = ht.Position(1) - 9*ht.Position(3);
+ht.Position(2) = ht.Position(2) - 0.3;
+ht.FontSize = 14;
 % for some reason, shifting the title to the left fucks
 % up the title. it disappears
 % ht = title(ax, myTitle, 'Units', 'normalized', ...
