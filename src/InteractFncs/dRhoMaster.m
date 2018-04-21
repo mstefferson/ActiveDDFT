@@ -1,8 +1,8 @@
 % Handles all the dRho contributions that are not in Lop
-function [gammaCube_FT, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
+function [gammaCubeFt, shitIsFucked, whatBroke] = dRhoMaster( rho, rho_FT, ...
   interObj,  systemObj, diffObj, polarDrive, noise, dRhoFlux )
 % Initialize
-gammaCube_FT = 0;
+gammaCubeFt = 0;
 shitIsFucked = 0;
 calcGamma = 0;
 whatBroke = [];
@@ -80,9 +80,9 @@ if polarDrive.Flag
   iota2 = iota2 + polarDrive.Iota2;
 end
 % calculate gamma from fluxes
-gammaCube_FT = dRhoFlux.calcDrho( iota1, iota2, iota3 );
+gammaCubeFt = dRhoFlux.calcDrho( iota1, iota2, iota3 );
 % noise
 if noise.Flag
   gammaNoiseFT = noise.calcDrho( rho ); 
-  gammaCube_FT = gammaCube_FT + gammaNoiseFT;
+  gammaCubeFt = gammaCubeFt + gammaNoiseFT;
 end
