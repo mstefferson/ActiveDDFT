@@ -44,6 +44,7 @@ for ii = 1:length(fd2Plot)
   c2plot = shiftSlice( cSlices2Plot{ii} ./ cWant, circAmount );
   p2plot = shiftSlice( pSlices2Plot{ii}, circAmount );
   n2plot = shiftSlice( nSlices2Plot{ii}, circAmount );
+  keyboard
   % plot it
   plot(ax1, x, c2plot, 'Color', wantedColors(ii,:) )
   plot(ax2, x, p2plot, 'Color', wantedColors(ii,:) )

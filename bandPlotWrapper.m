@@ -1,10 +1,11 @@
 %%
 plotMyBand = 0;
 plotMySlice = 0;
+plotMySliceDeriv = 1;
 plotMyPhase = 0;
-plotMyIN = 1;
+plotMyIN = 0;
 bandThres = 0.05;
-saveMe = 1;
+saveMe = 0;
 dockStyle = 'normal';
 addpath( genpath( './src' ) );
 dir2check = 'analyzedfiles/BandAnalysis';
@@ -39,6 +40,20 @@ if plotMyBand
   if saveMe
     saveTitle = 'band_example';   
     saveas( gcf, saveTitle, saveExtBand  )
+    fprintf('Saved\n')
+  end
+end
+%% compare derivatives
+if plotMySliceDeriv
+  saveExt = 'png';
+  cWant = 1.55;
+  fWant = [0, 5, 10 30];
+  fprintf('Starting plotBandSlice\n')
+  plotCompareBandDeriv( cWant, fWant, bandTable );
+  fprintf('Finished plotBandSlice\n')
+  if saveMe
+    saveTitle = 'band_analysis';
+    saveas( gcf, saveTitle, saveExt )
     fprintf('Saved\n')
   end
 end

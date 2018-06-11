@@ -1,18 +1,22 @@
 %% plotBoxSizeThesis.m
 dirname = '/Users/mike/Projects/ActiveDDFT/analyzedfiles/BoxSize';
 my_dirs = dir([dirname '/Hr*']);
-saveName = 'box_size_compare';
+% saveName = 'box_size_compare_band';
+saveName = 'box_size_compare_eq';
 saveMe = 1;
-  ind2plot = [1 2 3 4 5 7 9];
+ind2plot = [1 5 9 11];
+yLim = [0 4];
 % titles
 fig = figure();
 fig.WindowStyle = 'normal';
-fig.Position = [126 53 752 644];
-myTitle = {'A', 'B', 'C', 'D'};
+fig.Position = [231 73 985 624];
+myTitle = {'A', 'B', 'C', 'D', 'E', 'F'};
+% myTitle = cell(100,1);
 % set some figur parameters
-numRow = 2;
-numCol = 2;
 numT = length(my_dirs);
+numRow = 2;
+numCol = numT/2;
+
 for ii = 1:numT
   % load params and opObj from current WD
   dir_temp = [my_dirs(ii).folder '/' my_dirs(ii).name];
@@ -34,7 +38,6 @@ for ii = 1:numT
   % Concentration
   axh1 = subplot(numRow,numCol,ii); % Save the handle of the subplot
   axis square
-  cLim = [min(C(:)) max(C(:))];
   %fixAxis( axh1, C, xTick, yTick, xLim, yLim, cLim, myTitle{plotRowId+1} )
   % shift things
   [circAmount, shiftDim] = findShift( C, paramLoad.systemObj );
@@ -59,6 +62,7 @@ for ii = 1:numT
     my_leg{nn} = ['$$ t = $$' num2str(paramLoad.timeObj.t_rec * (plotid-1))];
   end
   axh1.XLim = 1/2 * round(2*[x2plot(1) x2plot(end)]);
+  axh1.YLim = yLim;
   box on
   xlabel('Position $$x$$')
   ylabel('Concentration $$C(x,t)$$')
@@ -68,7 +72,7 @@ for ii = 1:numT
   if ii == numT
     hl = legend(my_leg);
     hl.Interpreter = 'latex';
-    hl.Position = [0.8841 0.2327 0.1124 0.1427];
+    hl.Position = [0.9086 0.2127 0.0876 0.1506];
   end
 end
 if saveMe

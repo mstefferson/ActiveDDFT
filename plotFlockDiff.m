@@ -1,16 +1,26 @@
 dirname = '/Users/mike/Projects/ActiveDDFT/analyzedfiles/FlockDiff';
 my_dirs = dir([dirname '/Hr*']);
-saveName = 'flock_diff';
+saveName = 'flock_diff_break_apart';
+pLim = [0 0.07];
+% saveName = 'flock_diff_backscatter';
+% pLim = [0 0.175];
 saveMe = 1;
-myTitle = {'A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'D1', 'D2'};
+% myTitle = {'A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'D1', 'D2',...
+%   'E1', 'E2', 'F1', 'F2', 'G1', 'G2', 'H1', 'H2'};
+myTitle = {'C0',  'C1.1', 'C1.2', 'P0','P1.1', 'P1.2',...
+  'C0',  'C2.1', 'C2.2', 'P0', 'P2.1',  'P2.2'};
+% myTitle= cell(100,1);
 % time inds
-timeId = [1 2 3];
+timeId = [1 4 7];
 % titles
 % fig.WindowStyle = 'normal';
 % set some figur parameters
-numRow = 2;
+numRow = 2*numT;
 numCol = length(timeId);
 numT = length(my_dirs);
+fig = figure();
+fig.WindowStyle = 'normal';
+fig.Position = [426 1 754 704];
 for ii = 1:numT
   % load params and opObj from current WD
   dir_temp = [my_dirs(ii).folder '/' my_dirs(ii).name];
@@ -31,29 +41,30 @@ for ii = 1:numT
   nPlot = length(timeId);
   myColors = viridis(nPlot);
   maxP = max( P(:) );
-  fig = figure();
-  fig.WindowStyle = 'normal';
-  fig.Position = [211 178 767 362];
   for nn = 1:nPlot
     plotid = timeId(nn);
     cTemp = C(:,:,plotid);
     pTemp = P(:,:,plotid);
     pX = fileObj.POPx_rec(:,:,plotid);
     pY = fileObj.POPy_rec(:,:,plotid);
-    polarTempX = pX(subInd1,subInd2) ./ maxP;
-    polarTempY = pY(subInd1,subInd2) ./ maxP;
+    pXYnorm = 3*maxP;
+    polarTempX = pX(subInd1,subInd2) ./ pXYnorm;
+    polarTempY = pY(subInd1,subInd2) ./ pXYnorm;
     % Concentration
-    axh1 = subplot(numRow,numCol,nn); % Save the handle of the subplot
+    plotidtemp = 2*(ii-1)*numCol+nn;
+    %     disp(plotidtemp)
+    axh1 = subplot(numRow,numCol,plotidtemp); % Save the handle of the subplot
     cLim = [min(C(:)) max(C(:))];
     fixAxis( axh1, C, xTick, yTick, xLim, yLim, cLim, ...
-      myTitle{numRow*(nn-1) + 1} )
+      myTitle{plotidtemp} )
     pcolor( axh1, x1, x2, cTemp' );
     shading( axh1, 'interp')
     %% Polar order
-    axh2 = subplot(numRow,numCol,numCol+nn); % Save the handle of the subplot
-    cLim = [0 1];
-    fixAxis( axh2, C, xTick, yTick, xLim, yLim, cLim, ...
-      myTitle{numRow*(nn-1) + 2})
+    plotidtemp = 2*(ii-1)*numCol+numCol+nn;
+    %     disp(plotidtemp)
+    axh2 = subplot(numRow,numCol,plotidtemp); % Save the handle of the subplot
+    fixAxis( axh2, C, xTick, yTick, xLim, yLim, pLim, ...
+      myTitle{plotidtemp})
     pcolor(axh2, x1, x2, pTemp' );
     shading( axh2, 'interp')
     pause(1)
@@ -61,12 +72,11 @@ for ii = 1:numT
     quiver(axh2, x1(subInd1), x2(subInd2),...
       polarTempX', polarTempY', 0,'color',[1,1,1] );
   end
-  if saveMe
-    disp([saveName num2str(ii)])
-    saveas(fig, [saveName num2str(ii)],'png')
-  end
 end
-
+if saveMe
+%   disp([saveName num2str(ii)])
+  saveas(fig, saveName,'png')
+end
 %%%%%%%%% functions %%%%%%%%%%%%%%%
 function [xTick, yTick, xLim, yLim, subInd1, subInd2, x1, x2] = ...
   buildTicks( systemObj )
@@ -103,7 +113,7 @@ ax.FontSize = fontSize;
 hold(ax, 'on')
 h = colorbar('peer',ax);
 h.TickLabelInterpreter = 'latex';
-minVal = min( data(:) );
+% minVal = min( data(:) );
 % maxVal = max( data(:) );
 % if minVal >= maxVal -0.0001
 %   maxVal = 1.1 .* minVal ;
